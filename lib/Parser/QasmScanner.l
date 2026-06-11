@@ -344,6 +344,18 @@ void comment_error(const char* msg) {
   return yylval->Tok->GetInt();
 }
 
+"qumode" { 
+yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQubit);
+  return yylval->Tok->GetInt();
+}
+
 "U" {
   ASTGateContextBuilder::Instance().OpenContext();
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_U);
