@@ -17933,6 +17933,147 @@ ASTProductionFactory::ProductionRule_1102(const ASTToken *TK,
 }
 
 ASTDeclarationNode *
+ASTProductionFactory::ProductionRule_1107(const ASTToken *TK,
+                                          const ASTIdentifierNode *DId) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(DId && "Invalid ASTIdentifierNode argument!");
+
+  unsigned Bits = DId->GetBits() == 0 ? 1 : DId->GetBits();
+  DId->SetBits(Bits);
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(
+          DId, Bits, ASTTypeQumodeContainer)) {
+    std::stringstream M;
+    M << "Could not transfer Symbol Table Entry for ASTTypeQumodeContainer.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::ICE);
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
+    std::stringstream M;
+    M << "Declaration " << DId->GetName() << " shadows a "
+      << "previous declaration.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(),
+        DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  ASTQumodeContainerNode *QCN =
+      ASTBuilder::Instance().CreateASTQumodeContainerNode(DId, Bits);
+  assert(QCN && "Could not create a valid ASTQumodeContainerNode!");
+
+  QCN->SetLocation(DId->GetLocation());
+  QCN->Mangle();
+  ASTDeclarationNode *DN =
+      new ASTDeclarationNode(DId, QCN, ASTTypeQumodeContainer, false);
+  assert(DN && "Could not create a valid ASTDeclarationNode!");
+
+  DN->SetLocation(TK->GetLocation());
+  ASTStatementBuilder::Instance().Append(DN);
+  ASTDeclarationBuilder::Instance().Append(DN);
+  return DN;
+}
+
+ASTDeclarationNode *
+ASTProductionFactory::ProductionRule_1108(const ASTToken *TK,
+                                          const ASTIdentifierNode *DId,
+                                          const ASTIntNode *BI) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(DId && "Invalid ASTIdentifierNode argument!");
+  assert(BI && "Invalid ASTIntegerNode argument!");
+
+  unsigned Bits = ASTUtils::Instance().GetUnsignedValue(BI);
+  assert(!ASTIdentifierNode::InvalidBits(Bits) &&
+         "Invalid number of bits for ASTQumodeContainerNode!");
+
+  DId->SetBits(Bits);
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(
+          DId, Bits, ASTTypeQumodeContainer)) {
+    std::stringstream M;
+    M << "Could not transfer Symbol Table Entry for ASTTypeQumodeContainer.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::ICE);
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
+    std::stringstream M;
+    M << "Declaration " << DId->GetName() << " shadows a "
+      << "previous declaration.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(),
+        DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  ASTQumodeContainerNode *QCN =
+      ASTBuilder::Instance().CreateASTQumodeContainerNode(DId, Bits);
+  assert(QCN && "Could not create a valid ASTQumodeContainerNode!");
+
+  QCN->SetLocation(DId->GetLocation());
+  QCN->Mangle();
+  ASTDeclarationNode *DN =
+      new ASTDeclarationNode(DId, QCN, ASTTypeQumodeContainer, false);
+  assert(DN && "Could not create a valid ASTDeclarationNode!");
+
+  DN->SetLocation(TK->GetLocation());
+  ASTStatementBuilder::Instance().Append(DN);
+  ASTDeclarationBuilder::Instance().Append(DN);
+  return DN;
+}
+
+ASTDeclarationNode *
+ASTProductionFactory::ProductionRule_1109(const ASTToken *TK,
+                                          const ASTIdentifierNode *DId,
+                                          const ASTIdentifierNode *IXd) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(DId && "Invalid ASTIdentifierNode argument!");
+  assert(IXd && "Invalid Qumode Index ASTIdentifierNode!");
+
+  ASTScopeController::Instance().CheckUndefined(IXd);
+  ASTScopeController::Instance().CheckOutOfScope(IXd);
+
+  unsigned Bits = ASTUtils::Instance().GetUnsignedValue(IXd);
+  assert(!ASTIdentifierNode::InvalidBits(Bits) &&
+         "Invalid number of bits for Index Identifier!");
+
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(
+          DId, Bits, ASTTypeQumodeContainer)) {
+    std::stringstream M;
+    M << "Could not transfer Symbol Table Entry for ASTTypeQumodeContainer.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::ICE);
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
+    std::stringstream M;
+    M << "Declaration " << DId->GetName() << " shadows a "
+      << "previous declaration.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(),
+        DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  ASTQumodeContainerNode *QCN =
+      ASTBuilder::Instance().CreateASTQumodeContainerNode(DId, Bits);
+  assert(QCN && "Could not create a valid ASTQumodeContainerNode!");
+
+  QCN->SetLocation(DId->GetLocation());
+  QCN->Mangle();
+  ASTDeclarationNode *DN =
+      new ASTDeclarationNode(DId, QCN, ASTTypeQumodeContainer, false);
+  assert(DN && "Could not create a valid ASTDeclarationNode!");
+
+  DN->SetLocation(TK->GetLocation());
+  ASTStatementBuilder::Instance().Append(DN);
+  ASTDeclarationBuilder::Instance().Append(DN);
+  return DN;
+}
+
+ASTDeclarationNode *
 ASTProductionFactory::ProductionRule_1103(const ASTToken *TK,
                                           const ASTIdentifierNode *DId,
                                           const ASTExpressionNode *EN) const {

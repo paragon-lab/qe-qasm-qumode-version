@@ -66,6 +66,9 @@ public:
     case ASTTypeQubit:
       return LB == 0 && RB == 0 ? CT : CT = ASTTypeQubitContainer;
       break;
+    case ASTTypeQumode:
+      return LB == 0 && RB == 0 ? CT : CT = ASTTypeQumodeContainer;
+      break;
     case ASTTypeQubitArray:
       return LB == 1 && RB == 1 ? CT : CT = ASTTypeQubitArray;
       break;
@@ -165,6 +168,9 @@ public:
         break;
       case ASTTypeQubit:
         CT = ASTTypeQubitContainer;
+        break;
+      case ASTTypeQumode:
+        CT = ASTTypeQumodeContainer;
         break;
       case ASTTypeAngle:
         CT = ASTTypeAngle;

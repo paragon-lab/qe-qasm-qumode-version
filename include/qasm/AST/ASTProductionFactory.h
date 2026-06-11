@@ -453,6 +453,16 @@ public:
                                           const ASTIdentifierNode *IXd,
                                           const ASTExpressionNode *EN) const;
 
+  // qumode
+  ASTDeclarationNode *ProductionRule_1107(const ASTToken *TK,
+                                          const ASTIdentifierNode *DId) const;
+  ASTDeclarationNode *ProductionRule_1108(const ASTToken *TK,
+                                          const ASTIdentifierNode *DId,
+                                          const ASTIntNode *BI) const;
+  ASTDeclarationNode *ProductionRule_1109(const ASTToken *TK,
+                                          const ASTIdentifierNode *DId,
+                                          const ASTIdentifierNode *IXd) const;
+
   // qubit aliases
   ASTDeclarationNode *ProductionRule_1150(const ASTIdentifierNode *AId,
                                           const std::string *QN,

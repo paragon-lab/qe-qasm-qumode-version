@@ -406,6 +406,14 @@ void ASTMangler::Init() {
             {"QCa", 3},
         }, // # [<number> '_'] qubit container alias
         {
+            ASTTypeQumode,
+            {"QM", 2},
+        }, // # [<number> '_'] qumode
+        {
+            ASTTypeQumodeContainer,
+            {"QMC", 3},
+        }, // # [<number> '_'] qumode container
+        {
             ASTTypeGateQubitParam,
             {"GQP", 3},
         }, // gate qubit parameter
@@ -874,6 +882,7 @@ void ASTMangler::TypeSize(ASTType Ty, unsigned SZ) {
   case ASTTypeBitset:
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
+  case ASTTypeQumodeContainer:
   case ASTTypeCReg:
   case ASTTypeQReg:
   case ASTTypeHash:
@@ -1097,8 +1106,10 @@ void ASTMangler::TypeIdentifier(ASTType Ty, unsigned TS,
   case ASTTypeCReg:
   case ASTTypeQReg:
   case ASTTypeQubit:
+  case ASTTypeQumode:
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
+  case ASTTypeQumodeContainer:
   case ASTTypeGateQubitParam:
   case ASTTypeBool:
   case ASTTypeInt:

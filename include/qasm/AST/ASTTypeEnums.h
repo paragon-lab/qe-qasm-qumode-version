@@ -288,6 +288,8 @@ enum ASTType : unsigned {
   ASTTypeQubitContainerAlias,
   ASTTypeQubitMap,
   ASTTypeQubits,
+  ASTTypeQumode,
+  ASTTypeQumodeContainer,
   ASTTypeRegister,
   ASTTypeReset,
   ASTTypeRestrict,

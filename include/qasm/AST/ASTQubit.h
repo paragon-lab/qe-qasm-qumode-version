@@ -106,6 +106,23 @@ public:
   virtual void push(ASTBase * /* unused */) override {}
 };
 
+class ASTQumodeNode : public ASTQubitNode {
+public:
+  ASTQumodeNode(const ASTIdentifierNode *Id,
+                unsigned Idx = static_cast<unsigned>(~0x0))
+      : ASTQubitNode(Id, Idx) {}
+
+  ASTQumodeNode(const ASTIdentifierNode *Id, unsigned Idx,
+                const std::string &QN)
+      : ASTQubitNode(Id, Idx, QN) {}
+
+  virtual ~ASTQumodeNode() = default;
+
+  virtual ASTType GetASTType() const override { return ASTTypeQumode; }
+
+  virtual void print() const override;
+};
+
 class ASTGateQubitParamNode : public ASTExpressionNode {
 private:
   unsigned Bits;
@@ -536,6 +553,29 @@ public:
 
     if (ASTQubitNode *QN = dynamic_cast<ASTQubitNode *>(Node))
       List.push_back(QN);
+  }
+};
+
+class ASTQumodeContainerNode : public ASTQubitContainerNode {
+public:
+  ASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned Size)
+      : ASTQubitContainerNode(Id, Size) {}
+
+  virtual ASTType GetASTType() const override { return ASTTypeQumodeContainer; }
+
+  virtual void print() const override {
+    std::cout << "<QumodeContainer>" << std::endl;
+    std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
+    std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
+              << std::endl;
+    std::cout << "<Size>" << Size() << "</Size>" << std::endl;
+    std::cout << "<Qumodes>" << std::endl;
+
+    for (const_iterator I = begin(); I != end(); ++I)
+      (*I)->print();
+
+    std::cout << "</Qumodes>" << std::endl;
+    std::cout << "</QumodeContainer>" << std::endl;
   }
 };
 

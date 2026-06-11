@@ -336,6 +336,14 @@ void ASTTypeSystemBuilder::Init() {
             ASTQubitContainerAliasNode::QubitContainerAliasBits,
         },
         {
+            ASTTypeQumode,
+            ASTQubitNode::QubitBits,
+        },
+        {
+            ASTTypeQumodeContainer,
+            ASTQubitContainerNode::QubitContainerBits,
+        },
+        {
             ASTTypeResult,
             ASTResultNode::ResultBits,
         },
