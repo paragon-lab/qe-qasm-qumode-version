@@ -453,16 +453,6 @@ public:
                                           const ASTIdentifierNode *IXd,
                                           const ASTExpressionNode *EN) const;
 
-  // qumode
-  ASTDeclarationNode *ProductionRule_1107(const ASTToken *TK,
-                                          const ASTIdentifierNode *DId) const;
-  ASTDeclarationNode *ProductionRule_1108(const ASTToken *TK,
-                                          const ASTIdentifierNode *DId,
-                                          const ASTIntNode *BI) const;
-  ASTDeclarationNode *ProductionRule_1109(const ASTToken *TK,
-                                          const ASTIdentifierNode *DId,
-                                          const ASTIdentifierNode *IXd) const;
-
   // qubit aliases
   ASTDeclarationNode *ProductionRule_1150(const ASTIdentifierNode *AId,
                                           const std::string *QN,
@@ -1508,6 +1498,24 @@ public:
   ASTMPIntegerNode *ProductionRule_7004(const ASTToken *TK) const;
   ASTMPDecimalNode *ProductionRule_7005(const ASTToken *TK) const;
   ASTArrayNode *ProductionRule_7006(const ASTToken *TK) const;
+
+  // -------------------------------------------------------------------------
+  // Fork-local production rules (SQMS / qumode fork). Start at 10000 so new
+  // upstream rules in the 1xxx–9xxx ranges cannot collide.
+  // -------------------------------------------------------------------------
+
+  // qumode
+  ASTDeclarationNode *ProductionRule_10000(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const;
+  ASTDeclarationNode *ProductionRule_10001(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTIntNode *BI) const;
+  ASTDeclarationNode *ProductionRule_10002(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTIdentifierNode *IXd) const;
+
+  // Gate angle-array literal parameter: [θ0, ..., θk]
+  ASTAngleArrayNode *ProductionRule_10010(const ASTExpressionList *EL) const;
 };
 
 } // namespace QASM

@@ -695,3 +695,6 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tests/qumode)
 
 add_test(NAME qumode-t00001
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/qumode-decl.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/qumode-decl.qasm.out 2>&1")
+
+add_test(NAME snap-t00001
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-snap-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/test-snap-array-param.qasm.out 2>&1")

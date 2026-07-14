@@ -1787,15 +1787,15 @@ Decl
                                                               $5, $7);
   }
   | TOK_QUMODE Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1107(GET_TOKEN(2), $2);
+    $$ = ASTProductionFactory::Instance().ProductionRule_10000(GET_TOKEN(2), $2);
   }
   | TOK_QUMODE '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1108(GET_TOKEN(5),
-                                                              $5, $3);
+    $$ = ASTProductionFactory::Instance().ProductionRule_10001(GET_TOKEN(5),
+                                                               $5, $3);
   }
   | TOK_QUMODE '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1109(GET_TOKEN(5),
-                                                              $5, $3);
+    $$ = ASTProductionFactory::Instance().ProductionRule_10002(GET_TOKEN(5),
+                                                               $5, $3);
   }
   | TOK_LET Identifier '=' TOK_IDENTIFIER '[' TOK_INTEGER_CONSTANT ','
                                               IntegerList ']' ';' {
@@ -3696,6 +3696,12 @@ ArgsList
   | '(' ExprList ')' {
     $$ = ASTArgumentNodeBuilder::Instance().List();
     *$$ = $2;
+  }
+  | '(' '[' ExprList ']' ')' {
+    $$ = ASTArgumentNodeBuilder::Instance().NewList();
+    ASTAngleArrayNode *AAN =
+        ASTProductionFactory::Instance().ProductionRule_10010($3);
+    $$->Append(AAN);
   }
   ;
 

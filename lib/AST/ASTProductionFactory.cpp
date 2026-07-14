@@ -17933,8 +17933,8 @@ ASTProductionFactory::ProductionRule_1102(const ASTToken *TK,
 }
 
 ASTDeclarationNode *
-ASTProductionFactory::ProductionRule_1107(const ASTToken *TK,
-                                          const ASTIdentifierNode *DId) const {
+ASTProductionFactory::ProductionRule_10000(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(DId && "Invalid ASTIdentifierNode argument!");
 
@@ -17976,9 +17976,9 @@ ASTProductionFactory::ProductionRule_1107(const ASTToken *TK,
 }
 
 ASTDeclarationNode *
-ASTProductionFactory::ProductionRule_1108(const ASTToken *TK,
-                                          const ASTIdentifierNode *DId,
-                                          const ASTIntNode *BI) const {
+ASTProductionFactory::ProductionRule_10001(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTIntNode *BI) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(DId && "Invalid ASTIdentifierNode argument!");
   assert(BI && "Invalid ASTIntegerNode argument!");
@@ -18024,9 +18024,9 @@ ASTProductionFactory::ProductionRule_1108(const ASTToken *TK,
 }
 
 ASTDeclarationNode *
-ASTProductionFactory::ProductionRule_1109(const ASTToken *TK,
-                                          const ASTIdentifierNode *DId,
-                                          const ASTIdentifierNode *IXd) const {
+ASTProductionFactory::ProductionRule_10002(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTIdentifierNode *IXd) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(DId && "Invalid ASTIdentifierNode argument!");
   assert(IXd && "Invalid Qumode Index ASTIdentifierNode!");
@@ -30075,6 +30075,76 @@ ASTProductionFactory::ProductionRule_3506(const ASTToken *TK,
   ASTGateContextBuilder::Instance().CloseContext();
   ASTIdentifierTypeController::Instance().Reset();
   return RG;
+}
+
+ASTAngleArrayNode *
+ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
+  assert(EL && "Invalid ASTExpressionList argument!");
+
+  if (EL->Empty()) {
+    std::stringstream M;
+    M << "Gate angle-array parameter cannot be empty.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    return ASTAngleArrayNode::ExpressionError(M.str());
+  }
+
+  std::vector<ASTAngleNode *> Angles;
+  Angles.reserve(EL->Size());
+  unsigned C = 0;
+
+  for (ASTExpressionList::const_iterator I = EL->begin(); I != EL->end(); ++I) {
+    const ASTExpressionNode *EN = dynamic_cast<const ASTExpressionNode *>(*I);
+    if (!EN) {
+      std::stringstream M;
+      M << "Invalid expression in gate angle-array parameter at index " << C
+        << ".";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      return ASTAngleArrayNode::ExpressionError(M.str());
+    }
+
+    std::stringstream SAN;
+    SAN << "ast-gate-array-angle-" << C;
+    ASTIdentifierNode *AId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        SAN.str(), ASTAngleNode::AngleBits, ASTTypeAngle);
+    assert(AId && "Could not create an Angle ASTIdentifierNode!");
+
+    ASTAngleType ATy = ASTAngleNode::DetermineAngleType(AId->GetName());
+    ASTAngleNode *AN = ASTBuilder::Instance().CreateASTAngleNodeFromExpression(
+        AId, EN, ATy, ASTAngleNode::AngleBits);
+    if (!AN) {
+      std::stringstream M;
+      M << "Could not convert gate angle-array element at index " << C
+        << " to an angle.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(EN), M.str(),
+          DiagLevel::Error);
+      return ASTAngleArrayNode::ExpressionError(M.str());
+    }
+
+    AN->SetGateParamName(AId->GetName());
+    AId->SetPolymorphicName(AId->GetName());
+    AN->Mangle();
+    AN->MangleLiteral();
+    ASTAngleNodeBuilder::Instance().Insert(AN);
+    ASTAngleNodeBuilder::Instance().Append(AN);
+    Angles.push_back(AN);
+    ++C;
+  }
+
+  std::stringstream ArrName;
+  ArrName << "ast-gate-angle-array-lit-" << Angles.size();
+  ASTIdentifierNode *ArrId = new ASTIdentifierNode(
+      ArrName.str(), ASTTypeAngleArray, static_cast<unsigned>(Angles.size()));
+  assert(ArrId && "Could not create an Array ASTIdentifierNode!");
+
+  ArrId->SetPolymorphicName("gatearrayangle");
+  ASTAngleArrayNode *AAN = new ASTAngleArrayNode(ArrId, Angles);
+  assert(AAN && "Could not create a valid ASTAngleArrayNode!");
+
+  AAN->Mangle();
+  return AAN;
 }
 
 ASTGateQOpNode *ASTProductionFactory::ProductionRule_3507(

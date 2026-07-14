@@ -754,8 +754,12 @@ protected:
   ASTAngleArrayNode(const ASTIdentifierNode *Id, const std::string &ERM,
                     const ASTToken *TK)
       : ASTArrayNode(Id, ERM, ASTTypeAngleArray), AV(), AS(0U) {
-    SetLocation(TK->GetLocation());
+    if (TK)
+      SetLocation(TK->GetLocation());
   }
+
+  ASTAngleArrayNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTArrayNode(Id, ERM, ASTTypeAngleArray), AV(), AS(0U) {}
 
 public:
   using vector_type = std::vector<ASTAngleNode *>;
@@ -805,6 +809,13 @@ public:
   ASTAngleArrayNode(const ASTIdentifierNode *Id, unsigned Size, unsigned Bits,
                     const ASTInitializerList *IL)
       : ASTArrayNode(Id, ASTTypeAngleArray, Size, IL), AV(), AS(Bits) {}
+
+  /// Construct an angle-array literal from already-materialized angle elements.
+  ASTAngleArrayNode(const ASTIdentifierNode *Id,
+                    const std::vector<ASTAngleNode *> &Angles)
+      : ASTArrayNode(Id, ASTTypeAngleArray,
+                     static_cast<unsigned>(Angles.size())),
+        AV(Angles), AS(ASTAngleNode::AngleBits) {}
 
   virtual ~ASTAngleArrayNode() = default;
 
@@ -886,6 +897,10 @@ public:
                                             const ASTToken *TK) {
     return new ASTAngleArrayNode(ASTIdentifierNode::AngleArray.Clone(), ERM,
                                  TK);
+  }
+
+  static ASTAngleArrayNode *ExpressionError(const std::string &ERM) {
+    return new ASTAngleArrayNode(ASTIdentifierNode::AngleArray.Clone(), ERM);
   }
 
   static ASTAngleArrayNode *ExpressionError(const ASTIdentifierNode *Id,
