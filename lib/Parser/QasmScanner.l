@@ -344,7 +344,7 @@ void comment_error(const char* msg) {
   return yylval->Tok->GetInt();
 }
 
-"qumode" { 
+"qumode" {
 yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
