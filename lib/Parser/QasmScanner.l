@@ -333,15 +333,15 @@ void comment_error(const char* msg) {
 }
 
 "qubit" {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUBIT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUBIT); // when we reach the sequence "qubit q;" quibt is recognized as a known sequence and a token object is created
+  assert(yylval->Tok && "Could not create a valid ASTToken!"); //checking the token was created successfully
+  yylval->Token = yylval->Tok->GetInt(); // store token ID
+  yylval->String = yylval->Tok->GetStringAddress(); //store token address
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(), //save where the loction appeared in the source file
                            prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQubit);
-  return yylval->Tok->GetInt();
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex()); //store token in registry
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQubit); //IMPORTANT this sets the identifier type. so when we see qubit q; we know moving forward that q is type ASTTypeQubit
+  return yylval->Tok->GetInt(); //return int corresponding to Tok_QUBIT (we then use that number when matching a rule)
 }
 
 "qumode" { 
