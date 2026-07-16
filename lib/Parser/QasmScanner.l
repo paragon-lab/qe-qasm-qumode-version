@@ -352,7 +352,7 @@ yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
                            prev_yycolno + 1);
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQubit);
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQumode);
   return yylval->Tok->GetInt();
 }
 
