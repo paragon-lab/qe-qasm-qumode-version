@@ -382,7 +382,13 @@ public:
   CreateASTQubitContainerNode(const ASTIdentifierNode *Id, unsigned NumBits,
                               const std::vector<ASTQubitNode *> &QV);
 
+  ASTQumodeContainerNode *
+  CreateASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned NumBits);
+
   ASTQubitNode *CreateASTQubitNode(const ASTIdentifierNode *Id, unsigned Index);
+
+  ASTQubitNode *CreateASTQumodeNode(const ASTIdentifierNode *Id,
+                                    unsigned Index);
 
   ASTQubitContainerAliasNode *
   CreateASTQubitContainerAliasNode(const ASTIdentifierNode *Id, int32_t Index);

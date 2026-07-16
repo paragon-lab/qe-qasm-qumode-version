@@ -813,6 +813,12 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeQubits:
     return "ASTTypeQubits";
     break;
+  case ASTTypeQumode:
+    return "ASTTypeQumode";
+    break;
+  case ASTTypeQumodeContainer:
+    return "ASTTypeQumodeContainer";
+    break;
   case ASTTypeRegister:
     return "ASTTypeRegister";
     break;
@@ -1787,6 +1793,9 @@ const char *PrintParserToken(unsigned Token) {
     break;
   case token::TOK_QUBITS:
     return "TOK_QUBITS";
+    break;
+  case token::TOK_QUMODE:
+    return "TOK_QUMODE";
     break;
   case token::TOK_U:
     return "TOK_U";

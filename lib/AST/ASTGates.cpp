@@ -517,9 +517,10 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
                          const ASTArgumentNodeList &AL,
                          const ASTAnyTypeList &QL, bool IsGateCall,
                          const ASTGateQOpList &OL)
-    : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(), QCParams(),
-      OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
-      ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall) {
+    : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(), Qubits(),
+      QCParams(), OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id),
+      GSTM(), ControlType(ASTTypeUndefined), Opaque(false),
+      GateCall(IsGateCall) {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode *> NQV;
@@ -1124,6 +1125,29 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
             DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       }
     } break;
+    case ASTTypeAngleArray: {
+      try {
+        ASTExpressionNode *EN =
+            std::any_cast<ASTExpressionNode *>((*I)->GetValue());
+        assert(EN && "Failed to any_cast to an ExpressionNode!");
+
+        ASTAngleArrayNode *AAN = dynamic_cast<ASTAngleArrayNode *>(EN);
+        assert(AAN && "Failed to dynamic_cast to an ASTAngleArrayNode!");
+
+        ArrayParams.push_back(AAN);
+        PNS.insert(AAN->GetName());
+      } catch (const std::bad_any_cast &E) {
+        std::stringstream M;
+        M << "std::bad_any_cast caught at index " << C << ": " << E.what();
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      } catch (...) {
+        std::stringstream M;
+        M << "Unknown exception caught at index " << C << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      }
+    } break;
     default:
       break;
     }
@@ -1131,7 +1155,7 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
     ++C;
   }
 
-  if (C != Params.size()) {
+  if (C != Params.size() + ArrayParams.size()) {
     std::stringstream M;
     M << C
       << " inconsistent parameters in the gate call for the "
@@ -1252,9 +1276,10 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
                          const ASTParameterList &PL,
                          const ASTIdentifierList &IL, bool IsGateCall,
                          const ASTGateQOpList &OL)
-    : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(), QCParams(),
-      OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
-      ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall) {
+    : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(), Qubits(),
+      QCParams(), OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id),
+      GSTM(), ControlType(ASTTypeUndefined), Opaque(false),
+      GateCall(IsGateCall) {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode *> NQV;
@@ -1555,6 +1580,15 @@ void ASTGateNode::print() const {
          I != Params.end(); ++I)
       (*I)->print();
     std::cout << "</Params>" << std::endl;
+  }
+
+  if (!ArrayParams.empty()) {
+    std::cout << "<ArrayParams>" << std::endl;
+    for (std::vector<ASTAngleArrayNode *>::const_iterator I =
+             ArrayParams.begin();
+         I != ArrayParams.end(); ++I)
+      (*I)->print();
+    std::cout << "</ArrayParams>" << std::endl;
   }
 
   if (!Qubits.empty()) {
@@ -2638,6 +2672,14 @@ void ASTGateNode::Mangle() {
       }
 
       X += 1U;
+    }
+
+    if (!ArrayParams.empty()) {
+      for (unsigned I = 0; I < ArrayParams.size(); ++I) {
+        M.GateArg(X + I, ASTStringUtils::Instance().SanitizeMangled(
+                             ArrayParams[I]->GetMangledName()));
+      }
+      X += static_cast<unsigned>(ArrayParams.size());
     }
 
     if (!QCParams.empty()) {

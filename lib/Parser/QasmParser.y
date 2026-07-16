@@ -600,6 +600,7 @@ int readinput() {
 %token <String> TOK_TYPEDEF_NAME
 %token <String> TOK_CREG TOK_QREG TOK_CNOT TOK_HADAMARD
 %token <String> TOK_CCX TOK_CX TOK_QUBIT TOK_BOUND_QUBIT TOK_UNBOUND_QUBIT
+%token <String> TOK_QUMODE
 %token <String> TOK_QUBITS TOK_U TOK_ANGLE TOK_FIXED
 %token <String> TOK_DIRTY TOK_OPAQUE TOK_RESET
 %token <String> TOK_IBMQASM
@@ -1784,6 +1785,17 @@ Decl
     // Functions cannot return Qubits.
     $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(6),
                                                               $5, $7);
+  }
+  | TOK_QUMODE Identifier ';' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_10000(GET_TOKEN(2), $2);
+  }
+  | TOK_QUMODE '[' Integer ']' Identifier ';' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_10001(GET_TOKEN(5),
+                                                               $5, $3);
+  }
+  | TOK_QUMODE '[' Identifier ']' Identifier ';' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_10002(GET_TOKEN(5),
+                                                               $5, $3);
   }
   | TOK_LET Identifier '=' TOK_IDENTIFIER '[' TOK_INTEGER_CONSTANT ','
                                               IntegerList ']' ';' {
@@ -3684,6 +3696,12 @@ ArgsList
   | '(' ExprList ')' {
     $$ = ASTArgumentNodeBuilder::Instance().List();
     *$$ = $2;
+  }
+  | '(' '[' ExprList ']' ')' {
+    $$ = ASTArgumentNodeBuilder::Instance().NewList();
+    ASTAngleArrayNode *AAN =
+        ASTProductionFactory::Instance().ProductionRule_10010($3);
+    $$->Append(AAN);
   }
   ;
 

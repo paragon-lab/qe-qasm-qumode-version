@@ -686,3 +686,15 @@ add_test(NAME t00338
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-17.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-17.qasm.out 2>&1")
 add_test(NAME t00339
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-18.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-18.qasm.out 2>&1")
+
+# -----------------------------------------------------------------------------
+# Qumode tests
+# -----------------------------------------------------------------------------
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tests/qumode)
+
+add_test(NAME qumode-t00001
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/qumode-decl.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/qumode-decl.qasm.out 2>&1")
+
+add_test(NAME qumode-t00002
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/snap-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/snap-array-param.qasm.out 2>&1")

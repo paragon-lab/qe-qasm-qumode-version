@@ -4939,6 +4939,185 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
   return QCN;
 }
 
+ASTQumodeContainerNode *
+ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
+                                         unsigned NumBits) {
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+
+  const std::string &IDS = Id->GetName();
+  ASTType ITy = Id->GetSymbolTableEntry()->GetValueType();
+
+  ASTSymbolTableEntry *STE =
+      const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry());
+  if (!STE)
+    STE = ASTSymbolTable::Instance().Lookup(IDS, NumBits, Id->GetSymbolType());
+  if (!STE && Id->GetBits() == 0) {
+    STE = ASTSymbolTable::Instance().Lookup(IDS, Id->GetBits(), ITy);
+    Id->SetBits(NumBits);
+  }
+
+  if (!STE) {
+    std::stringstream M;
+    M << "Failed to locate Identifier " << IDS << " in the Symbol Table!";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    return nullptr;
+  }
+
+  if (STE->GetIdentifier() != Id) {
+    std::stringstream M;
+    M << "Inconsistent SymbolTable ASTIdentifierNode.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+    return nullptr;
+  }
+
+  if (Id->GetBits() == 0U && ITy == ASTTypeQumodeContainer)
+    STE->ResetValue();
+
+  if (Id->GetBits() != NumBits)
+    Id->SetBits(NumBits);
+
+  ASTSymbolTable::Instance().TransferQubit(Id, NumBits, ITy);
+
+  switch (STE->GetValueType()) {
+  case ASTTypeInt:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeQumode:
+  case ASTTypeBitset:
+  case ASTTypeUndefined:
+  case ASTTypeIdentifier:
+    STE->ResetValue();
+    STE->SetValueType(ASTTypeQumodeContainer);
+    break;
+  case ASTTypeQumodeContainer:
+    break;
+  default: {
+    std::stringstream M;
+    M << "ASTIdentifier " << IDS << " exists in the SymbolTable "
+      << "with a different Type (" << PrintTypeEnum(STE->GetValueType())
+      << " vs. " << PrintTypeEnum(ASTTypeQumodeContainer) << ").";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    return nullptr;
+  } break;
+  }
+
+  ASTSymbolTableEntry *QSTE =
+      const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry());
+
+  if (QSTE) {
+    if (QSTE->HasValue()) {
+      ASTQumodeContainerNode *QCN =
+          QSTE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+      assert(QCN &&
+             "Invalid ASTQumodeContainerNode obtained from the SymbolTable!");
+
+      if (QCN->Size() != Id->GetBits()) {
+        std::stringstream M;
+        M << "Existing ASTQumodeContainerNode does not have the width "
+          << "requested (" << QCN->Size() << " vs. " << Id->GetBits() << ").";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Warning);
+      }
+
+      const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(QSTE);
+      return QCN;
+    }
+  } else {
+    QSTE = new ASTSymbolTableEntry(Id, ASTTypeQumodeContainer);
+    assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
+  }
+
+  ASTQumodeContainerNode *QCN = new ASTQumodeContainerNode(Id, NumBits);
+  assert(QCN && "Unable to create an ASTQumodeContainerNode!");
+
+  QSTE->ResetValue();
+  QSTE->SetValue(new ASTValue<>(QCN, ASTTypeQumodeContainer),
+                 ASTTypeQumodeContainer);
+  assert(QSTE->HasValue() &&
+         "ASTQumodeContainerNode SymbolTable Entry has no Value!");
+
+  const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(QSTE);
+
+  std::stringstream QS;
+  std::stringstream QSS;
+  ASTQubitNode *QBN;
+
+  for (unsigned I = 0; I < NumBits; ++I) {
+    QS.clear();
+    QS.str("");
+
+    if (IDS[0] == '%' || IDS[0] == '$')
+      QS << IDS << ':' << I;
+    else
+      QS << '%' << IDS << ':' << I;
+
+    ASTIdentifierNode *QId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        QS.str(), 1U, ASTTypeQumode);
+    assert(QId && "Could not create a valid ASTIdentifierNode!");
+
+    ASTSymbolTableEntry *QQSTE =
+        ASTSymbolTable::Instance().Lookup(QId, 1U, ASTTypeQumode);
+    if (!QQSTE) {
+      ASTSymbolTable::Instance().Insert(QId, 1U, ASTTypeQumode);
+      QQSTE = ASTSymbolTable::Instance().Lookup(QId, 1U, ASTTypeQumode);
+    }
+
+    assert(QQSTE && "Could not obtain or create a valid ASTQumodeNode "
+                    "SymbolTable Entry!");
+
+    if (QQSTE->HasValue()) {
+      QBN = QQSTE->GetValue()->GetValue<ASTQubitNode *>();
+      assert(QBN && "Invalid SymbolTable Entry ASTQumodeNode Value!");
+
+      QBN->Mangle();
+      QCN->AddQubit(QBN);
+    } else {
+      QBN = ASTBuilder::CreateASTQumodeNode(QId, I);
+      assert(QBN && "Could not create a valid ASTQumodeNode!");
+
+      QQSTE->ResetValue();
+      QQSTE->SetValue(new ASTValue<>(QBN, ASTTypeQumode), ASTTypeQumode);
+      assert(QQSTE->HasValue() && "ASTQumode SymbolTable Entry has no Value!");
+
+      QBN->Mangle();
+      QCN->AddQubit(QBN);
+    }
+
+    QSS.str("");
+    QSS.clear();
+    if (IDS[0] == '%' || IDS[0] == '$')
+      QSS << IDS.substr(1);
+    else
+      QSS << IDS;
+    QSS << '[' << I << ']';
+
+    ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(QSS.str(), QId, 1U);
+    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+
+    ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(IdR, ASTTypeQumode);
+    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
+
+    XSTE->ResetValue();
+    XSTE->SetValue(new ASTValue<>(QBN, ASTTypeQumode), ASTTypeQumode);
+    assert(XSTE->HasValue() && "ASTQumode SymbolTable Entry has no Value!");
+
+    if (!ASTSymbolTable::Instance().Insert(IdR, XSTE)) {
+      std::stringstream M;
+      M << "Failure inserting qumode " << QSS.str() << " into the SymbolTable.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+          DiagLevel::Error);
+    }
+  }
+
+  QCN->Mangle();
+  return QCN;
+}
+
 ASTQubitContainerNode *
 ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
                                         const std::vector<ASTQubitNode *> &QV) {
@@ -5491,6 +5670,46 @@ ASTQubitNode *ASTBuilder::CreateASTQubitNode(const ASTIdentifierNode *Id,
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(QN, ASTTypeQubit), ASTTypeQubit);
   assert(STE->HasValue() && "ASTQubit SymbolTable Entry has no Value!");
+
+  const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(STE);
+  return QN;
+}
+
+ASTQubitNode *ASTBuilder::CreateASTQumodeNode(const ASTIdentifierNode *Id,
+                                              unsigned Index) {
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+
+  ASTSymbolTableEntry *STE = nullptr;
+  const std::string &IDS = Id->GetName();
+
+  if (!(STE = ASTSymbolTable::Instance().Lookup(IDS))) {
+    std::stringstream M;
+    M << "Failed to locate Identifier " << IDS << " in the Symbol Table!";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    return nullptr;
+  }
+
+  if (STE->GetValueType() != ASTTypeQumode &&
+      STE->GetValueType() != ASTTypeUndefined &&
+      STE->GetValueType() != ASTTypeIdentifier) {
+    std::stringstream M;
+    M << "Identifier " << IDS << " exists in the SymbolTable with a "
+      << "different Type! (" << PrintTypeEnum(STE->GetValueType()) << " vs. "
+      << PrintTypeEnum(ASTTypeQumode) << ").";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    return nullptr;
+  }
+
+  ASTSymbolTable::Instance().TransferQubit(Id, 1, ASTTypeQumode);
+
+  ASTQumodeNode *QN = new ASTQumodeNode(Id, Index);
+  assert(QN && "Unable to create an ASTQumodeNode!");
+
+  STE->ResetValue();
+  STE->SetValue(new ASTValue<>(QN, ASTTypeQumode), ASTTypeQumode);
+  assert(STE->HasValue() && "ASTQumode SymbolTable Entry has no Value!");
 
   const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(STE);
   return QN;

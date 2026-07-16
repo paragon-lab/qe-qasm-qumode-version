@@ -725,7 +725,8 @@ public:
       Id->SetSymbolTableEntry(DSTE);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         if ((*QI).second && (*QI).second->GetValueType() == Ty &&
@@ -1136,7 +1137,8 @@ public:
         return false;
       }
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         if ((*QI).second && (*QI).second->GetValueType() == Ty &&
@@ -1419,7 +1421,8 @@ public:
       Id->SetSymbolTableEntry((*GI).second);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         (*QI).second = STE;
@@ -2025,7 +2028,8 @@ public:
       Id->SetSymbolTableEntry((*GI).second);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         (*QI).second = STE;
@@ -3911,7 +3915,8 @@ public:
       }
     } else {
       if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-          Ty == ASTTypeGateQubitParam || Ty == ASTTypeQubitContainerAlias) {
+          Ty == ASTTypeGateQubitParam || Ty == ASTTypeQubitContainerAlias ||
+          Ty == ASTTypeQumode || Ty == ASTTypeQumodeContainer) {
         map_iterator QI = QSTM.find(S);
         if (QI != QSTM.end()) {
         }
@@ -5245,7 +5250,9 @@ public:
 
     if (Id->GetSymbolType() == ASTTypeQubit ||
         Id->GetSymbolType() == ASTTypeQubitContainer ||
-        Id->GetSymbolType() == ASTTypeQubitContainerAlias) {
+        Id->GetSymbolType() == ASTTypeQubitContainerAlias ||
+        Id->GetSymbolType() == ASTTypeQumode ||
+        Id->GetSymbolType() == ASTTypeQumodeContainer) {
       UI = QSTM.find(Id->GetName());
       if (UI != QSTM.end()) {
         MIX = XQSTM;
@@ -5371,7 +5378,8 @@ public:
       EraseFromMap(UI, MIX);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         if ((*UI).second == (*QI).second &&
@@ -5389,6 +5397,12 @@ public:
           break;
         case ASTTypeQubitContainer:
           QT = "QubitContainer";
+          break;
+        case ASTTypeQumode:
+          QT = "Qumode";
+          break;
+        case ASTTypeQumodeContainer:
+          QT = "QumodeContainer";
           break;
         default:
           QT = "QubitContainer alias ";

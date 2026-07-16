@@ -22,6 +22,7 @@
 #include <qasm/AST/ASTAngleNodeList.h>
 #include <qasm/AST/ASTAnyTypeList.h>
 #include <qasm/AST/ASTArgument.h>
+#include <qasm/AST/ASTArray.h>
 #include <qasm/AST/ASTExpression.h>
 #include <qasm/AST/ASTGateOpList.h>
 #include <qasm/AST/ASTIdentifier.h>
@@ -47,6 +48,8 @@ class ASTGateNode : public ASTExpressionNode {
 
 protected:
   std::vector<ASTAngleNode *> Params;
+  /// Classical gate parameters that are angle arrays (e.g. snap([θ…])).
+  std::vector<ASTAngleArrayNode *> ArrayParams;
   std::vector<ASTQubitNode *> Qubits;
   std::vector<const ASTSymbolTableEntry *> QCParams;
   std::map<unsigned, const ASTIdentifierNode *> QCParamIds;
@@ -102,8 +105,8 @@ public:
 
 public:
   ASTGateNode(const ASTIdentifierNode *Id)
-      : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(), QCParams(),
-        OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
+      : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(), Qubits(),
+        QCParams(), OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
         ControlType(ASTTypeUndefined), Opaque(false), GateCall(false) {}
 
   // Implemented in ASTGates.cpp
@@ -135,7 +138,21 @@ public:
   }
 
   virtual unsigned GetNumParams() const {
-    return static_cast<unsigned>(Params.size());
+    return static_cast<unsigned>(Params.size() + ArrayParams.size());
+  }
+
+  virtual unsigned GetNumArrayParams() const {
+    return static_cast<unsigned>(ArrayParams.size());
+  }
+
+  virtual const ASTAngleArrayNode *GetArrayParam(unsigned Index) const {
+    assert(Index < ArrayParams.size() && "Index is out-of-range!");
+    return ArrayParams[Index];
+  }
+
+  virtual ASTAngleArrayNode *GetArrayParam(unsigned Index) {
+    assert(Index < ArrayParams.size() && "Index is out-of-range!");
+    return ArrayParams[Index];
   }
 
   virtual unsigned GetNumQCParams() const {

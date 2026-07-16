@@ -922,6 +922,12 @@ ASTType ASTIdentifierRefNode::ResolveReferenceType(ASTType ITy) const {
   case ASTTypeQubitContainerAlias:
     return ASTTypeQubitContainer;
     break;
+  case ASTTypeQumode:
+    return ASTTypeQumode;
+    break;
+  case ASTTypeQumodeContainer:
+    return ASTTypeQumodeContainer;
+    break;
   case ASTTypeAngle:
     return ASTTypeAngle;
     break;

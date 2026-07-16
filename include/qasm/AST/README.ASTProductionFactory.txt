@@ -235,3 +235,13 @@ misc. warnings:           6000
 misc. errors:             7000
 
 -------------------------------
+
+Fork-local (SQMS / qumode fork):
+  Reserve 10000+ so new upstream rules in 1xxx–9xxx cannot collide.
+
+qumode:                   10000
+qumode[n] (int size):     10001
+qumode[n] (id size):      10002
+gate angle-array literal: 10010
+
+-------------------------------

@@ -89,6 +89,9 @@ ASTType ASTTypeSpecifierNode::ResolveASTType(int Token) const {
   case token::TOK_QUBIT:
     return ASTTypeQubit;
     break;
+  case token::TOK_QUMODE:
+    return ASTTypeQumode;
+    break;
   case token::TOK_QUBITS:
     return ASTTypeQubits;
     break;

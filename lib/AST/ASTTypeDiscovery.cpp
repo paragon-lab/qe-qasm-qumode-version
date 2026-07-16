@@ -1586,6 +1586,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             assert(Id && "Could not create a valid ASTIdentifierNode!");
             Id->SetLocation(TK->GetLocation());
             break;
+          case ASTTypeQumodeContainer:
+            Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0, CTy);
+            assert(Id && "Could not create a valid ASTIdentifierNode!");
+            break;
           case ASTTypeQubitContainer:
             Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0, CTy);
             assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -1893,6 +1897,17 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       case ASTTypeKernel:
         Id = ASTBuilder::Instance().CreateASTIdentifierNode(
             S, ASTKernelNode::KernelBits, CTy);
+        assert(Id && "Could not create a valid ASTIdentifierNode!");
+        Id->SetLocation(TK->GetLocation());
+        break;
+      case ASTTypeQumodeContainer:
+        Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0U, CTy);
+        assert(Id && "Could not create a valid ASTIdentifierNode!");
+        Id->SetLocation(TK->GetLocation());
+        break;
+      case ASTTypeQumode:
+        CTy = ASTTypeQumodeContainer;
+        Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U, CTy);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
         Id->SetLocation(TK->GetLocation());
         break;
