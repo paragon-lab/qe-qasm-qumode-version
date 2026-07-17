@@ -2382,6 +2382,7 @@ public:
         case ASTTypeCCXGate:
         case ASTTypeCNotGate:
         case ASTTypeHadamardGate:
+        case ASTTypeDispGate:
         case ASTTypeUGate:
         case ASTTypeDefcal:
         case ASTTypeDefcalGroup:
@@ -2458,6 +2459,7 @@ public:
       case ASTTypeCCXGate:
       case ASTTypeCNotGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
       case ASTTypeDefcal:
       case ASTTypeDefcalGroup:
@@ -2691,6 +2693,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate: {
       GI = GSTM.find(S);
@@ -3088,6 +3091,7 @@ public:
         case ASTTypeCCXGate:
         case ASTTypeCNotGate:
         case ASTTypeHadamardGate:
+        case ASTTypeDispGate:
         case ASTTypeUGate:
         case ASTTypeGate:
         case ASTTypeDefcal:
@@ -3119,6 +3123,7 @@ public:
       case ASTTypeCCXGate:
       case ASTTypeCNotGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
         SI = GSTM.find(S);
         if (SI != GSTM.end())
@@ -3715,6 +3720,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate: {
       std::stringstream M;
@@ -3864,6 +3870,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate:
       M << "Declared Gates cannot be erased.";
@@ -5199,6 +5206,7 @@ public:
     case ASTTypeCXGate:
     case ASTTypeCCXGate:
     case ASTTypeCNotGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGateQubitParam:
     case ASTTypeKernel:
@@ -5664,6 +5672,7 @@ public:
     case ASTTypeCXGate:
     case ASTTypeCCXGate:
     case ASTTypeCNotGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeFunction:
     case ASTTypeDefcal:

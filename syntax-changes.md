@@ -90,26 +90,30 @@ only `ecd(alpha) qb, qm` is considered valid syntax.
 Typed operand checking requires revising the gate definition
 syntax (also see [Gate Declarations](#gate-declarations-low-priority)).
 
-## 3. (WIP) Passing complex numbers as gate parameters
+## 3. Passing complex numbers as gate parameters
 The displacement gate and ECD gate can take complex numbers as parameters:
 ```qasm
-disp(0.3+0.5i) qm;
-ecd(0.5-0.3i) qb, qm;
+disp(0.3+0.5im) qm;
+ecd(0.5-0.3im) qb, qm;
 
-disp(0.3) qm; // equivalent to disp(0.3+0i) qm;
-ecd(-0.5i) qb, qm; // equivalent to ecd(0-0.5i) qb, qm;
+disp(0.3) qm; // promoted to complex 0.3+0im for builtin disp
+ecd(-0.5im) qb, qm;
 ```
+Complex literals use OpenQASM's `im` suffix. Gate calls store complex args in
+`ComplexParams` (parallel to angle `Params` / `ArrayParams`).
 
+## 4. Builtin CV gates
+`disp` is a builtin gate (`TOK_DISP` / `ASTTypeDispGate`):
+- exactly one classical parameter, always materialized as complex
+  (real scalars are promoted to `real+0im`)
+- last quantum operand is the target and must be a `qumode`
+  (a bare qubit target is rejected)
+- leading operands are control qubits and are only legal under
+  `ctrl`/`negctrl`, e.g. `ctrl @ disp(alpha) qb, qm`
+  (bare `disp(alpha) qb, qm` is rejected)
 
-
-## 4. (WIP) Adding new builtin gates
-**Current workaround:** include the `cvgates.inc` libraries that defines the new
-gates as opaque gates.
-
-Displacement gates (`disp`) should be a builtin gate. SNAP gates and ECD gates
-can be defined in terms of control gate syntax. That said, we might want to
-treat SNAP and ECD gates as builtin gates, until we have proper gate definition
-syntaxes (also see [Gate Declarations](#gate-declarations-low-priority)).
+SNAP and ECD remain opaque stubs in `cvgates.inc` until they become builtins
+or gain typed gate-declaration syntax.
 
 
 # (WIP) Unitary Declarations

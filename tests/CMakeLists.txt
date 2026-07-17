@@ -701,3 +701,15 @@ add_test(NAME qumode-t00002
 
 add_test(NAME qumode-t00003
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/ecd-mixed.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/ecd-mixed.qasm.out 2>&1")
+
+add_test(NAME qumode-t00004
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-complex.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-complex.qasm.out 2>&1")
+
+add_test(NAME qumode-t00005
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-qubit-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-qubit-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00006
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-ctrl.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-ctrl.qasm.out 2>&1")
+
+add_test(NAME qumode-t00007
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-ctrl-required.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-ctrl-required.qasm.out 2>&1; test $? -ne 0")

@@ -1516,6 +1516,11 @@ public:
 
   // Gate angle-array literal parameter: [θ0, ..., θk]
   ASTAngleArrayNode *ProductionRule_10010(const ASTExpressionList *EL) const;
+
+  // Builtin disp gate call: complex parameter + qumode operand.
+  ASTGateQOpNode *ProductionRule_10020(const ASTToken *TK,
+                                       const ASTArgumentNodeList *ANL,
+                                       const ASTAnyTypeList *ATL) const;
 };
 
 } // namespace QASM

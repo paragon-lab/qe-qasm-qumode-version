@@ -1471,6 +1471,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       case ASTTypeCCXGate:
       case ASTTypeCXGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
         Id = ASTBuilder::Instance().CreateASTIdentifierNode(
             S, ASTGateNode::GateBits, ASTTypeGate);

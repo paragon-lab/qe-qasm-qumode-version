@@ -50,6 +50,8 @@ protected:
   std::vector<ASTAngleNode *> Params;
   /// Classical gate parameters that are angle arrays (e.g. snap([θ…])).
   std::vector<ASTAngleArrayNode *> ArrayParams;
+  /// Classical gate parameters that are complex values (e.g. disp(3+4im)).
+  std::vector<ASTMPComplexNode *> ComplexParams;
   std::vector<ASTQubitNode *> Qubits;
   std::vector<const ASTSymbolTableEntry *> QCParams;
   std::map<unsigned, const ASTIdentifierNode *> QCParamIds;
@@ -105,9 +107,10 @@ public:
 
 public:
   ASTGateNode(const ASTIdentifierNode *Id)
-      : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(), Qubits(),
-        QCParams(), OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
-        ControlType(ASTTypeUndefined), Opaque(false), GateCall(false) {}
+      : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(),
+        ComplexParams(), Qubits(), QCParams(), OpList(), Ctrl(nullptr),
+        GDId(Id), GSTM(), ControlType(ASTTypeUndefined), Opaque(false),
+        GateCall(false) {}
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
@@ -138,7 +141,8 @@ public:
   }
 
   virtual unsigned GetNumParams() const {
-    return static_cast<unsigned>(Params.size() + ArrayParams.size());
+    return static_cast<unsigned>(Params.size() + ArrayParams.size() +
+                                 ComplexParams.size());
   }
 
   virtual unsigned GetNumArrayParams() const {
@@ -153,6 +157,20 @@ public:
   virtual ASTAngleArrayNode *GetArrayParam(unsigned Index) {
     assert(Index < ArrayParams.size() && "Index is out-of-range!");
     return ArrayParams[Index];
+  }
+
+  virtual unsigned GetNumComplexParams() const {
+    return static_cast<unsigned>(ComplexParams.size());
+  }
+
+  virtual const ASTMPComplexNode *GetComplexParam(unsigned Index) const {
+    assert(Index < ComplexParams.size() && "Index is out-of-range!");
+    return ComplexParams[Index];
+  }
+
+  virtual ASTMPComplexNode *GetComplexParam(unsigned Index) {
+    assert(Index < ComplexParams.size() && "Index is out-of-range!");
+    return ComplexParams[Index];
   }
 
   virtual unsigned GetNumQCParams() const {
@@ -553,6 +571,40 @@ public:
     std::cout << "<UGate>" << std::endl;
     ASTGateNode::print();
     std::cout << "</UGate>" << std::endl;
+  }
+};
+
+class ASTDispGateNode : public ASTGateNode {
+private:
+  ASTDispGateNode() = delete;
+
+public:
+  ASTDispGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
+                  const ASTAnyTypeList &TL, bool IsGateCall = false,
+                  const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault)
+      : ASTGateNode(Id, AL, TL, IsGateCall, OL) {}
+
+  ASTDispGateNode(const ASTIdentifierNode *Id, const ASTParameterList &PL,
+                  const ASTIdentifierList &IL, bool IsGateCall = false,
+                  const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault)
+      : ASTGateNode(Id, PL, IL, IsGateCall, OL) {}
+
+  virtual ~ASTDispGateNode() = default;
+
+  virtual ASTType GetASTType() const override { return ASTTypeDispGate; }
+
+  virtual ASTSemaType GetSemaType() const override {
+    return SemaTypeExpression;
+  }
+
+  virtual ASTDispGateNode *CloneCall(const ASTIdentifierNode *Id,
+                                     const ASTArgumentNodeList &AL,
+                                     const ASTAnyTypeList &QL) override;
+
+  virtual void print() const override {
+    std::cout << "<DispGate>" << std::endl;
+    ASTGateNode::print();
+    std::cout << "</DispGate>" << std::endl;
   }
 };
 

@@ -17058,6 +17058,7 @@ ASTProductionFactory::ProductionRule_1250(const ASTToken *TK,
   case ASTTypeCCXGate:
   case ASTTypeCNotGate:
   case ASTTypeHadamardGate:
+  case ASTTypeDispGate:
   case ASTTypeUGate:
   case ASTTypeDefcal:
   case ASTTypeDefcalGroup:
@@ -17120,6 +17121,7 @@ ASTProductionFactory::ProductionRule_1251(const ASTToken *TK,
   case ASTTypeCCXGate:
   case ASTTypeCNotGate:
   case ASTTypeHadamardGate:
+  case ASTTypeDispGate:
   case ASTTypeUGate:
   case ASTTypeDefcal:
   case ASTTypeDefcalGroup:
@@ -20907,7 +20909,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1435(
   std::string GN = ASTStringUtils::Instance().ToUpper(GId->GetName());
 
   if (GN == "U" || GN == "CX" || GN == "CCX" || GN == "CNOT" || GN == "H" ||
-      GN == "HADAMARD") {
+      GN == "HADAMARD" || GN == "DISP") {
     std::stringstream M;
     M << "A Standard Universal Gate [" << GN.c_str()
       << "] cannot have its own Opaque Re-Declaration!";
@@ -21048,7 +21050,7 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken *TK,
   std::string GN = ASTStringUtils::Instance().ToUpper(GId->GetName());
 
   if (GN == "U" || GN == "CX" || GN == "CCX" || GN == "CNOT" || GN == "H" ||
-      GN == "HADAMARD") {
+      GN == "HADAMARD" || GN == "DISP") {
     std::stringstream M;
     M << "A Standard Universal Gate [" << GN.c_str()
       << "] cannot have its own Opaque Re-Declaration!";
@@ -25850,6 +25852,7 @@ ASTIfStatementNode *ASTProductionFactory::ProductionRule_3000(
   case ASTTypeCCXGate:
   case ASTTypeCNotGate:
   case ASTTypeHadamardGate:
+  case ASTTypeDispGate:
   case ASTTypeUGate:
   case ASTTypeDefcal:
   case ASTTypeKernel:
@@ -26102,6 +26105,7 @@ ASTIfStatementNode *ASTProductionFactory::ProductionRule_3001(
   case ASTTypeCCXGate:
   case ASTTypeCNotGate:
   case ASTTypeHadamardGate:
+  case ASTTypeDispGate:
   case ASTTypeUGate:
   case ASTTypeDefcal:
   case ASTTypeKernel:
@@ -29699,6 +29703,22 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
   case ASTTypeUGate:
     RQO = CreateUGateCall(TK, Id, ANL, ATL);
     break;
+  case ASTTypeDispGate: {
+    ASTDispGateNode *GN = dynamic_cast<ASTDispGateNode *>(
+        STE->GetValue()->GetValue<ASTGateNode *>());
+    assert(GN && "Invalid Disp ASTGateNode obtained from the SymbolTable!");
+    ASTDispGateNode *DGN = GN->CloneCall(Id, ANL, ATL);
+    assert(DGN && "Could not create a valid ASTDispGateNode!");
+    DGN->SetLocation(TK->GetLocation());
+    DGN->Mangle();
+    ASTGateNodeBuilder::Instance().Append(DGN);
+    ASTGateQOpNode *RG =
+        ASTGateOpBuilder::Instance().CreateASTGenericGateOpNode(Id, DGN);
+    assert(RG && "Failed to create a valid ASTGenericGateOpNode!");
+    RG->SetLocation(TK->GetLocation());
+    RG->Mangle();
+    RQO = RG;
+  } break;
   case ASTTypeFunction: {
     std::stringstream M;
     M << "A GateQOpNode cannot materialize a function call.";
@@ -30154,6 +30174,144 @@ ASTProductionFactory::ProductionRule_3506(const ASTToken *TK,
   ASTGateQOpNode *RG =
       ASTGateOpBuilder::Instance().CreateASTHGateOpNode(Id, CHDG);
   assert(RG && "Could not create a valid ASTCNotGateOpNode!");
+
+  RG->SetLocation(TK->GetLocation());
+  RG->Mangle();
+
+  ASTGateContextBuilder::Instance().CloseContext();
+  ASTIdentifierTypeController::Instance().Reset();
+  return RG;
+}
+
+ASTGateQOpNode *
+ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
+                                           const ASTArgumentNodeList *ANL,
+                                           const ASTAnyTypeList *ATL) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(ANL && "Invalid ASTArgumentNodeList argument!");
+  assert(ATL && "Invalid ASTAnyTypeList argument!");
+
+  ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateCall);
+
+  if (ANL->Size() != 1U) {
+    std::stringstream M;
+    M << "The disp gate expects exactly one complex parameter.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  // Like U under ctrl/negctrl: the full operand list is attached to the
+  // GateEOp before the modifier wraps it. Controls come first; the last
+  // operand is the disp target and must be a qumode. Extra leading operands
+  // are only legal while parsing under ctrl/negctrl.
+  if (ATL->Size() < 1U) {
+    std::stringstream M;
+    M << "The disp gate expects a qumode target operand.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  if (ATL->Size() > 1U &&
+      !ASTGateContextBuilder::Instance().InControlModifier()) {
+    std::stringstream M;
+    M << "The disp gate expects exactly one qumode operand; use "
+         "ctrl/negctrl for controlled forms.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  for (unsigned I = 0; I < ATL->Size(); ++I) {
+    if (!ATL->IsIdentifier(I)) {
+      std::stringstream M;
+      M << "The disp gate expects quantum identifier operands.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return ASTGateQOpNode::StatementError(M.str());
+    }
+
+    const ASTIdentifierNode *QId = ATL->GetIdentifier(I);
+    assert(QId && "Invalid quantum ASTIdentifierNode from ASTAnyTypeList!");
+
+    if (!ASTStringUtils::Instance().IsBoundQubit(QId->GetName()))
+      QId->SetGateLocal(true);
+
+    // Prefer the declared quantum-register entry; gate-call parsing may
+    // have reclassified the identifier as ASTTypeGateQubitParam.
+    const ASTSymbolTableEntry *QSTE = ASTSymbolTable::Instance().FindQubit(QId);
+    if (!QSTE)
+      QSTE = QId->GetSymbolTableEntry();
+    ASTType QTy = QSTE ? QSTE->GetValueType() : QId->GetSymbolType();
+
+    const bool IsTarget = (I + 1U == ATL->Size());
+    if (IsTarget) {
+      if (!ASTUtils::Instance().IsQumodeType(QTy) &&
+          QTy != ASTTypeGateQubitParam) {
+        std::stringstream M;
+        M << "The disp gate target must be a qumode, but '" << QId->GetName()
+          << "' has type " << PrintTypeEnum(QTy) << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+            DiagLevel::Error);
+        return ASTGateQOpNode::StatementError(QId, M.str());
+      }
+    } else if (!ASTUtils::Instance().IsQubitType(QTy) &&
+               QTy != ASTTypeGateQubitParam) {
+      std::stringstream M;
+      M << "Control operands of disp must be qubits, but '" << QId->GetName()
+        << "' has type " << PrintTypeEnum(QTy) << ".";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+          DiagLevel::Error);
+      return ASTGateQOpNode::StatementError(QId, M.str());
+    }
+  }
+
+  ASTIdentifierNode *Id = ASTBuilder::Instance().FindASTIdentifierNode(
+      TK->GetString(), ASTGateNode::GateBits, ASTTypeDispGate);
+  if (!Id) {
+    std::stringstream M;
+    M << "A Gate (" << TK->GetString() << ") without a definition "
+      << "cannot materialize a Gate call expression.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  const ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().FindGate(Id);
+  if (!STE || !STE->HasValue()) {
+    std::stringstream M;
+    M << TK->GetString() << " Gate has no SymbolTable Entry Value.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(Id, M.str());
+  }
+
+  ASTDispGateNode *DGN = dynamic_cast<ASTDispGateNode *>(
+      STE->GetValue()->GetValue<ASTGateNode *>());
+  assert(DGN && "Could not obtain a valid DispGate ASTGateNode!");
+
+  ASTDispGateNode *DGA = DGN->CloneCall(Id, *ANL, *ATL);
+  assert(DGA && "Failed to create an ASTDispGateNode!");
+
+  if (DGA->GetNumComplexParams() != 1U) {
+    std::stringstream M;
+    M << "The disp gate expects exactly one complex parameter.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(Id, M.str());
+  }
+
+  DGA->SetLocation(TK->GetLocation());
+  DGA->Mangle();
+  ASTGateNodeBuilder::Instance().Append(DGA);
+
+  ASTGateQOpNode *RG =
+      ASTGateOpBuilder::Instance().CreateASTGenericGateOpNode(Id, DGA);
+  assert(RG && "Failed to create a valid ASTGenericGateOpNode!");
 
   RG->SetLocation(TK->GetLocation());
   RG->Mangle();

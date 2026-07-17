@@ -8206,6 +8206,11 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
     assert(STE && "Could not create a valid ASTUGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
+  case ASTGateKindDisp:
+    STE = new ASTSymbolTableEntry(Id, ASTTypeDispGate);
+    assert(STE && "Could not create a valid ASTDispGateNode SymbolTableEntry!");
+    STE->SetGlobalScope();
+    break;
   default:
     STE = new ASTSymbolTableEntry(Id, ASTTypeGate);
     assert(STE && "Could not create a valid ASTGateNode SymbolTableEntry!");
@@ -8255,6 +8260,13 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeUGate), ASTTypeUGate);
     assert(STE->HasValue() && "UGate ASTGateNode has no Value!");
+    break;
+  case ASTGateKindDisp:
+    GN = new ASTDispGateNode(Id, PL, IL, false, OL);
+    assert(GN && "Could not create a valid ASTDispGateNode!");
+    STE->ResetValue();
+    STE->SetValue(new ASTValue<>(GN, ASTTypeDispGate), ASTTypeDispGate);
+    assert(STE->HasValue() && "DispGate ASTGateNode has no Value!");
     break;
   default:
     GN = new ASTGateNode(Id, PL, IL, false, OL);
@@ -8332,6 +8344,11 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
     assert(STE && "Could not create a valid ASTUGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
+  case ASTGateKindDisp:
+    STE = new ASTSymbolTableEntry(Id, ASTTypeDispGate);
+    assert(STE && "Could not create a valid ASTDispGateNode SymbolTableEntry!");
+    STE->SetGlobalScope();
+    break;
   default:
     STE = new ASTSymbolTableEntry(Id, ASTTypeGate);
     assert(STE && "Could not create a valid ASTGateNode SymbolTableEntry!");
@@ -8381,6 +8398,13 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeUGate), ASTTypeUGate);
     assert(STE->HasValue() && "UGate ASTGateNode has no Value!");
+    break;
+  case ASTGateKindDisp:
+    GN = new ASTDispGateNode(Id, AL, QL, false, OL);
+    assert(GN && "Could not create a valid ASTDispGateNode!");
+    STE->ResetValue();
+    STE->SetValue(new ASTValue<>(GN, ASTTypeDispGate), ASTTypeDispGate);
+    assert(STE->HasValue() && "DispGate ASTGateNode has no Value!");
     break;
   default:
     GN = new ASTGateNode(Id, AL, QL, false, OL);
