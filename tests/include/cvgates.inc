@@ -1,2 +1,5 @@
-// Opaque SNAP gate (array angle parameter; target treated as qubit for now)
-opaque snap(thetas) q;
+// Opaque CV gates. Operands are untyped quantum params so call sites may
+// pass qubits, qumodes, or a mix (e.g. ECD).
+opaque snap(thetas) qm;
+opaque ecd(alpha) qb, qm;
+opaque disp(alpha) qm;

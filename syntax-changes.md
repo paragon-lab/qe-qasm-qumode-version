@@ -82,10 +82,13 @@ ArgList
 Currently, we only allow gates to either take a fixed number of parameters or
 an array of parameters.
 
-## 2. (WIP) Passing qumodes as gate operands
-The gate call syntax should support `qumode` operands as well as `qubit`
-operands. Type checking may be possible, though that requires revising the gate
-definition syntax (also see [Gate Declarations](#gate-declarations-low-priority)).
+## 2. Passing qumodes as gate operands
+The gate call syntax supports `qumode` operands as well as `qubit`
+operands (and mixed operands, e.g. ECD). Currently, no type checking is done,
+so both `ecd(alpha) qb, qm` and `ecd(alpha) qm, qb` are allowed. However,
+only `ecd(alpha) qb, qm` is considered valid syntax.
+Typed operand checking requires revising the gate definition
+syntax (also see [Gate Declarations](#gate-declarations-low-priority)).
 
 ## 3. (WIP) Passing complex numbers as gate parameters
 The displacement gate and ECD gate can take complex numbers as parameters:

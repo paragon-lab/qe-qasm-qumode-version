@@ -29102,6 +29102,39 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
             }
           }
         } break;
+        case ASTTypeQumode: {
+          if (ASTE->HasValue()) {
+            ASTQumodeNode *QN = ASTE->GetValue()->GetValue<ASTQumodeNode *>();
+            assert(QN &&
+                   "Invalid ASTQumodeNode obtained from the SymbolTable!");
+
+            if (!QN) {
+              std::stringstream M;
+              M << "ASTQumodeNode without a valid SymbolTable Entry.";
+              QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+                  DIAGLineCounter::Instance().GetLocation(AId), M.str(),
+                  DiagLevel::ICE);
+              return ASTGateQOpNode::StatementError(AId, M.str());
+            }
+          }
+        } break;
+        case ASTTypeQumodeContainer: {
+          if (ASTE->HasValue()) {
+            ASTQumodeContainerNode *QCN =
+                ASTE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+            assert(QCN && "Invalid ASTQumodeContainerNode obtained from the "
+                          "SymbolTable!");
+
+            if (!QCN) {
+              std::stringstream M;
+              M << "ASTQumodeContainerNode without a valid SymbolTable Entry.";
+              QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+                  DIAGLineCounter::Instance().GetLocation(AId), M.str(),
+                  DiagLevel::ICE);
+              return ASTGateQOpNode::StatementError(AId, M.str());
+            }
+          }
+        } break;
         case ASTTypeGateQubitParam: {
           if (!ASTSymbolTable::Instance().TransferGateQubitParam(AId)) {
             std::stringstream M;
@@ -29127,6 +29160,10 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
                       AIdR->GetSymbolType() == ASTTypeQubitContainerAlias)) {
           ASTE = ASTSymbolTable::Instance().LookupLocal(
               AIdR->GetName(), AIdR->GetBits(), ASTTypeQubit);
+        }
+        if (!ASTE && AIdR->GetSymbolType() == ASTTypeQumodeContainer) {
+          ASTE = ASTSymbolTable::Instance().LookupLocal(
+              AIdR->GetName(), AIdR->GetBits(), ASTTypeQumode);
         }
 
         if (!ASTE) {
@@ -29188,6 +29225,55 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
               std::stringstream M;
               M << "Invalid ASTQubitNode obtained from the "
                    "ASTQubitContainerNode.";
+              QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+                  DIAGLineCounter::Instance().GetLocation(AIdR), M.str(),
+                  DiagLevel::ICE);
+              return ASTGateQOpNode::StatementError(AIdR->GetIdentifier(),
+                                                    M.str());
+            }
+          }
+        } break;
+        case ASTTypeQumode: {
+          if (ASTE->HasValue()) {
+            ASTQumodeNode *QN = ASTE->GetValue()->GetValue<ASTQumodeNode *>();
+            assert(QN &&
+                   "Invalid ASTQumodeNode obtained from the SymbolTable!");
+
+            if (!QN) {
+              std::stringstream M;
+              M << "ASTQumodeNode without a valid SymbolTable Entry.";
+              QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+                  DIAGLineCounter::Instance().GetLocation(AIdR), M.str(),
+                  DiagLevel::ICE);
+              return ASTGateQOpNode::StatementError(AIdR->GetIdentifier(),
+                                                    M.str());
+            }
+          }
+        } break;
+        case ASTTypeQumodeContainer: {
+          if (ASTE->HasValue()) {
+            ASTQumodeContainerNode *QCN =
+                ASTE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+            assert(QCN && "Invalid ASTQumodeContainerNode obtained from the "
+                          "SymbolTable!");
+
+            if (!QCN) {
+              std::stringstream M;
+              M << "ASTQumodeContainerNode without a valid SymbolTable Entry.";
+              QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+                  DIAGLineCounter::Instance().GetLocation(AIdR), M.str(),
+                  DiagLevel::ICE);
+              return ASTGateQOpNode::StatementError(AIdR->GetIdentifier(),
+                                                    M.str());
+            }
+
+            ASTQubitNode *QN = QCN->GetQubit(AIdR->GetIndex());
+            assert(QN && "Invalid ASTQubitNode obtained from the "
+                         "ASTQumodeContainerNode!");
+            if (!QN) {
+              std::stringstream M;
+              M << "Invalid ASTQubitNode obtained from the "
+                   "ASTQumodeContainerNode.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
                   DIAGLineCounter::Instance().GetLocation(AIdR), M.str(),
                   DiagLevel::ICE);

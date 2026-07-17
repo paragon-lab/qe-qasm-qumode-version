@@ -698,3 +698,6 @@ add_test(NAME qumode-t00001
 
 add_test(NAME qumode-t00002
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/snap-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/snap-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00003
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/ecd-mixed.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/ecd-mixed.qasm.out 2>&1")

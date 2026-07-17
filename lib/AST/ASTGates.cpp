@@ -224,6 +224,36 @@ ASTGateNode::MangleGateQubitParam(ASTIdentifierNode *Id,
     assert(QCAN && "Could not obtain a valid ASTQubitContainerAliasNode!");
     QCAN->Mangle();
   } break;
+  case ASTTypeQumode: {
+    ASTQumodeNode *QN = nullptr;
+    if (!STE->HasValue()) {
+      QN = new ASTQumodeNode(Id, IX, QNS.str());
+      assert(QN && "Could not create a valid ASTQumodeNode!");
+      STE->ResetValue();
+      STE->SetValue(new ASTValue<>(QN, QTy), QTy);
+      assert(STE->HasValue() && "Qumode SymbolTable Entry has no Value!");
+    } else {
+      QN = STE->GetValue()->GetValue<ASTQumodeNode *>();
+      assert(QN && "Could not obtain a valid ASTQumodeNode!");
+    }
+
+    QN->Mangle();
+  } break;
+  case ASTTypeQumodeContainer: {
+    ASTQumodeContainerNode *QCN = nullptr;
+    if (!STE->HasValue()) {
+      QCN = new ASTQumodeContainerNode(Id, Bits == 0U ? 1U : Bits);
+      assert(QCN && "Could not create a valid ASTQumodeContainerNode!");
+      STE->ResetValue();
+      STE->SetValue(new ASTValue<>(QCN, QTy), QTy);
+      assert(STE->HasValue() && "Qumode SymbolTable Entry has no Value!");
+    } else {
+      QCN = STE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+      assert(QCN && "Could not obtain a valid ASTQumodeContainerNode!");
+    }
+
+    QCN->Mangle();
+  } break;
   default: {
     std::stringstream M;
     M << "Impossible initialization of gate qubit parameter from "
@@ -1502,7 +1532,15 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         QBits = 1U;
       }
     } break;
+    case ASTTypeQumodeContainer: {
+      if (ASTQumodeContainerNode *QCN =
+              STE->GetValue()->GetValue<ASTQumodeContainerNode *>()) {
+        Bits = QCN->Size();
+        QBits = 1U;
+      }
+    } break;
     case ASTTypeQubit:
+    case ASTTypeQumode:
     case ASTTypeGateQubitParam:
       Bits = QBits = 1U;
       break;
@@ -1526,6 +1564,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
+      case ASTTypeQumode:
+      case ASTTypeQumodeContainer:
       case ASTTypeGateQubitParam:
         break;
       default:
