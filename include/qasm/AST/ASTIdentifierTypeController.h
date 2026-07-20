@@ -507,6 +507,7 @@ public:
     case ASTTypeCNotGate:
     case ASTTypeHadamardGate:
     case ASTTypeUGate:
+    case ASTTypeDispGate:
       return true;
       break;
     default:
@@ -521,6 +522,9 @@ public:
     switch (OTy) {
     case ASTTypeUGate:
       return NTy == ASTTypeUGate;
+      break;
+    case ASTTypeDispGate:
+      return NTy == ASTTypeDispGate;
       break;
     case ASTTypeHadamardGate:
       return NTy == ASTTypeHadamardGate;

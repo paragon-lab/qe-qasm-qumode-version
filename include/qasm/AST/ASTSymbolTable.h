@@ -2382,6 +2382,7 @@ public:
         case ASTTypeCCXGate:
         case ASTTypeCNotGate:
         case ASTTypeHadamardGate:
+        case ASTTypeDispGate:
         case ASTTypeUGate:
         case ASTTypeDefcal:
         case ASTTypeDefcalGroup:
@@ -2390,6 +2391,8 @@ public:
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
+        case ASTTypeQumode:
+        case ASTTypeQumodeContainer:
         case ASTTypeGateQubitParam:
           break;
         default:
@@ -2456,6 +2459,7 @@ public:
       case ASTTypeCCXGate:
       case ASTTypeCNotGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
       case ASTTypeDefcal:
       case ASTTypeDefcalGroup:
@@ -2464,6 +2468,8 @@ public:
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
+      case ASTTypeQumode:
+      case ASTTypeQumodeContainer:
       case ASTTypeGateQubitParam:
         break;
       default: {
@@ -2687,6 +2693,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate: {
       GI = GSTM.find(S);
@@ -2825,7 +2832,9 @@ public:
     } break;
     case ASTTypeQubit:
     case ASTTypeQubitContainer:
-    case ASTTypeQubitContainerAlias: {
+    case ASTTypeQubitContainerAlias:
+    case ASTTypeQumode:
+    case ASTTypeQumodeContainer: {
       map_iterator QI = QSTM.find(S);
 
       if (QI != QSTM.end()) {
@@ -2837,6 +2846,19 @@ public:
               ((*QI).second->GetValueType() == ASTTypeQubit ||
                (*QI).second->GetValueType() == ASTTypeQubitContainer ||
                (*QI).second->GetValueType() == ASTTypeQubitContainerAlias) &&
+              ((*QI).second->GetIdentifier()->GetBits() == Bits || Bits == 0)) {
+            return (*QI).second;
+          } else if (ASTStringUtils::Instance().IsQCElement(S)) {
+            if ((*QI).second && (*QI).second->GetValueType() == Ty &&
+                Bits <= (*QI).second->GetIdentifier()->GetBits())
+              return (*QI).second;
+          }
+          break;
+        case ASTTypeQumode:
+        case ASTTypeQumodeContainer:
+          if ((*QI).second &&
+              ((*QI).second->GetValueType() == ASTTypeQumode ||
+               (*QI).second->GetValueType() == ASTTypeQumodeContainer) &&
               ((*QI).second->GetIdentifier()->GetBits() == Bits || Bits == 0)) {
             return (*QI).second;
           } else if (ASTStringUtils::Instance().IsQCElement(S)) {
@@ -3069,6 +3091,7 @@ public:
         case ASTTypeCCXGate:
         case ASTTypeCNotGate:
         case ASTTypeHadamardGate:
+        case ASTTypeDispGate:
         case ASTTypeUGate:
         case ASTTypeGate:
         case ASTTypeDefcal:
@@ -3078,6 +3101,8 @@ public:
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
+        case ASTTypeQumode:
+        case ASTTypeQumodeContainer:
         case ASTTypeGateQubitParam:
           break;
         default: {
@@ -3098,6 +3123,7 @@ public:
       case ASTTypeCCXGate:
       case ASTTypeCNotGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
         SI = GSTM.find(S);
         if (SI != GSTM.end())
@@ -3106,6 +3132,8 @@ public:
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
+      case ASTTypeQumode:
+      case ASTTypeQumodeContainer:
         SI = QSTM.find(S);
         if (SI != QSTM.end())
           return (*SI).second;
@@ -3692,6 +3720,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate: {
       std::stringstream M;
@@ -3841,6 +3870,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate:
       M << "Declared Gates cannot be erased.";
@@ -5176,6 +5206,7 @@ public:
     case ASTTypeCXGate:
     case ASTTypeCCXGate:
     case ASTTypeCNotGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGateQubitParam:
     case ASTTypeKernel:
@@ -5641,6 +5672,7 @@ public:
     case ASTTypeCXGate:
     case ASTTypeCCXGate:
     case ASTTypeCNotGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeFunction:
     case ASTTypeDefcal:

@@ -181,6 +181,7 @@ enum ASTType : unsigned {
   ASTTypeGoTo,
   ASTTypeGPhaseExpression,
   ASTTypeGPhaseStatement,
+  ASTTypeDispGate,
   ASTTypeHadamardGate,
   ASTTypeIdentifier,
   ASTTypeIdentifierList,
@@ -489,6 +490,7 @@ enum GateKind : unsigned {
   ASTGateKindCNOT,
   ASTGateKindH,
   ASTGateKindU,
+  ASTGateKindDisp,
   ASTGateKindLambda,
   ASTGateKindPhi,
   ASTGateKindTheta

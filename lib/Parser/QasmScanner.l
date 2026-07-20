@@ -344,7 +344,7 @@ void comment_error(const char* msg) {
   return yylval->Tok->GetInt(); //return int corresponding to Tok_QUBIT (we then use that number when matching a rule)
 }
 
-"qumode" { 
+"qumode" {
 yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
@@ -379,6 +379,21 @@ yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   QASM::ASTIdentifierTypeController::Instance().Reset();
   QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUGate);
+  QASM::ASTIdentifierTypeController::Instance().StartQubitList();
+  return yylval->Tok->GetInt();
+}
+
+"disp" {
+  ASTGateContextBuilder::Instance().OpenContext();
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_DISP);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  QASM::ASTIdentifierTypeController::Instance().Reset();
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeDispGate);
   QASM::ASTIdentifierTypeController::Instance().StartQubitList();
   return yylval->Tok->GetInt();
 }

@@ -492,6 +492,8 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGPhaseStatement:
     return "ASTTypeGPhaseStatement";
     break;
+  case ASTTypeDispGate:
+    return "ASTTypeDispGate";
   case ASTTypeHadamardGate:
     return "ASTTypeHadamardGate";
     break;
@@ -1799,6 +1801,8 @@ const char *PrintParserToken(unsigned Token) {
     break;
   case token::TOK_U:
     return "TOK_U";
+  case token::TOK_DISP:
+    return "TOK_DISP";
     break;
   case token::TOK_ANGLE:
     return "TOK_ANGLE";
@@ -2216,6 +2220,9 @@ const char *PrintGateKind(GateKind GK) {
     break;
   case ASTGateKindU:
     return "U";
+    break;
+  case ASTGateKindDisp:
+    return "Disp";
     break;
   case ASTGateKindLambda:
     return "Lambda";

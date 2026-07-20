@@ -56,6 +56,7 @@
 #include <qasm/AST/ASTStringList.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTGateControl.h>
+#include <qasm/AST/ASTGateContextBuilder.h>
 #include <qasm/AST/ASTAngleContextControl.h>
 #include <qasm/AST/ASTReturn.h>
 #include <qasm/AST/ASTDeclarationList.h>
@@ -600,7 +601,7 @@ int readinput() {
 %token <String> TOK_TYPEDEF_NAME
 %token <String> TOK_CREG TOK_QREG TOK_CNOT TOK_HADAMARD
 %token <String> TOK_CCX TOK_CX TOK_QUBIT TOK_BOUND_QUBIT TOK_UNBOUND_QUBIT
-%token <String> TOK_QUMODE
+%token <String> TOK_QUMODE TOK_DISP
 %token <String> TOK_QUBITS TOK_U TOK_ANGLE TOK_FIXED
 %token <String> TOK_DIRTY TOK_OPAQUE TOK_RESET
 %token <String> TOK_IBMQASM
@@ -728,6 +729,7 @@ int readinput() {
 %type <GateNegControlNode>          GateNegCtrlExpr
 %type <GateInverseNode>             GateInvExpr
 %type <GatePowerNode>               GatePowExpr
+%type <IntegerNode>                 CtrlNAt NegCtrlNAt
 %type <BoxStatementNode>            BoxStmt
 %type <GPhaseOpNode>                GPhaseStmt
 %type <GateControlStmtNode>         GateCtrlExprStmt
@@ -3680,6 +3682,10 @@ GateEOp
   | TOK_HADAMARD ArgsList AnyList {
     $$ = ASTProductionFactory::Instance().ProductionRule_3506(GET_TOKEN(2),
                                                               $2, $3);
+  }
+  | TOK_DISP ArgsList AnyList {
+    $$ = ASTProductionFactory::Instance().ProductionRule_10020(GET_TOKEN(2),
+                                                               $2, $3);
   }
   ;
 
@@ -6869,47 +6875,78 @@ GPhaseStmt
   ;
 
 GateCtrlExpr
-  : TOK_CTRL TOK_ASSOCIATION_OP GateEOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(2), $3);
+  : CtrlAt GateEOp {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP GateEOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(5),
-                                                              $6, $3);
+  | CtrlNAt GateEOp {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL TOK_ASSOCIATION_OP GateCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(2), $3);
+  | CtrlAt GateCtrlExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP GateCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(5),
-                                                              $6, $3);
+  | CtrlNAt GateCtrlExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(2), $3);
+  | CtrlAt GateNegCtrlExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(5),
-                                                              $6, $3);
+  | CtrlNAt GateNegCtrlExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(2), $3);
+  | CtrlAt GateGPhaseExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(5),
-                                                              $6, $3);
+  | CtrlNAt GateGPhaseExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(2), $3);
+  | CtrlAt GateInvExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(5),
-                                                              $6, $3);
+  | CtrlNAt GateInvExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL TOK_ASSOCIATION_OP GatePowExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(2), $3);
+  | CtrlAt GatePowExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP GatePowExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(5),
-                                                              $6, $3);
+  | CtrlNAt GatePowExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3850(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
+  }
+  ;
+
+CtrlAt
+  : TOK_CTRL TOK_ASSOCIATION_OP {
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(1));
+  }
+  ;
+
+CtrlNAt
+  : TOK_CTRL '(' Integer ')' TOK_ASSOCIATION_OP {
+    $$ = $3;
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(4));
   }
   ;
 
@@ -6928,40 +6965,68 @@ GateCtrlExprStmt
   ;
 
 GateNegCtrlExpr
-  : TOK_NEGCTRL TOK_ASSOCIATION_OP GateEOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(2), $3);
+  : NegCtrlAt GateEOp {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP GateEOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(5),
-                                                              $6, $3);
+  | NegCtrlNAt GateEOp {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(2), $3);
+  | NegCtrlAt GateNegCtrlExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(5),
-                                                              $6, $3);
+  | NegCtrlNAt GateNegCtrlExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(2), $3);
+  | NegCtrlAt GateGPhaseExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(5),
-                                                              $6, $3);
+  | NegCtrlNAt GateGPhaseExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(2), $3);
+  | NegCtrlAt GateInvExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(5),
-                                                              $6, $3);
+  | NegCtrlNAt GateInvExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL TOK_ASSOCIATION_OP GatePowExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(2), $3);
+  | NegCtrlAt GatePowExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
-  | TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP GatePowExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3851(GET_TOKEN(5),
-                                                              $6, $3);
+  | NegCtrlNAt GatePowExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3851(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $2, $1);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
+  }
+  ;
+
+NegCtrlAt
+  : TOK_NEGCTRL TOK_ASSOCIATION_OP {
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(1));
+  }
+  ;
+
+NegCtrlNAt
+  : TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP {
+    $$ = $3;
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(4));
   }
   ;
 
