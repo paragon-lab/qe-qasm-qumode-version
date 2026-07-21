@@ -48,17 +48,18 @@ void ASTQubitNode::print() const {
   std::cout << "</Qubit>" << std::endl;
 }
 
-void ASTQumodeNode::print() const {
-  std::cout << "<Qumode>" << std::endl;
-  std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
-  std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
-            << std::endl;
-  if (!GetGateQubitName().empty())
-    std::cout << "<GateQubitName>" << GetGateQubitName() << "</GateQubitName>"
-              << std::endl;
-  std::cout << "<Index>" << GetIndex() << "</Index>" << std::endl;
-  std::cout << "</Qumode>" << std::endl;
-}
+// Why is this here? I don't think we need this-Katie 07/21/2026
+// void ASTQumodeNode::print() const {
+//   std::cout << "<Qumode>" << std::endl;
+//   std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
+//   std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
+//             << std::endl;
+//   if (!GetGateQubitName().empty())
+//     std::cout << "<GateQubitName>" << GetGateQubitName() << "</GateQubitName>"
+//               << std::endl;
+//   std::cout << "<Index>" << GetIndex() << "</Index>" << std::endl;
+//   std::cout << "</Qumode>" << std::endl;
+// }
 
 static bool FillRangeQubitVector(const std::vector<int32_t> &IV,
                                  const std::vector<ASTQubitNode *> &QV,
