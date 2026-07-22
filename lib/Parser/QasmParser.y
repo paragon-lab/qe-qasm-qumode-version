@@ -601,7 +601,7 @@ int readinput() {
 %token <String> TOK_TYPEDEF_NAME
 %token <String> TOK_CREG TOK_QREG TOK_CNOT TOK_HADAMARD
 %token <String> TOK_CCX TOK_CX TOK_QUBIT TOK_BOUND_QUBIT TOK_UNBOUND_QUBIT
-%token <String> TOK_QUMODE TOK_DISP
+%token <String> TOK_QUMODE TOK_UNITARY TOK_DISP //adding a data type Unitary KH
 %token <String> TOK_QUBITS TOK_U TOK_ANGLE TOK_FIXED
 %token <String> TOK_DIRTY TOK_OPAQUE TOK_RESET
 %token <String> TOK_IBMQASM
@@ -1799,6 +1799,10 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_10002(GET_TOKEN(5),
                                                                $5, $3);
   }
+  | TOK_UNITARY Identifier ';' {
+  $$ = ASTProductionFactory::Instance() .ProductionRule_10003(GET_TOKEN(2), $2);
+}
+
   | TOK_LET Identifier '=' TOK_IDENTIFIER '[' TOK_INTEGER_CONSTANT ','
                                               IntegerList ']' ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1150($2, $4, $6, $8);

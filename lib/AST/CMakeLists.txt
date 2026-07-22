@@ -95,6 +95,7 @@ set(OPENQASM_AST_SOURCES
   ASTTypeEnums.cpp
   ASTTypeSpecifier.cpp
   ASTTypeSystemBuilder.cpp
+  ASTUnitary.cpp
   ASTUtils.cpp
   ASTExpressionEvaluator.cpp
   ASTExpressionValidator.cpp)

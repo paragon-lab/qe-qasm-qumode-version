@@ -1514,6 +1514,11 @@ public:
                                            const ASTIdentifierNode *DId,
                                            const ASTIdentifierNode *IXd) const;
 
+   // unitary
+    ASTDeclarationNode *
+    ProductionRule_10003(const ASTToken *TK,
+                        const ASTIdentifierNode *DId) const;
+
   // Gate angle-array literal parameter: [θ0, ..., θk]
   ASTAngleArrayNode *ProductionRule_10010(const ASTExpressionList *EL) const;
 

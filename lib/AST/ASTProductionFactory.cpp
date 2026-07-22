@@ -17977,6 +17977,62 @@ ASTProductionFactory::ProductionRule_10000(const ASTToken *TK,
   return DN;
 }
 
+ASTDeclarationNode * //adding a data type Unitary KH
+ASTProductionFactory::ProductionRule_10003(
+    const ASTToken *TK,
+    const ASTIdentifierNode *DId) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(DId && "Invalid ASTIdentifierNode argument!");
+
+  unsigned Bits = DId->GetBits() == 0 ? 1 : DId->GetBits();
+  DId->SetBits(Bits);
+
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(
+          DId, Bits, ASTTypeUnitary)) {
+    std::stringstream M;
+    M << "Could not transfer Symbol Table Entry for ASTTypeUnitary.";
+
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId),
+        M.str(),
+        DiagLevel::ICE);
+
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
+    std::stringstream M;
+    M << "Declaration " << DId->GetName()
+      << " shadows a previous declaration.";
+
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId),
+        M.str(),
+        DiagLevel::Error);
+
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  ASTUnitaryNode *UN =
+      ASTBuilder::Instance().CreateASTUnitaryNode(DId);
+
+  assert(UN && "Could not create a valid ASTUnitaryNode!");
+
+  UN->SetLocation(DId->GetLocation());
+  UN->Mangle();
+
+  ASTDeclarationNode *DN =
+      new ASTDeclarationNode(DId, UN, ASTTypeUnitary, false);
+
+  assert(DN && "Could not create a valid ASTDeclarationNode!");
+
+  DN->SetLocation(TK->GetLocation());
+  ASTStatementBuilder::Instance().Append(DN);
+  ASTDeclarationBuilder::Instance().Append(DN);
+
+  return DN;
+}
+
 ASTDeclarationNode *
 ASTProductionFactory::ProductionRule_10001(const ASTToken *TK,
                                            const ASTIdentifierNode *DId,

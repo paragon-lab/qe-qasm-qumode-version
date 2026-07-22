@@ -61,6 +61,7 @@
 #include <qasm/AST/ASTTypeSpecifier.h>
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTValue.h>
+#include <qasm/AST/ASTUnitary.h>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -384,6 +385,9 @@ public:
 
   ASTQumodeContainerNode *
   CreateASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned NumBits);
+
+  ASTUnitaryNode *
+  CreateASTUnitaryNode(const ASTIdentifierNode *Id);
 
   ASTQubitNode *CreateASTQubitNode(const ASTIdentifierNode *Id, unsigned Index);
 

@@ -356,15 +356,26 @@ yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   return yylval->Tok->GetInt();
 }
 
-"qumode" {
-yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
+"unitary" { //adding a data type Unitary KH
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_UNITARY);
+
   assert(yylval->Tok && "Could not create a valid ASTToken!");
+
   yylval->Token = yylval->Tok->GetInt();
   yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQumode);
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  QASM::ASTIdentifierTypeController::Instance()
+      .SetCurrentType(ASTTypeUnitary);
+
   return yylval->Tok->GetInt();
 }
 
