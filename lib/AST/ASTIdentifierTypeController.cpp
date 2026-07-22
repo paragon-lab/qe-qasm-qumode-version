@@ -179,6 +179,7 @@ void ASTIdentifierTypeController::CheckIsCallable(
   case ASTTypeDefcalCallExpression:
   case ASTTypeFunctionCallExpression:
   case ASTTypeKernelCallExpression:
+  case ASTTypeUnitary:
     return;
     break;
   default:

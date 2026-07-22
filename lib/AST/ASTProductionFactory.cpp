@@ -59,6 +59,7 @@
 #include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTTypeDiscovery.h>
 #include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTUnitary.h>
 #include <qasm/AST/ASTUtils.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -29687,7 +29688,24 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
                                       const ASTIdentifierNode *Id,
                                       const ASTArgumentNodeList &ANL,
                                       const ASTAnyTypeList &ATL) {
-  ASTGateNode *GN = STE->GetValue()->GetValue<ASTGateNode *>();
+  // ASTGateNode *GN = STE->GetValue()->GetValue<ASTGateNode *>();
+  ASTGateNode *GN = nullptr;
+
+  switch (STE->GetValueType()) {
+  case ASTTypeGate:
+    GN = STE->GetValue()->GetValue<ASTGateNode *>();
+    break;
+
+  case ASTTypeUnitary: {
+    ASTUnitaryNode *UN =
+        STE->GetValue()->GetValue<ASTUnitaryNode *>();
+    GN = UN;
+    break;
+  }
+
+  default:
+    break;
+  }
   if (!GN) {
     std::stringstream M;
     M << "Invalid ASTGateNode " << Id->GetName() << " used in constructing "
@@ -29734,6 +29752,11 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
 
   ASTGateQOpNode *RQO = nullptr;
 
+  //debugging code
+  std::cerr << "STE->GetValueType() = "
+          << PrintTypeEnum(STE->GetValueType())
+          << std::endl;
+
   switch (STE->GetValueType()) {
   case ASTTypeDefcal:
     RQO = CreateDefcalCall(TK, STE, Id, ANL, ATL);
@@ -29742,6 +29765,7 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
     RQO = CreateDefcalGroupCall(TK, Id, ANL, ATL);
     break;
   case ASTTypeGate:
+  case ASTTypeUnitary:
     RQO = CreateGateCall(TK, STE, Id, ANL, ATL);
     break;
   case ASTTypeCXGate:
