@@ -179,10 +179,12 @@ inline void reset_colno() {
   } \
 }
 
-#define sym_type(ident) token::TOK_IDENTIFIER
+#define sym_type(ident) token::TOK_IDENTIFIER \\dead, unused code, delete in a later push request
 
 extern void yyerror(const char* msg);
 extern int readinput();
+
+\\error message functions 
 
 void token_error() {
   std::cerr << "Error: Unrecognized token at line "
@@ -204,6 +206,9 @@ void comment_error(const char* msg) {
   else
     std::cerr << ": " << yytext << std::endl;
 }
+
+
+
 
 %}
 
@@ -1055,7 +1060,7 @@ yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
                            prev_yycolno + 1);
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return token::TOK_IDENTIFIER;
+  return token::TOK_IDENTIFIER; //simply telling the parser to parse the tok_delta as it would a TOk_IDENTIFER. the AST tree will still see TOK_DELTA
 }
 
 "Ε" {
@@ -3012,6 +3017,8 @@ $[a-zA-Z_][0-9]+ {
   return yylval->Tok->GetInt();
 }
 
+// Scanner rules that defines what text counts as a general identifier
+
 {L}{A}* {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
@@ -3162,6 +3169,20 @@ $[a-zA-Z_][0-9]+ {
 
   return yylval->Tok->GetInt();
 }
+
+%[0-9a-zA-Z_]+ {
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  return yylval->Tok->GetInt();
+}
+
+//end of rules to define general identifier token
+
 
 {HP}{H}+{IS}? {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
@@ -4037,17 +4058,6 @@ $[a-zA-Z_][0-9]+ {
 
 "%" {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_MOD_OP);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
-%[0-9a-zA-Z_]+ {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
   yylval->String = yylval->Tok->GetStringAddress();
