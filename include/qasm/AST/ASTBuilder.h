@@ -387,8 +387,8 @@ public:
 
   ASTQubitNode *CreateASTQubitNode(const ASTIdentifierNode *Id, unsigned Index);
 
-  ASTQubitNode *CreateASTQumodeNode(const ASTIdentifierNode *Id,
-                                    unsigned Index);
+  ASTQumodeNode *CreateASTQumodeNode(const ASTIdentifierNode *Id,
+                                     unsigned Index);
 
   ASTQubitContainerAliasNode *
   CreateASTQubitContainerAliasNode(const ASTIdentifierNode *Id, int32_t Index);

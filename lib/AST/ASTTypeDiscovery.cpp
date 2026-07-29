@@ -2759,6 +2759,133 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
     return XIdR;
   } break;
+  case ASTTypeQumode:
+  case ASTTypeQumodeContainer: {
+    ASTSymbolTableEntry *STE =
+        ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer);
+    if (!STE) {
+      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
+      if (STE && STE->GetIdentifier()->IsReference()) {
+        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+              US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+              STE, ASN, ASL);
+          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+          IdR->SetSymbolTableEntry(STE);
+          return IdR;
+        }
+
+        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+      } else {
+        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode);
+        if (STE && STE->GetIdentifier()->IsReference()) {
+          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+                US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+                STE, ASN, ASL);
+            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+            IdR->SetSymbolTableEntry(STE);
+            return IdR;
+          }
+
+          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+        }
+      }
+    } else {
+      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
+      if (STE && STE->GetIdentifier()->IsReference()) {
+        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+              US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+              STE, ASN, ASL);
+          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+          IdR->SetSymbolTableEntry(STE);
+          return IdR;
+        }
+
+        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+      } else {
+        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode);
+        if (STE && STE->GetIdentifier()->IsReference()) {
+          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+                US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+                STE, ASN, ASL);
+            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+            IdR->SetSymbolTableEntry(STE);
+            return IdR;
+          }
+
+          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+        }
+      }
+    }
+
+    // Fall back: resolve via %name:index element created at declaration.
+    if (ASTSymbolTableEntry *CSTE =
+            ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer)) {
+      ASTQumodeContainerNode *QCN =
+          CSTE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+      assert(QCN && "Could not obtain a valid ASTQumodeContainerNode!");
+
+      std::string QIS = "%";
+      QIS += ASTStringUtils::Instance().IndexedIdentifierToQCElement(IS);
+      ASTSymbolTableEntry *XSTE =
+          ASTSymbolTable::Instance().Lookup(QIS, 1U, ASTTypeQumode);
+      if (XSTE) {
+        if (XSTE->GetIdentifier()->IsReference())
+          return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+
+        if (ASTSymbolTableEntry *RSTE =
+                ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode)) {
+          return dynamic_cast<ASTIdentifierRefNode *>(RSTE->GetIdentifier());
+        }
+
+        ASTIdentifierRefNode *IdR =
+            new ASTIdentifierRefNode(IS, XSTE->GetIdentifier(), 1U);
+        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+
+        IdR->SetBits(1U);
+        IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+        IdR->SetArraySubscriptList(ASL);
+        IdR->SetSymbolTableEntry(XSTE);
+
+        if (!ASTSymbolTable::Instance().Insert(IdR, XSTE)) {
+          std::stringstream M;
+          M << "Failure inserting into the SymbolTable.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(XSTE->GetIdentifier()),
+              M.str(), DiagLevel::Error);
+          return ASTIdentifierRefNode::IdentifierError(M.str());
+        }
+
+        return IdR;
+      }
+    }
+
+    Id = ASTBuilder::Instance().CreateASTIdentifierNode(US, IX,
+                                                        ASTTypeQumodeContainer);
+    assert(Id && "Could not create a valid ASTIdentifierNode!");
+    assert(Id->GetSymbolTableEntry() &&
+           "ASTIdentifierNode without an ASTSymbolTableEntry!");
+
+    ASTIdentifierRefNode *XIdR =
+        new ASTIdentifierRefNode(US, IS, ASTTypeQumodeContainer, Id, IX, true,
+                                 Id->GetSymbolTableEntry(), ASN, ASL);
+    assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
+
+    XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
+    if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
+      std::stringstream M;
+      M << "Failure inserting into the SymbolTable.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
+      return ASTIdentifierRefNode::IdentifierError(M.str());
+    }
+
+    return XIdR;
+  } break;
   case ASTTypeQubitContainerAlias: {
     ASTSymbolTableEntry *STE =
         ASTSymbolTable::Instance().Lookup(US, ASTTypeQubitContainerAlias);

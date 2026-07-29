@@ -5044,7 +5044,7 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
 
   std::stringstream QS;
   std::stringstream QSS;
-  ASTQubitNode *QBN;
+  ASTQumodeNode *QBN;
 
   for (unsigned I = 0; I < NumBits; ++I) {
     QS.clear();
@@ -5070,7 +5070,7 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
                     "SymbolTable Entry!");
 
     if (QQSTE->HasValue()) {
-      QBN = QQSTE->GetValue()->GetValue<ASTQubitNode *>();
+      QBN = QQSTE->GetValue()->GetValue<ASTQumodeNode *>();
       assert(QBN && "Invalid SymbolTable Entry ASTQumodeNode Value!");
 
       QBN->Mangle();
@@ -5078,10 +5078,6 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
     } else {
       QBN = ASTBuilder::CreateASTQumodeNode(QId, I);
       assert(QBN && "Could not create a valid ASTQumodeNode!");
-
-      QQSTE->ResetValue();
-      QQSTE->SetValue(new ASTValue<>(QBN, ASTTypeQumode), ASTTypeQumode);
-      assert(QQSTE->HasValue() && "ASTQumode SymbolTable Entry has no Value!");
 
       QBN->Mangle();
       QCN->AddQubit(QBN);
@@ -5675,8 +5671,8 @@ ASTQubitNode *ASTBuilder::CreateASTQubitNode(const ASTIdentifierNode *Id,
   return QN;
 }
 
-ASTQubitNode *ASTBuilder::CreateASTQumodeNode(const ASTIdentifierNode *Id,
-                                              unsigned Index) {
+ASTQumodeNode *ASTBuilder::CreateASTQumodeNode(const ASTIdentifierNode *Id,
+                                               unsigned Index) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   ASTSymbolTableEntry *STE = nullptr;
