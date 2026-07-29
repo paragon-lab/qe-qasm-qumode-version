@@ -25,6 +25,11 @@ qubit qb;
 qubit[5] qbs;
 qumode qm;
 qumode[7] qms;
+
+// Element selection mirrors qubits:
+disp(0.3 + 0.5 im) qms[0];
+snap([pi/2, 0, 0.3]) qms[1];
+ecd(0.5) qb[0], qms[0];
 ```
 
 To support this, we added `qumode` as a token:

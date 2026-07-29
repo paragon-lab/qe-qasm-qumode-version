@@ -713,3 +713,6 @@ add_test(NAME qumode-t00006
 
 add_test(NAME qumode-t00007
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-ctrl-required.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-ctrl-required.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00008
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/qumode-index.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/qumode-index.qasm.out 2>&1")

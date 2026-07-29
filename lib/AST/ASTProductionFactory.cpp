@@ -30304,7 +30304,13 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
   }
 
   for (unsigned I = 0; I < ATL->Size(); ++I) {
-    if (!ATL->IsIdentifier(I)) {
+    const ASTIdentifierNode *QId = nullptr;
+    if (ATL->IsIdentifier(I))
+      QId = ATL->GetIdentifier(I);
+    else if (ATL->IsIdentifierRef(I))
+      QId = ATL->GetIdentifierRef(I);
+
+    if (!QId) {
       std::stringstream M;
       M << "The disp gate expects quantum identifier operands.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
@@ -30312,9 +30318,6 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
           DiagLevel::Error);
       return ASTGateQOpNode::StatementError(M.str());
     }
-
-    const ASTIdentifierNode *QId = ATL->GetIdentifier(I);
-    assert(QId && "Invalid quantum ASTIdentifierNode from ASTAnyTypeList!");
 
     if (!ASTStringUtils::Instance().IsBoundQubit(QId->GetName()))
       QId->SetGateLocal(true);

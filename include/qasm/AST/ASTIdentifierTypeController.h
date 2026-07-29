@@ -478,6 +478,7 @@ public:
     case ASTTypeKernelCall:
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias:
+    case ASTTypeQumodeContainer:
     case ASTTypeAngleArray:
     case ASTTypeBoolArray:
     case ASTTypeCBitArray:
