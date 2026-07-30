@@ -647,9 +647,9 @@ void ASTGateGPhaseExpressionNode::Mangle() {
       }
       assert(QSTE && "Could not obtain a valid SymbolTable Entry!");
 
-      ASTGateQubitParamNode *GQP =
-          QSTE->GetValue()->GetValue<ASTGateQubitParamNode *>();
-      assert(GQP && "Could not obtain a valid ASTGateQubitParamNode!");
+      ASTGateOperandParamNode *GQP =
+          QSTE->GetValue()->GetValue<ASTGateOperandParamNode *>();
+      assert(GQP && "Could not obtain a valid ASTGateOperandParamNode!");
 
       GQP->Mangle();
     }

@@ -433,9 +433,9 @@ public:
   void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty0,
                            ASTType Ty1, ASTType Ty2, ASTType Ty3) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierNode *Id) const;
+  void CheckGateOperandParamType(const ASTIdentifierNode *Id) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierList &IL) const;
+  void CheckGateOperandParamType(const ASTIdentifierList &IL) const;
 
   void CheckIsCallable(const ASTIdentifierNode *Id) const;
 

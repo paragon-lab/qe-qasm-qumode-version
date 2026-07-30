@@ -246,7 +246,7 @@ void ASTIdentifierTypeController::CheckIsHardwareQubit(
   }
 }
 
-void ASTIdentifierTypeController::CheckGateQubitParamType(
+void ASTIdentifierTypeController::CheckGateOperandParamType(
     const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -270,8 +270,8 @@ void ASTIdentifierTypeController::CheckGateQubitParamType(
   }
 
   if (Id->IsGlobalScope()) {
-    if (Id->GetSymbolType() == ASTTypeGateQubitParam) {
-      if (!ASTSymbolTable::Instance().TransferGateQubitParam(Id)) {
+    if (Id->GetSymbolType() == ASTTypeGateOperandParam) {
+      if (!ASTSymbolTable::Instance().TransferGateOperandParam(Id)) {
         std::stringstream M;
         M << "Transfer of Gate Qubit Parameter " << Id->GetName() << " failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
@@ -291,7 +291,7 @@ void ASTIdentifierTypeController::CheckGateQubitParamType(
   }
 
   if (Id->GetSymbolType() != ASTTypeUndefined &&
-      Id->GetSymbolType() != ASTTypeGateQubitParam &&
+      Id->GetSymbolType() != ASTTypeGateOperandParam &&
       !ASTUtils::Instance().IsQuantumRegisterType(Id->GetSymbolType())) {
     std::stringstream M;
     M << "Symbol " << Id->GetName() << " already exists with type "
@@ -312,12 +312,12 @@ void ASTIdentifierTypeController::CheckGateQubitParamType(
   }
 }
 
-void ASTIdentifierTypeController::CheckGateQubitParamType(
+void ASTIdentifierTypeController::CheckGateOperandParamType(
     const ASTIdentifierList &IL) const {
   if (!IL.Empty())
     for (ASTIdentifierList::const_iterator LI = IL.begin(); LI != IL.end();
          ++LI)
-      CheckGateQubitParamType(*LI);
+      CheckGateOperandParamType(*LI);
 }
 
 bool ASTIdentifierTypeController::TypeScopeIsAlwaysGlobal(

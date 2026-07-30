@@ -3277,7 +3277,10 @@ public:
 
   virtual void print() const override {
     std::cout << "<ComplexExpressionNode>" << std::endl;
-    BOP->print();
+    if (EType == ASTTypeBinaryOp && BOP)
+      BOP->print();
+    else if (EType == ASTTypeUnaryOp && UOP)
+      UOP->print();
     std::cout << "</ComplexExpressionNode>" << std::endl;
   }
 
@@ -3536,6 +3539,14 @@ public:
   virtual bool NeedsEval() const { return NE; }
 
   virtual const ASTExpressionNode *GetExpression() const { return Expr; }
+
+  /// Attach a non-evaluated complex expression tree (e.g. `alpha/2`).
+  /// Leaves the numeric value as NaN; used so gate Params keep the expression
+  /// for unrolling without forcing Evaluate (real/imag literal form).
+  virtual void AttachExpression(const ASTComplexExpressionNode *E) {
+    Expr = E;
+    NE = true;
+  }
 
   virtual const ASTFunctionCallNode *GetFunctionCall() const { return FC; }
 

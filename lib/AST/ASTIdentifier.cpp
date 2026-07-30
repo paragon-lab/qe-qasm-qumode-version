@@ -148,7 +148,7 @@ ASTIdentifierNode __attribute__((init_priority(201)))
 ASTIdentifierNode::Qubit("qubit", ASTTypeQubit, 1U);
 
 ASTIdentifierNode __attribute__((init_priority(201)))
-ASTIdentifierNode::QubitParam("qubitparam", ASTTypeGateQubitParam, 1U);
+ASTIdentifierNode::OperandParam("operandparam", ASTTypeGateOperandParam, 1U);
 
 ASTIdentifierNode __attribute__((init_priority(201)))
 ASTIdentifierNode::QCAlias("qubitcontaineralias", ASTTypeQubitContainerAlias,

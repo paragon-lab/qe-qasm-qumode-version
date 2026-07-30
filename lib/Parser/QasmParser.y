@@ -106,7 +106,7 @@
 #include <qasm/AST/ASTIdentifierIndexResolver.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
-#include <qasm/AST/ASTGateQubitParamBuilder.h>
+#include <qasm/AST/ASTGateOperandParamBuilder.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTAngleNodeBuilder.h>
 #include <qasm/AST/ASTGateNodeBuilder.h>
@@ -779,7 +779,7 @@ int readinput() {
 %type <AnyList>                     AnyList AnyListImpl
 %type <IdentifierList>              IdentifierList IdentifierListImpl
 %type <StringList>                  StringList StringListImpl
-%type <GateQubitList>               GateQubitParamList GateQubitParamListImpl
+%type <GateQubitList>               GateOperandParamList GateOperandParamListImpl
                                     GateTypedQuantumOperandList
                                     GateTypedQuantumOperandListImpl
 %type <ArgumentList>                ArgsList
@@ -2104,11 +2104,11 @@ FuncDecl
   ;
 
 GateDecl
-  : TOK_GATE Identifier '(' NamedTypeDeclList ')' GateQubitParamList '{' GateOpList '}' {
+  : TOK_GATE Identifier '(' NamedTypeDeclList ')' GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1430(GET_TOKEN(8),
                                                               $2, $4, $6, $8);
   }
-  | TOK_GATE Identifier GateQubitParamList '{' GateOpList '}' {
+  | TOK_GATE Identifier GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1431(GET_TOKEN(5),
                                                               $2, $3, $5);
   }
@@ -2120,15 +2120,15 @@ GateDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(8),
                                                                $2, $4, $6, $8);
   }
-  | TOK_GATE TOK_CX GateQubitParamList '{' GateOpList '}' {
+  | TOK_GATE TOK_CX GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1432(GET_TOKEN(5), $3,
                                           GET_TOKEN(4)->GetLocation(), $5);
   }
-  | TOK_GATE TOK_HADAMARD GateQubitParamList '{' GateOpList '}' {
+  | TOK_GATE TOK_HADAMARD GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1433(GET_TOKEN(5), $2,
                                           GET_TOKEN(4)->GetLocation(), $3, $5);
   }
-  | TOK_GATE TOK_HADAMARD '(' NamedTypeDeclList ')' GateQubitParamList '{' GateOpList '}' {
+  | TOK_GATE TOK_HADAMARD '(' NamedTypeDeclList ')' GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1434(GET_TOKEN(8), $2,
                                           GET_TOKEN(7)->GetLocation(),
                                           $4, $6, $8);
@@ -2136,11 +2136,11 @@ GateDecl
   ;
 
 OpaqueDecl
-  : TOK_OPAQUE Identifier '(' NamedTypeDeclList ')' GateQubitParamList ';' {
+  : TOK_OPAQUE Identifier '(' NamedTypeDeclList ')' GateOperandParamList ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1435(GET_TOKEN(6),
                                                               $2, $4, $6);
   }
-  | TOK_OPAQUE Identifier GateQubitParamList ';' {
+  | TOK_OPAQUE Identifier GateOperandParamList ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1436(GET_TOKEN(3),
                                                               $2, $3);
   }
@@ -3802,42 +3802,42 @@ StringListImpl
   }
   ;
 
-GateQubitParamList
-  : GateQubitParamListImpl Identifier {
-    assert($1 && "Invalid GateQubitParamListImpl!");
+GateOperandParamList
+  : GateOperandParamListImpl Identifier {
+    assert($1 && "Invalid GateOperandParamListImpl!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     Id->SetPolymorphicType(Id->GetSymbolType());
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append(Id);
   }
   ;
 
-GateQubitParamListImpl
+GateOperandParamListImpl
   : %empty {
-    $$ = ASTGateQubitParamBuilder::Instance().NewList();
+    $$ = ASTGateOperandParamBuilder::Instance().NewList();
   }
-  | GateQubitParamListImpl Identifier ',' {
-    assert($1 && "Invalid GateQubitParamListImpl!");
+  | GateOperandParamListImpl Identifier ',' {
+    assert($1 && "Invalid GateOperandParamListImpl!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     Id->SetPolymorphicType(Id->GetSymbolType());
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append(Id);
   }
-  | GateQubitParamListImpl Identifier {
-    assert($1 && "Invalid GateQubitParamListImpl!");
+  | GateOperandParamListImpl Identifier {
+    assert($1 && "Invalid GateOperandParamListImpl!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     Id->SetPolymorphicType(Id->GetSymbolType());
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append($2);
@@ -3846,14 +3846,14 @@ GateQubitParamListImpl
 
 /* Quantum operands for fully-typed gate decls: qubit/qumode keyword required.
    PolymorphicType records the declared quantum kind; SymbolType stays
-   ASTTypeGateQubitParam for existing gate-formal machinery. */
+   ASTTypeGateOperandParam for existing gate-formal machinery. */
 GateTypedQuantumOperandList
   : GateTypedQuantumOperandListImpl TOK_QUBIT Identifier {
     assert($1 && "Invalid GateTypedQuantumOperandListImpl!");
     ASTIdentifierNode* Id = $3;
     assert(Id && "Invalid ASTIdentifierNode argument!");
     Id->SetPolymorphicType(ASTTypeQubit);
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append(Id);
@@ -3864,7 +3864,7 @@ GateTypedQuantumOperandList
     ASTIdentifierNode* Id = $3;
     assert(Id && "Invalid ASTIdentifierNode argument!");
     Id->SetPolymorphicType(ASTTypeQumode);
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append(Id);
@@ -3874,14 +3874,14 @@ GateTypedQuantumOperandList
 
 GateTypedQuantumOperandListImpl
   : %empty {
-    $$ = ASTGateQubitParamBuilder::Instance().NewList();
+    $$ = ASTGateOperandParamBuilder::Instance().NewList();
   }
   | GateTypedQuantumOperandListImpl TOK_QUBIT Identifier ',' {
     assert($1 && "Invalid GateTypedQuantumOperandListImpl!");
     ASTIdentifierNode* Id = $3;
     assert(Id && "Invalid ASTIdentifierNode argument!");
     Id->SetPolymorphicType(ASTTypeQubit);
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append(Id);
@@ -3892,7 +3892,7 @@ GateTypedQuantumOperandListImpl
     ASTIdentifierNode* Id = $3;
     assert(Id && "Invalid ASTIdentifierNode argument!");
     Id->SetPolymorphicType(ASTTypeQumode);
-    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetSymbolType(ASTTypeGateOperandParam);
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append(Id);

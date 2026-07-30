@@ -441,8 +441,8 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGatePowerStatement:
     return "ASTTypeGatePowerStatement";
     break;
-  case ASTTypeGateQubitParam:
-    return "ASTTypeGateQubitParam";
+  case ASTTypeGateOperandParam:
+    return "ASTTypeGateOperandParam";
     break;
   case ASTTypeGateQualifier:
     return "ASTTypeGateQualifier";
@@ -959,9 +959,9 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeUGate:
     return "ASTTypeUGate";
     break;
-  case ASTTypeUnitary: //adding a data type Unitary KH
-  return "ASTTypeUnitary";
-  break;
+  case ASTTypeUnitary: // adding a data type Unitary KH
+    return "ASTTypeUnitary";
+    break;
 
   case ASTTypeUnaryOp:
     return "ASTTypeUnaryOp";
@@ -1809,9 +1809,9 @@ const char *PrintParserToken(unsigned Token) {
   case token::TOK_DISP:
     return "TOK_DISP";
     break;
-  case token::TOK_UNITARY: //adding a data type Unitary KH
-  return "TOK_UNITARY";
-  break;
+  case token::TOK_UNITARY: // adding a data type Unitary KH
+    return "TOK_UNITARY";
+    break;
   case token::TOK_ANGLE:
     return "TOK_ANGLE";
     break;

@@ -2297,7 +2297,7 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
       ASTTypeSystemBuilder::Instance().IsImplicitAngle(Id)) {
     ASTIdentifierNode *IDN = nullptr;
 
-    if (Type != ASTTypeAngle && Type != ASTTypeGateQubitParam)
+    if (Type != ASTTypeAngle && Type != ASTTypeGateOperandParam)
       Type = ASTTypeAngle;
 
     // ASTTypeSystemBuilder will create the reserved pi, tau and euler
@@ -2675,11 +2675,11 @@ ASTIdentifierNode *ASTBuilder::CreateLocalScopeASTIdentifierNode(
   }
 
   // Do not clobber an existing typed classical gate formal (e.g. complex
-  // alpha) by re-inserting the same name as ASTTypeGateQubitParam.
+  // alpha) by re-inserting the same name as ASTTypeGateOperandParam.
   if (const ASTSymbolTableEntry *Any =
           ASTSymbolTable::Instance().FindLocal(Id)) {
     ASTType ETy = Any->GetIdentifier()->GetSymbolType();
-    if (Type == ASTTypeGateQubitParam &&
+    if (Type == ASTTypeGateOperandParam &&
         (ETy == ASTTypeMPComplex || ETy == ASTTypeFloat ||
          ETy == ASTTypeDouble || ETy == ASTTypeMPDecimal || ETy == ASTTypeInt ||
          ETy == ASTTypeUInt || ETy == ASTTypeMPInteger ||
@@ -2772,7 +2772,7 @@ ASTIdentifierNode *ASTBuilder::FindASTIdentifierNode(const std::string &Id) {
     if (STE)
       return const_cast<ASTIdentifierNode *>(STE->GetIdentifier());
 
-    STE = ASTSymbolTable::Instance().Lookup(Id, 1U, ASTTypeGateQubitParam);
+    STE = ASTSymbolTable::Instance().Lookup(Id, 1U, ASTTypeGateOperandParam);
     if (STE)
       return const_cast<ASTIdentifierNode *>(STE->GetIdentifier());
 
@@ -2817,7 +2817,7 @@ ASTIdentifierNode *ASTBuilder::FindASTIdentifierNode(const std::string &Id) {
     return STE ? const_cast<ASTIdentifierNode *>(STE->GetIdentifier())
                : nullptr;
   } break;
-  case ASTTypeGateQubitParam: {
+  case ASTTypeGateOperandParam: {
     if (ASTIdentifierTypeController::Instance().InQubitList()) {
       STE = ASTSymbolTable::Instance().Lookup(Id, 1U, CTy);
       return STE ? const_cast<ASTIdentifierNode *>(STE->GetIdentifier())
@@ -4767,7 +4767,7 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
   const std::string &IDS = Id->GetName();
   ASTType ITy = Id->GetSymbolTableEntry()->GetValueType();
 
-  if (Id->GetSymbolType() == ASTTypeGateQubitParam)
+  if (Id->GetSymbolType() == ASTTypeGateOperandParam)
     Id->SetBits(1U);
 
   ASTSymbolTableEntry *STE =
@@ -4820,7 +4820,7 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
     break;
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     break;
   case ASTTypeQubitArray:
     if (Id->IsIndexed() || Id->IsReference()) {

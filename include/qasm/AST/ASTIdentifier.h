@@ -637,7 +637,7 @@ public:
   static ASTIdentifierNode BoxAs;
   static ASTIdentifierNode BoxTo;
   static ASTIdentifierNode Qubit;
-  static ASTIdentifierNode QubitParam;
+  static ASTIdentifierNode OperandParam;
   static ASTIdentifierNode QCAlias;
   static ASTIdentifierNode QC;
   static ASTIdentifierNode Bitset;
@@ -1006,7 +1006,7 @@ public:
 
 class ASTIdentifierList : public ASTBase {
   friend class ASTIdentifierBuilder;
-  friend class ASTGateQubitParamBuilder;
+  friend class ASTGateOperandParamBuilder;
 
 protected:
   std::vector<ASTIdentifierNode *> Graph;

@@ -164,7 +164,7 @@ enum ASTType : unsigned {
   ASTTypeGateParam,
   ASTTypeGatePower,
   ASTTypeGatePowerStatement,
-  ASTTypeGateQubitParam,
+  ASTTypeGateOperandParam,
   ASTTypeGateQualifier,
   ASTTypeGateOpNode,
   ASTTypeGateOpList,
@@ -337,7 +337,7 @@ enum ASTType : unsigned {
   ASTTypeTypeExpression,
   ASTTypeTypeQualifier,
   ASTTypeUGate,
-  ASTTypeUnitary, //adding a data type Unitary KH
+  ASTTypeUnitary, // adding a data type Unitary KH
   ASTTypeUInt,
   ASTTypeULong,
   ASTTypeUnaryOp,

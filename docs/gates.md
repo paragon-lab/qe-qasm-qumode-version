@@ -82,10 +82,29 @@ Type checkings for typed gate declarations are enforced both in definitions and
 in call sites. The syntax needed to implement SNAP gate is not yet implemented
 (See below).
 
+### AST representation
+Gate definitions and calls expose quantum targets on `ASTGateNode` as follows:
+
+- **`Operands`** — `std::vector<ASTQubitNode *>` holding materialized targets.
+  For fully-typed gates, each element is an `ASTQubitNode` or `ASTQumodeNode`
+  (subclass), chosen from `FormalQuantumTypes` or the formal's polymorphic /
+  symbol type. Dump: `<Operands>` with `<Qubit>` / `<Qumode>` children.
+- **`OperandParams`** — symbol-table entries for quantum arguments at call
+  sites (when operands are not yet materialized as nodes).
+- **`Params`** — ordered classical actuals / formals (`ASTGateParam`: type +
+  expression).
+- **Gate formal names** (in signatures such as `qubit qb, qumode qm`) use
+  `ASTTypeGateOperandParam` and `ASTGateOperandParamNode`. Synthetic operand
+  ids use the prefix `ast-gate-operand-param-`; dump tag `<GateOperandName>`
+  holds the source name (e.g. `qb`, `qm`).
+- **Mangling** — operand formals in mangled gate names still use the legacy tag
+  `GQP` (Gate Qubit Param). The AST type is `GateOperandParam`; the acronym is
+  kept for compatibility with existing mangled strings.
+
 ## Variable-length arrays with compile-time known length (WIP)
 Here, we describe the syntax needed for gates with variable-length arrays with
 compile-time known length.
-For example, consider the fsfollowing definition of the SNAP gate:
+For example, consider the following definition of the SNAP gate:
 ```
 gate snap<uint N>(array[float[64], N] thetas) qumode qm {
     for i in [0:N] {

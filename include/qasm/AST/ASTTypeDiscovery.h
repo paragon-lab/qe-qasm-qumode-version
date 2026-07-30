@@ -91,8 +91,8 @@ protected:
 protected:
   bool InReDeclarationContext(const ASTIdentifierNode *Id, ASTType CTy,
                               const ASTDeclarationContext *DCX) const;
-  bool IsGateQubitParam(const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
-                        const ASTDeclarationContext *DCX) const;
+  bool IsGateOperandParam(const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
+                          const ASTDeclarationContext *DCX) const;
   bool IsGateAngleParam(const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
                         const ASTDeclarationContext *DCX) const;
   bool IsGateAngleParam(const std::string &S, ASTType CTy, ASTType PTy,
