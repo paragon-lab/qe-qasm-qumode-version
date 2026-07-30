@@ -7,6 +7,6 @@
 opaque snap(thetas) qm;
 
 gate ecd(complex[float[64]] alpha) qubit qb, qumode qm {
-    negctrl @ disp(alpha/2) qb, qm;
+    negctrl @ disp(-alpha/2) qb, qm;
     ctrl @ disp(alpha/2) qb, qm;
 }
