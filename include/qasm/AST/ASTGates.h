@@ -118,6 +118,13 @@ private:
   ASTMPComplexNode *MaterializeComplexParamExpr(unsigned Index,
                                                 const ASTExpressionNode *EN);
 
+  /// True when call formal Index is complex (FormalParamTypes or builtin disp).
+  bool FormalWantsComplex(unsigned Index) const;
+
+  /// Store a real scalar as complex real+0i for a complex formal.
+  ASTMPComplexNode *MaterializeComplexFromReal(unsigned Index,
+                                               const ASTMPDecimalNode *R);
+
   template <typename NodeTy>
   NodeTy *GetParamOfType(ASTType Ty, unsigned Index) const {
     unsigned Seen = 0;
@@ -162,7 +169,8 @@ public:
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
               const ASTAnyTypeList &QL, bool IsGateCall = false,
-              const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault);
+              const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault,
+              const std::vector<ASTType> *CallFormalParamTypes = nullptr);
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTParameterList &PL,

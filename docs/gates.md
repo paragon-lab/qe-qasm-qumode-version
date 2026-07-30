@@ -100,6 +100,13 @@ Gate definitions and calls expose quantum targets on `ASTGateNode` as follows:
 - **Mangling** — operand formals in mangled gate names still use the legacy tag
   `GQP` (Gate Qubit Param). The AST type is `GateOperandParam`; the acronym is
   kept for compatibility with existing mangled strings.
+- **Call-site `GateQOpList` (representation quirk)** — `CloneCall` shallow-copies
+  the definition’s `OpList` onto the call node (upstream qss-qasm behavior since
+  the initial import). Dumps therefore nest the gate body under the call, but
+  the body still refers to **formals** (`alpha`, …); call actuals live only in
+  the call’s `Params` / `OperandParams`. This is not unrolling or formal→actual
+  substitution — that belongs to the compiler. Leave the copy as-is unless a
+  downstream consumer requires a different shape.
 
 ## Variable-length arrays with compile-time known length (WIP)
 Here, we describe the syntax needed for gates with variable-length arrays with

@@ -154,6 +154,48 @@ ASTGateNode::MaterializeComplexParamExpr(unsigned Index,
   return MPC;
 }
 
+bool ASTGateNode::FormalWantsComplex(unsigned Index) const {
+  if (Index < FormalParamTypes.size() &&
+      FormalParamTypes[Index] == ASTTypeMPComplex)
+    return true;
+  // Builtin disp always expects a complex scalar at parameter 0.
+  if (GateCall && IsDispGateIdentifier(GetIdentifier()) && Index == 0U)
+    return true;
+  return false;
+}
+
+ASTMPComplexNode *
+ASTGateNode::MaterializeComplexFromReal(unsigned Index,
+                                        const ASTMPDecimalNode *R) {
+  assert(R && "Invalid real part for complex gate Param!");
+
+  std::stringstream SCN;
+  SCN << ASTDemangler::TypeName(ASTTypeMPComplex) << Index;
+  ASTIdentifierNode *CId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      SCN.str(), ASTMPComplexNode::DefaultBits, ASTTypeMPComplex);
+  assert(CId && "Could not create a Complex ASTIdentifierNode!");
+
+  std::stringstream ISN;
+  ISN << "complex-im-" << Index;
+  ASTIdentifierNode *IId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      ISN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+  assert(IId && "Could not create an Imaginary ASTIdentifierNode!");
+
+  ASTMPDecimalNode *Imag = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      IId, ASTMPDecimalNode::DefaultBits, 0.0);
+  assert(Imag && "Could not create a zero imaginary ASTMPDecimalNode!");
+
+  ASTMPComplexNode *MPC = ASTBuilder::Instance().CreateASTMPComplexNode(
+      CId, R, Imag, ASTOpTypeAdd, ASTMPComplexNode::DefaultBits);
+  assert(MPC && "Could not create a valid ASTMPComplexNode!");
+
+  CId->SetPolymorphicName(SCN.str());
+  MPC->Mangle();
+  MPC->MangleLiteral();
+  ToGateParamSymbolTable(CId, CId->GetSymbolTableEntry());
+  return MPC;
+}
+
 void ASTGateNode::ToGateParamSymbolTable(const ASTIdentifierNode *Id,
                                          const ASTSymbolTableEntry *STE) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
@@ -678,12 +720,16 @@ void ASTGateNode::MaterializeBuiltinUGate(const ASTIdentifierNode *GId,
 ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
                          const ASTArgumentNodeList &AL,
                          const ASTAnyTypeList &QL, bool IsGateCall,
-                         const ASTGateQOpList &OL)
+                         const ASTGateQOpList &OL,
+                         const std::vector<ASTType> *CallFormalParamTypes)
     : ASTExpressionNode(Id, ASTTypeGate), Params(), Operands(), OperandParams(),
       OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
       ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall),
       FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
       FormalQuantumTypes() {
+  if (CallFormalParamTypes)
+    FormalParamTypes = *CallFormalParamTypes;
+
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode *> NQV;
@@ -761,6 +807,52 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           AddParam(ASTTypeMPComplex, MPC);
           PNS.insert(MPC->GetName());
           break;
+        }
+
+        // Typed complex formal: promote real scalar identifiers to real+0i.
+        if (IsGateCall && FormalWantsComplex(C) && XSTE && XSTE->HasValue()) {
+          const ASTMPDecimalNode *R = nullptr;
+          ASTMPDecimalNode *OwnedR = nullptr;
+          if (XSTE->GetValueType() == ASTTypeMPDecimal) {
+            R = XSTE->GetValue()->GetValue<ASTMPDecimalNode *>();
+          } else if (XSTE->GetValueType() == ASTTypeFloat) {
+            const ASTFloatNode *FLT =
+                XSTE->GetValue()->GetValue<ASTFloatNode *>();
+            if (FLT) {
+              std::stringstream RSN;
+              RSN << "complex-re-" << C;
+              ASTIdentifierNode *RId =
+                  ASTBuilder::Instance().CreateASTIdentifierNode(
+                      RSN.str(), ASTMPDecimalNode::DefaultBits,
+                      ASTTypeMPDecimal);
+              OwnedR = ASTBuilder::Instance().CreateASTMPDecimalNode(
+                  RId, ASTMPDecimalNode::DefaultBits,
+                  static_cast<double>(FLT->GetValue()));
+              R = OwnedR;
+            }
+          } else if (XSTE->GetValueType() == ASTTypeDouble) {
+            const ASTDoubleNode *DBL =
+                XSTE->GetValue()->GetValue<ASTDoubleNode *>();
+            if (DBL) {
+              std::stringstream RSN;
+              RSN << "complex-re-" << C;
+              ASTIdentifierNode *RId =
+                  ASTBuilder::Instance().CreateASTIdentifierNode(
+                      RSN.str(), ASTMPDecimalNode::DefaultBits,
+                      ASTTypeMPDecimal);
+              OwnedR = ASTBuilder::Instance().CreateASTMPDecimalNode(
+                  RId, ASTMPDecimalNode::DefaultBits, DBL->GetValue());
+              R = OwnedR;
+            }
+          }
+          if (R) {
+            ASTMPComplexNode *MPC = MaterializeComplexFromReal(C, R);
+            assert(MPC && "Could not materialize complex Param from id!");
+            AddParam(ASTTypeMPComplex, MPC);
+            PNS.insert(MPC->GetName());
+            break;
+          }
+          (void)OwnedR;
         }
 
         ASTAngleNode *XAN = nullptr;
@@ -848,7 +940,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         const ASTBinaryOpNode *BOP = EN->DynCast<const ASTBinaryOpNode>();
         assert(BOP && "Failed to dynamic_cast to a BinaryOpNode!");
 
-        if (IsGateCall && PreferComplexGateParam(Id, BOP)) {
+        if (IsGateCall &&
+            (PreferComplexGateParam(Id, BOP) || FormalWantsComplex(C))) {
           ASTMPComplexNode *MPC = MaterializeComplexParamExpr(C, BOP);
           assert(MPC && "Could not materialize complex gate Param!");
           AddParam(ASTTypeMPComplex, MPC);
@@ -912,7 +1005,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         const ASTUnaryOpNode *UOP = EN->DynCast<const ASTUnaryOpNode>();
         assert(UOP && "Failed to dynamic_cast to an UnaryOpNode!");
 
-        if (IsGateCall && PreferComplexGateParam(Id, UOP)) {
+        if (IsGateCall &&
+            (PreferComplexGateParam(Id, UOP) || FormalWantsComplex(C))) {
           ASTMPComplexNode *MPC = MaterializeComplexParamExpr(C, UOP);
           assert(MPC && "Could not materialize complex gate Param!");
           AddParam(ASTTypeMPComplex, MPC);
@@ -976,6 +1070,25 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         const ASTIdentifierNode *ID = INT->GetIdentifier();
         assert(ID && "Invalid ASTIdentifierNode for ASTIntNode!");
 
+        if (IsGateCall && FormalWantsComplex(C)) {
+          std::stringstream RSN;
+          RSN << "complex-re-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create a Real ASTIdentifierNode!");
+          ASTMPDecimalNode *R = ASTBuilder::Instance().CreateASTMPDecimalNode(
+              RId, ASTMPDecimalNode::DefaultBits,
+              static_cast<double>(INT->IsSigned() ? INT->GetSignedValue()
+                                                  : INT->GetUnsignedValue()));
+          assert(R && "Could not create real ASTMPDecimalNode!");
+          ASTMPComplexNode *MPC = MaterializeComplexFromReal(C, R);
+          assert(MPC && "Could not materialize complex Param from int!");
+          AddParam(ASTTypeMPComplex, MPC);
+          PNS.insert(MPC->GetName());
+          break;
+        }
+
         if (INT->GetSignedValue() > static_cast<double>(M_PI * 2)) {
           std::stringstream M;
           M << "Angle value exceeds 2pi.";
@@ -1036,6 +1149,24 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         const ASTIdentifierNode *ID = FLT->GetIdentifier();
         assert(ID && "Invalid ASTIdentifierNode for ASTFloatNode!");
 
+        if (IsGateCall && FormalWantsComplex(C)) {
+          std::stringstream RSN;
+          RSN << "complex-re-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create a Real ASTIdentifierNode!");
+          ASTMPDecimalNode *R = ASTBuilder::Instance().CreateASTMPDecimalNode(
+              RId, ASTMPDecimalNode::DefaultBits,
+              static_cast<double>(FLT->GetValue()));
+          assert(R && "Could not create real ASTMPDecimalNode!");
+          ASTMPComplexNode *MPC = MaterializeComplexFromReal(C, R);
+          assert(MPC && "Could not materialize complex Param from float!");
+          AddParam(ASTTypeMPComplex, MPC);
+          PNS.insert(MPC->GetName());
+          break;
+        }
+
         if (FLT->GetValue() > static_cast<float>(M_PI * 2)) {
           std::stringstream M;
           M << "Angle value exceeds 2pi.";
@@ -1095,6 +1226,23 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
         const ASTIdentifierNode *ID = DBL->GetIdentifier();
         assert(ID && "Invalid ASTIdentifierNode for ASTDoubleNode!");
+
+        if (IsGateCall && FormalWantsComplex(C)) {
+          std::stringstream RSN;
+          RSN << "complex-re-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create a Real ASTIdentifierNode!");
+          ASTMPDecimalNode *R = ASTBuilder::Instance().CreateASTMPDecimalNode(
+              RId, ASTMPDecimalNode::DefaultBits, DBL->GetValue());
+          assert(R && "Could not create real ASTMPDecimalNode!");
+          ASTMPComplexNode *MPC = MaterializeComplexFromReal(C, R);
+          assert(MPC && "Could not materialize complex Param from double!");
+          AddParam(ASTTypeMPComplex, MPC);
+          PNS.insert(MPC->GetName());
+          break;
+        }
 
         if (DBL->GetValue() > static_cast<double>(M_PI * 2)) {
           std::stringstream M;
@@ -1226,6 +1374,14 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
         const ASTIdentifierNode *ID = MPD->GetIdentifier()->GetIdentifier();
         assert(ID && "Invalid ASTIdentifierNode for ASTMPDecimalNode!");
+
+        if (IsGateCall && FormalWantsComplex(C)) {
+          ASTMPComplexNode *MPC = MaterializeComplexFromReal(C, MPD);
+          assert(MPC && "Could not materialize complex Param from MPDecimal!");
+          AddParam(ASTTypeMPComplex, MPC);
+          PNS.insert(MPC->GetName());
+          break;
+        }
 
         mpfr_t MP2PI;
         mpfr_init2(MP2PI, MPD->GetBits());
@@ -3025,7 +3181,8 @@ ASTGateNode *ASTGateNode::CloneCall(const ASTIdentifierNode *Id,
 
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
-  ASTGateNode *RG = new ASTGateNode(GId, AL, QL, true);
+  ASTGateNode *RG = new ASTGateNode(
+      GId, AL, QL, true, ASTGateQOpList::EmptyDefault, &FormalParamTypes);
   assert(RG && "Could not create a valid ASTGateNode!");
 
   RG->OpList = OpList;
@@ -3034,6 +3191,9 @@ ASTGateNode *ASTGateNode::CloneCall(const ASTIdentifierNode *Id,
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
   RG->GateCall = true;
+  RG->FullyTyped = FullyTyped;
+  RG->FormalParamArraySizes = FormalParamArraySizes;
+  RG->FormalQuantumTypes = FormalQuantumTypes;
   RG->Mangle();
   return RG;
 }
