@@ -50,6 +50,9 @@ protected:
   std::vector<ASTAngleNode *> Params;
   /// Classical gate parameters that are angle arrays (e.g. snap([θ…])).
   std::vector<ASTAngleArrayNode *> ArrayParams;
+  /// Classical gate parameters that are complex arrays (e.g. array[complex,
+  /// N]).
+  std::vector<ASTMPComplexArrayNode *> ComplexArrayParams;
   /// Classical gate parameters that are complex values (e.g. disp(3+4im)).
   std::vector<ASTMPComplexNode *> ComplexParams;
   std::vector<ASTQubitNode *> Qubits;
@@ -69,6 +72,14 @@ protected:
   mutable ASTType ControlType;
   bool Opaque;
   bool GateCall;
+  /// True for ProductionRule_10030 fully-typed gate declarations.
+  bool FullyTyped;
+  /// Declared classical formal types in order (fully-typed gates only).
+  std::vector<ASTType> FormalParamTypes;
+  /// Parallel to FormalParamTypes: array length when known, else 0.
+  std::vector<unsigned> FormalParamArraySizes;
+  /// Declared quantum formal kinds (Qubit/Qumode) in order.
+  std::vector<ASTType> FormalQuantumTypes;
 
 private:
   ASTGateNode() = delete;
@@ -108,9 +119,10 @@ public:
 public:
   ASTGateNode(const ASTIdentifierNode *Id)
       : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(),
-        ComplexParams(), Qubits(), QCParams(), OpList(), Ctrl(nullptr),
-        GDId(Id), GSTM(), ControlType(ASTTypeUndefined), Opaque(false),
-        GateCall(false) {}
+        ComplexArrayParams(), ComplexParams(), Qubits(), QCParams(), OpList(),
+        Ctrl(nullptr), GDId(Id), GSTM(), ControlType(ASTTypeUndefined),
+        Opaque(false), GateCall(false), FullyTyped(false), FormalParamTypes(),
+        FormalParamArraySizes(), FormalQuantumTypes() {}
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
@@ -142,6 +154,7 @@ public:
 
   virtual unsigned GetNumParams() const {
     return static_cast<unsigned>(Params.size() + ArrayParams.size() +
+                                 ComplexArrayParams.size() +
                                  ComplexParams.size());
   }
 
@@ -157,6 +170,21 @@ public:
   virtual ASTAngleArrayNode *GetArrayParam(unsigned Index) {
     assert(Index < ArrayParams.size() && "Index is out-of-range!");
     return ArrayParams[Index];
+  }
+
+  virtual unsigned GetNumComplexArrayParams() const {
+    return static_cast<unsigned>(ComplexArrayParams.size());
+  }
+
+  virtual const ASTMPComplexArrayNode *
+  GetComplexArrayParam(unsigned Index) const {
+    assert(Index < ComplexArrayParams.size() && "Index is out-of-range!");
+    return ComplexArrayParams[Index];
+  }
+
+  virtual ASTMPComplexArrayNode *GetComplexArrayParam(unsigned Index) {
+    assert(Index < ComplexArrayParams.size() && "Index is out-of-range!");
+    return ComplexArrayParams[Index];
   }
 
   virtual unsigned GetNumComplexParams() const {
@@ -255,6 +283,34 @@ public:
   }
 
   virtual void SetOpaque(bool O = true) { Opaque = O; }
+
+  virtual void SetFullyTyped(bool FT = true) { FullyTyped = FT; }
+
+  virtual bool IsFullyTyped() const { return FullyTyped; }
+
+  virtual void SetFormalParamTypes(const std::vector<ASTType> &Tys) {
+    FormalParamTypes = Tys;
+  }
+
+  virtual const std::vector<ASTType> &GetFormalParamTypes() const {
+    return FormalParamTypes;
+  }
+
+  virtual void SetFormalParamArraySizes(const std::vector<unsigned> &SZs) {
+    FormalParamArraySizes = SZs;
+  }
+
+  virtual const std::vector<unsigned> &GetFormalParamArraySizes() const {
+    return FormalParamArraySizes;
+  }
+
+  virtual void SetFormalQuantumTypes(const std::vector<ASTType> &Tys) {
+    FormalQuantumTypes = Tys;
+  }
+
+  virtual const std::vector<ASTType> &GetFormalQuantumTypes() const {
+    return FormalQuantumTypes;
+  }
 
   virtual bool HasControl() const {
     return ControlType == ASTTypeGateControl && Ctrl != nullptr;

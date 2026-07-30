@@ -780,6 +780,8 @@ int readinput() {
 %type <IdentifierList>              IdentifierList IdentifierListImpl
 %type <StringList>                  StringList StringListImpl
 %type <GateQubitList>               GateQubitParamList GateQubitParamListImpl
+                                    GateTypedQuantumOperandList
+                                    GateTypedQuantumOperandListImpl
 %type <ArgumentList>                ArgsList
 %type <NamedTypeDeclarationList>    NamedTypeDeclList NamedTypeDeclListImpl
 
@@ -2109,6 +2111,14 @@ GateDecl
   | TOK_GATE Identifier GateQubitParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1431(GET_TOKEN(5),
                                                               $2, $3, $5);
+  }
+  /* Fully-typed gate declaration: classical NamedTypeDecl params (validated
+     explicitly typed in ProductionRule_10030) + typed quantum operands.
+     Lookahead after ')' is TOK_QUBIT / TOK_QUMODE (vs bare Identifier for
+     the OQ3 untyped-operand production above). */
+  | TOK_GATE Identifier '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(8),
+                                                               $2, $4, $6, $8);
   }
   | TOK_GATE TOK_CX GateQubitParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1432(GET_TOKEN(5), $3,
@@ -3705,14 +3715,13 @@ ArgsList
     $$ = ASTArgumentNodeBuilder::Instance().NewList();
   }
   | '(' ExprList ')' {
+    /* ExprList already accepts ComplexInitializerExpr (`… im`), nested
+       FunctionCallArg, and `[…]` array literals as elements — so mixed
+       calls like foo([a,b], theta) work without a separate GateCallArg
+       list (which stole the Identifier '(' … ')' LR state from function
+       calls and broke assign-from-call / nested gate args). */
     $$ = ASTArgumentNodeBuilder::Instance().List();
     *$$ = $2;
-  }
-  | '(' '[' ExprList ']' ')' {
-    $$ = ASTArgumentNodeBuilder::Instance().NewList();
-    ASTAngleArrayNode *AAN =
-        ASTProductionFactory::Instance().ProductionRule_10010($3);
-    $$->Append(AAN);
   }
   ;
 
@@ -3832,6 +3841,62 @@ GateQubitParamListImpl
     Id->SetBits(1U);
     Id->SetLocalScope();
     $1->Append($2);
+  }
+  ;
+
+/* Quantum operands for fully-typed gate decls: qubit/qumode keyword required.
+   PolymorphicType records the declared quantum kind; SymbolType stays
+   ASTTypeGateQubitParam for existing gate-formal machinery. */
+GateTypedQuantumOperandList
+  : GateTypedQuantumOperandListImpl TOK_QUBIT Identifier {
+    assert($1 && "Invalid GateTypedQuantumOperandListImpl!");
+    ASTIdentifierNode* Id = $3;
+    assert(Id && "Invalid ASTIdentifierNode argument!");
+    Id->SetPolymorphicType(ASTTypeQubit);
+    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetBits(1U);
+    Id->SetLocalScope();
+    $1->Append(Id);
+    $$ = $1;
+  }
+  | GateTypedQuantumOperandListImpl TOK_QUMODE Identifier {
+    assert($1 && "Invalid GateTypedQuantumOperandListImpl!");
+    ASTIdentifierNode* Id = $3;
+    assert(Id && "Invalid ASTIdentifierNode argument!");
+    Id->SetPolymorphicType(ASTTypeQumode);
+    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetBits(1U);
+    Id->SetLocalScope();
+    $1->Append(Id);
+    $$ = $1;
+  }
+  ;
+
+GateTypedQuantumOperandListImpl
+  : %empty {
+    $$ = ASTGateQubitParamBuilder::Instance().NewList();
+  }
+  | GateTypedQuantumOperandListImpl TOK_QUBIT Identifier ',' {
+    assert($1 && "Invalid GateTypedQuantumOperandListImpl!");
+    ASTIdentifierNode* Id = $3;
+    assert(Id && "Invalid ASTIdentifierNode argument!");
+    Id->SetPolymorphicType(ASTTypeQubit);
+    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetBits(1U);
+    Id->SetLocalScope();
+    $1->Append(Id);
+    $$ = $1;
+  }
+  | GateTypedQuantumOperandListImpl TOK_QUMODE Identifier ',' {
+    assert($1 && "Invalid GateTypedQuantumOperandListImpl!");
+    ASTIdentifierNode* Id = $3;
+    assert(Id && "Invalid ASTIdentifierNode argument!");
+    Id->SetPolymorphicType(ASTTypeQumode);
+    Id->SetSymbolType(ASTTypeGateQubitParam);
+    Id->SetBits(1U);
+    Id->SetLocalScope();
+    $1->Append(Id);
+    $$ = $1;
   }
   ;
 
@@ -3978,6 +4043,10 @@ ExprList
     $1->Append($2);
     $$ = $1;
   }
+  | ExprListImpl '[' ExprList ']' {
+    $1->Append(ASTProductionFactory::Instance().ProductionRule_10010($3));
+    $$ = $1;
+  }
   | ExprListImpl ImplicitDuration {
     $1->Append($2);
     $$ = $1;
@@ -3996,6 +4065,10 @@ ExprListImpl
   }
   | ExprListImpl Expr ','  {
     $1->Append($2);
+    $$ = $1;
+  }
+  | ExprListImpl '[' ExprList ']' ',' {
+    $1->Append(ASTProductionFactory::Instance().ProductionRule_10010($3));
     $$ = $1;
   }
   | ExprListImpl BinaryOpAssign ','  {

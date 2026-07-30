@@ -38,6 +38,7 @@ set(OPENQASM_AST_SOURCES
   ASTGateOpBuilder.cpp
   ASTGateOps.cpp
   ASTGates.cpp
+  ASTGateType.cpp
   ASTGateQubitParamBuilder.cpp
   ASTGateQubitTracker.cpp
   ASTHeapSizeController.cpp

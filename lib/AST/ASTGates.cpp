@@ -550,9 +550,11 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
                          const ASTAnyTypeList &QL, bool IsGateCall,
                          const ASTGateQOpList &OL)
     : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(),
-      ComplexParams(), Qubits(), QCParams(), OpList(OL), Ctrl(nullptr),
-      GDId(IsGateCall ? nullptr : Id), GSTM(), ControlType(ASTTypeUndefined),
-      Opaque(false), GateCall(IsGateCall) {
+      ComplexArrayParams(), ComplexParams(), Qubits(), QCParams(), OpList(OL),
+      Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
+      ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall),
+      FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
+      FormalQuantumTypes() {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode *> NQV;
@@ -1186,8 +1188,13 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
     } break;
     case ASTTypeAngleArray: {
       try {
-        ASTExpressionNode *EN =
-            std::any_cast<ASTExpressionNode *>((*I)->GetValue());
+        ASTExpressionNode *EN = nullptr;
+        try {
+          EN = const_cast<ASTExpressionNode *>(
+              std::any_cast<const ASTExpressionNode *>((*I)->GetValue()));
+        } catch (const std::bad_any_cast &) {
+          EN = std::any_cast<ASTExpressionNode *>((*I)->GetValue());
+        }
         assert(EN && "Failed to any_cast to an ExpressionNode!");
 
         ASTAngleArrayNode *AAN = dynamic_cast<ASTAngleArrayNode *>(EN);
@@ -1195,6 +1202,34 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
         ArrayParams.push_back(AAN);
         PNS.insert(AAN->GetName());
+      } catch (const std::bad_any_cast &E) {
+        std::stringstream M;
+        M << "std::bad_any_cast caught at index " << C << ": " << E.what();
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      } catch (...) {
+        std::stringstream M;
+        M << "Unknown exception caught at index " << C << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      }
+    } break;
+    case ASTTypeMPComplexArray: {
+      try {
+        ASTExpressionNode *EN = nullptr;
+        try {
+          EN = const_cast<ASTExpressionNode *>(
+              std::any_cast<const ASTExpressionNode *>((*I)->GetValue()));
+        } catch (const std::bad_any_cast &) {
+          EN = std::any_cast<ASTExpressionNode *>((*I)->GetValue());
+        }
+        assert(EN && "Failed to any_cast to an ExpressionNode!");
+
+        ASTMPComplexArrayNode *CAN = dynamic_cast<ASTMPComplexArrayNode *>(EN);
+        assert(CAN && "Failed to dynamic_cast to an ASTMPComplexArrayNode!");
+
+        ComplexArrayParams.push_back(CAN);
+        PNS.insert(CAN->GetName());
       } catch (const std::bad_any_cast &E) {
         std::stringstream M;
         M << "std::bad_any_cast caught at index " << C << ": " << E.what();
@@ -1308,7 +1343,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           DiagLevel::Error);
       return;
     }
-  } else if (C != Params.size() + ArrayParams.size() + ComplexParams.size()) {
+  } else if (C != Params.size() + ArrayParams.size() +
+                      ComplexArrayParams.size() + ComplexParams.size()) {
     std::stringstream M;
     M << C
       << " inconsistent parameters in the gate call for the "
@@ -1430,9 +1466,11 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
                          const ASTIdentifierList &IL, bool IsGateCall,
                          const ASTGateQOpList &OL)
     : ASTExpressionNode(Id, ASTTypeGate), Params(), ArrayParams(),
-      ComplexParams(), Qubits(), QCParams(), OpList(OL), Ctrl(nullptr),
-      GDId(IsGateCall ? nullptr : Id), GSTM(), ControlType(ASTTypeUndefined),
-      Opaque(false), GateCall(IsGateCall) {
+      ComplexArrayParams(), ComplexParams(), Qubits(), QCParams(), OpList(OL),
+      Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
+      ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall),
+      FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
+      FormalQuantumTypes() {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode *> NQV;
@@ -1445,6 +1483,170 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
   for (ASTParameterList::const_iterator I = PL.begin(); I != PL.end(); ++I) {
     ASTParameter *AP = dynamic_cast<ASTParameter *>(*I);
     assert(AP && "Could not dynamic_cast to an ASTParameter!");
+
+    // Explicitly typed classical formals (fully-typed gate decls).
+    if (const ASTDeclarationNode *PDN = AP->GetDeclaration()) {
+      ASTType PTy = PDN->GetASTType();
+      // Prefer the Identifier's bound symbol type when the Decl wrapper
+      // reports a generic/expression type for array formals.
+      if (const ASTIdentifierNode *PId = AP->GetIdentifier()) {
+        ASTType STy = PId->GetSymbolType();
+        if (STy == ASTTypeMPComplexArray || STy == ASTTypeAngleArray ||
+            STy == ASTTypeFloatArray || STy == ASTTypeMPDecimalArray)
+          PTy = STy;
+      }
+      if (PTy == ASTTypeMPComplex) {
+        const ASTIdentifierNode *CId = AP->GetIdentifier();
+        assert(CId && "Typed complex gate param has no Identifier!");
+
+        ASTSymbolTableEntry *CSTE =
+            const_cast<ASTSymbolTableEntry *>(CId->GetSymbolTableEntry());
+        if (!CSTE)
+          CSTE = ASTSymbolTable::Instance().Lookup(
+              CId->GetName(), CId->GetBits(), ASTTypeMPComplex);
+        assert(CSTE && CSTE->HasValue() &&
+               "Typed complex gate param has no SymbolTable Entry!");
+
+        ASTMPComplexNode *MPC =
+            CSTE->GetValue()->GetValue<ASTMPComplexNode *>();
+        assert(MPC && "Could not obtain a valid ASTMPComplexNode!");
+
+        ToGateParamSymbolTable(CId, CSTE);
+        if (CId)
+          const_cast<ASTIdentifierNode *>(CId)->SetNoQubit(true);
+        ComplexParams.push_back(MPC);
+        PNS.insert(AP->GetName());
+        PNS.insert(CId->GetName());
+        ++C;
+        continue;
+      }
+
+      if (PTy == ASTTypeAngleArray || PTy == ASTTypeFloatArray ||
+          PTy == ASTTypeMPDecimalArray || PTy == ASTTypeMPComplexArray) {
+        const ASTIdentifierNode *AId = AP->GetIdentifier();
+        assert(AId && "Typed array gate param has no Identifier!");
+
+        ASTSymbolTableEntry *ASTE =
+            const_cast<ASTSymbolTableEntry *>(AId->GetSymbolTableEntry());
+        if (!ASTE)
+          ASTE = ASTSymbolTable::Instance().Lookup(AId->GetName(),
+                                                   AId->GetBits(), PTy);
+        assert(ASTE && ASTE->HasValue() &&
+               "Typed array gate param has no SymbolTable Entry!");
+
+        // Erase the formal from LSTM before publishing to GSTM so later
+        // TransferLocalContextSymbols / InsertLocal cannot collide.
+        ASTSymbolTable::Instance().EraseLocal(AId, AId->GetBits(), PTy);
+        ASTSymbolTable::Instance().EraseLocalSymbol(AId, AId->GetBits(), PTy);
+
+        // Keep declared STE identity for body lookup (thetas[i] / alphas[i]).
+        ToGateParamSymbolTable(AId, ASTE);
+        if (AId)
+          const_cast<ASTIdentifierNode *>(AId)->SetNoQubit(true);
+
+        if (PTy == ASTTypeMPComplexArray) {
+          ASTMPComplexArrayNode *CAN =
+              ASTE->GetValue()->GetValue<ASTMPComplexArrayNode *>();
+          if (!CAN) {
+            ASTArrayNode *ARN = ASTE->GetValue()->GetValue<ASTArrayNode *>();
+            CAN = dynamic_cast<ASTMPComplexArrayNode *>(ARN);
+          }
+          if (!CAN && PDN->GetExpression())
+            CAN = dynamic_cast<ASTMPComplexArrayNode *>(
+                const_cast<ASTExpressionNode *>(PDN->GetExpression()));
+          assert(CAN && "Typed complex-array gate param is not an "
+                        "ASTMPComplexArrayNode!");
+          ComplexArrayParams.push_back(CAN);
+        } else {
+          ASTAngleArrayNode *AAN = nullptr;
+          if (PTy == ASTTypeAngleArray) {
+            AAN = ASTE->GetValue()->GetValue<ASTAngleArrayNode *>();
+            if (!AAN) {
+              ASTArrayNode *ARN = ASTE->GetValue()->GetValue<ASTArrayNode *>();
+              AAN = dynamic_cast<ASTAngleArrayNode *>(ARN);
+            }
+          } else {
+            // Float/mpdecimal: STE holds declared array; add .gatearray angle
+            // view as an extra GSTM alias for mangling/gphase without replacing
+            // the formal STE used by thetas[i] resolution.
+            ASTArrayNode *ARN = ASTE->GetValue()->GetValue<ASTArrayNode *>();
+            if (!ARN) {
+              if (PTy == ASTTypeMPDecimalArray)
+                ARN = ASTE->GetValue()->GetValue<ASTMPDecimalArrayNode *>();
+              else if (PTy == ASTTypeFloatArray)
+                ARN = ASTE->GetValue()->GetValue<ASTFloatArrayNode *>();
+            }
+            if (!ARN && PDN->GetExpression())
+              ARN = dynamic_cast<ASTArrayNode *>(
+                  const_cast<ASTExpressionNode *>(PDN->GetExpression()));
+            assert(ARN && "Typed array gate param is not an ASTArrayNode!");
+            unsigned N = ARN->Size();
+            std::stringstream SN;
+            SN << AId->GetName() << ".gatearray";
+            ASTIdentifierNode *SynId =
+                ASTBuilder::Instance().CreateASTIdentifierNode(
+                    SN.str(), N, ASTTypeAngleArray);
+            assert(SynId && "Could not create angle-array view Identifier!");
+            AAN = dynamic_cast<ASTAngleArrayNode *>(
+                ASTBuilder::Instance().CreateASTAngleArrayNode(SynId, N));
+            assert(AAN && "Could not create angle-array view for gate formal!");
+            ToGateParamSymbolTable(SynId, SynId->GetSymbolTableEntry());
+          }
+          assert(AAN && "Could not obtain a valid ASTAngleArrayNode!");
+          ArrayParams.push_back(AAN);
+        }
+
+        PNS.insert(AP->GetName());
+        PNS.insert(AId->GetName());
+        ++C;
+        continue;
+      }
+
+      if (PTy == ASTTypeFloat || PTy == ASTTypeDouble ||
+          PTy == ASTTypeMPDecimal || PTy == ASTTypeInt || PTy == ASTTypeUInt ||
+          PTy == ASTTypeMPInteger || PTy == ASTTypeMPUInteger ||
+          PTy == ASTTypeBool || PTy == ASTTypeBitset ||
+          PTy == ASTTypeDuration) {
+        // Keep the declared binding; represent non-complex scalars as
+        // gate angles so existing gate-body angle machinery still works.
+        const ASTIdentifierNode *PId = AP->GetIdentifier();
+        assert(PId && "Typed classical gate param has no Identifier!");
+
+        ASTIdentifierNode *AId = ASTBuilder::Instance().CreateASTIdentifierNode(
+            AP->GetName() + ".gateparam", ASTAngleNode::AngleBits,
+            ASTTypeAngle);
+        assert(AId && "Could not create an Angle ASTIdentifierNode!");
+        AId->SetPolymorphicName(AP->GetName());
+
+        ASTAngleType ATy = ASTAngleNode::DetermineAngleType(AP->GetName());
+        ASTAngleNode *AN = ASTBuilder::Instance().CreateASTAngleNode(
+            AId, ATy, ASTAngleNode::AngleBits);
+        assert(AN && "Could not create a valid ASTAngleNode!");
+
+        AN->SetGateParamName(AP->GetName());
+        ASTSymbolTableEntry *ASTE = ASTSymbolTable::Instance().Lookup(
+            AId, AId->GetBits(), AId->GetSymbolType());
+        assert(ASTE && "Angle ASTIdentifierNode has no SymbolTable Entry!");
+        AId->SetLocalScope();
+        ASTE->SetLocalScope();
+        AId->SetSymbolTableEntry(ASTE);
+        AN->Mangle();
+        AN->MangleLiteral();
+        ToGateParamSymbolTable(AId, ASTE);
+
+        // Also publish under the formal name used in the gate body.
+        ToGateParamSymbolTable(PId, PId->GetSymbolTableEntry());
+
+        Params.push_back(AN);
+        PNS.insert(AP->GetName());
+        PNS.insert(AN->GetName());
+        ++C;
+        continue;
+      }
+
+      // ASTTypeAngle and untyped (implicit-angle) NamedTypeDecls fall through
+      // to the historical angle materialization path below.
+    }
 
     ASTSymbolTableEntry *ASTE = nullptr;
     ASTAngleNode *AN = nullptr;
@@ -1549,7 +1751,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
     ++C;
   }
 
-  if (C != Params.size()) {
+  if (C != Params.size() + ComplexParams.size() + ArrayParams.size() +
+               ComplexArrayParams.size()) {
     std::stringstream M;
     M << C
       << " inconsistent parameters in the gate call for the "
@@ -1752,6 +1955,15 @@ void ASTGateNode::print() const {
          I != ArrayParams.end(); ++I)
       (*I)->print();
     std::cout << "</ArrayParams>" << std::endl;
+  }
+
+  if (!ComplexArrayParams.empty()) {
+    std::cout << "<ComplexArrayParams>" << std::endl;
+    for (std::vector<ASTMPComplexArrayNode *>::const_iterator I =
+             ComplexArrayParams.begin();
+         I != ComplexArrayParams.end(); ++I)
+      (*I)->print();
+    std::cout << "</ComplexArrayParams>" << std::endl;
   }
 
   if (!ComplexParams.empty()) {
@@ -2578,6 +2790,17 @@ void ASTGateNode::MaterializeGateQubitParam(ASTIdentifierNode *Id) {
 
     ASTSymbolTable::Instance().EraseLocalSymbol(Id, Id->GetBits(),
                                                 Id->GetSymbolType());
+  } else if (ASTUtils::Instance().IsQuantumRegisterType(Id->GetSymbolType())) {
+    // Fully-typed gate operands may RestoreType() back to qubit/qumode.
+    if (!GSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
+      std::stringstream M;
+      M << "Failure inserting quantum Param into the Gate Symbol Table.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+    }
+
+    ASTSymbolTable::Instance().EraseLocalSymbol(Id, Id->GetBits(),
+                                                Id->GetSymbolType());
   } else {
     if (!GateCall) {
       std::stringstream M;
@@ -2878,6 +3101,14 @@ void ASTGateNode::Mangle() {
                              ArrayParams[I]->GetMangledName()));
       }
       X += static_cast<unsigned>(ArrayParams.size());
+    }
+
+    if (!ComplexArrayParams.empty()) {
+      for (unsigned I = 0; I < ComplexArrayParams.size(); ++I) {
+        M.GateArg(X + I, ASTStringUtils::Instance().SanitizeMangled(
+                             ComplexArrayParams[I]->GetMangledName()));
+      }
+      X += static_cast<unsigned>(ComplexArrayParams.size());
     }
 
     if (!ComplexParams.empty()) {

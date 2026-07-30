@@ -16,9 +16,11 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTGateContextBuilder.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTUtils.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
@@ -289,7 +291,8 @@ void ASTIdentifierTypeController::CheckGateQubitParamType(
   }
 
   if (Id->GetSymbolType() != ASTTypeUndefined &&
-      Id->GetSymbolType() != ASTTypeGateQubitParam) {
+      Id->GetSymbolType() != ASTTypeGateQubitParam &&
+      !ASTUtils::Instance().IsQuantumRegisterType(Id->GetSymbolType())) {
     std::stringstream M;
     M << "Symbol " << Id->GetName() << " already exists with type "
       << PrintTypeEnum(Id->GetSymbolType()) << '.';
@@ -329,21 +332,38 @@ bool ASTIdentifierTypeController::IsFunctionArgument(
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
+  (void)Id;
 
-  if (ASTExpressionValidator::Instance().IsFunctionType(
-          CTX->GetContextType())) {
-    uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
-    const ASTToken *ITK = ASTTokenFactory::GetToken(TIX);
-    assert(ITK && "Could not obtain a valid ASTToken!");
+  if (!ASTExpressionValidator::Instance().IsFunctionType(CTX->GetContextType()))
+    return false;
 
-    const std::string &TKS = ITK->GetString();
-    if (ASTExpressionValidator::Instance().IsArrayType(Ty))
-      return (TKS[0] == u8',' || TKS[0] == u8')') && !SeenLBrace();
+  // Array NamedTypeDecls reduce after the formal Identifier is shifted, so
+  // the previous token is the name — not ',' / ')'. Allow while still in the
+  // parameter list (seen '(', not yet '{').
+  if (ASTExpressionValidator::Instance().IsArrayType(Ty))
+    return SeenLParen() && !SeenLBrace();
 
-    return TKS[0] == u8',' || TKS[0] == u8')';
-  }
+  uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+  const ASTToken *ITK = ASTTokenFactory::GetToken(TIX);
+  assert(ITK && "Could not obtain a valid ASTToken!");
+  const std::string &TKS = ITK->GetString();
+  return TKS[0] == u8',' || TKS[0] == u8')';
+}
 
-  return false;
+bool ASTIdentifierTypeController::IsGateParameterArgument(const ASTToken *TK,
+                                                          ASTType Ty) const {
+  assert(TK && "Invalid ASTToken argument!");
+  (void)TK;
+
+  if (!ASTGateContextBuilder::Instance().InOpenContext())
+    return false;
+  if (!InAngleList() || SeenLBrace())
+    return false;
+  if (!ASTExpressionValidator::Instance().IsArrayType(Ty))
+    return false;
+
+  // Same as function arrays: reduction happens on the formal Identifier.
+  return SeenLParen() && !SeenLBrace();
 }
 
 } // namespace QASM

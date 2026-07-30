@@ -40,11 +40,13 @@
 #include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGateQubitParamBuilder.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
+#include <qasm/AST/ASTGateType.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTIfConditionalsGraphController.h>
 #include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/AST/ASTKernelBuilder.h>
 #include <qasm/AST/ASTLoops.h>
+#include <qasm/AST/ASTMPComplexList.h>
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTObjectTracker.h>
 #include <qasm/AST/ASTOpenQASMVersionTracker.h>
@@ -7288,7 +7290,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   Id->SetLocation(TK->GetLocation());
   ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
-  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 1U, Unsigned);
+  // TyBits 0 ⇒ ConstructASTArray uses per-type defaults (e.g. AngleBits).
+  // Do not pass 1: that forces 1-bit angle/mpdecimal elements.
+  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 0U, Unsigned);
 
   if (AN->IsError())
     return AN;
@@ -7692,14 +7696,89 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   return AN;
 }
 
+// Gate/function parameter lists provisionally type identifiers as Angle.
+// Array NamedTypeDecls must rebind that provisional type before construction.
+static bool RebindProvisionalArrayIdentifier(const ASTIdentifierNode *Id,
+                                             ASTType Ty, unsigned Bits) {
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+  ASTType Cur = Id->GetSymbolType();
+  if (Cur == Ty)
+    return true;
+
+  if (Cur != ASTTypeAngle && Cur != ASTTypeUndefined) {
+    std::stringstream M;
+    M << "Identifier '" << Id->GetName() << "' has type " << PrintTypeEnum(Cur)
+      << ", but array declaration requires " << PrintTypeEnum(Ty) << ".";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  ASTIdentifierNode *MId = const_cast<ASTIdentifierNode *>(Id);
+  ASTSymbolTableEntry *STE = MId->GetSymbolTableEntry();
+  if (!STE)
+    STE = ASTSymbolTable::Instance().Lookup(MId, MId->GetBits(), Cur);
+
+  if (Cur == ASTTypeAngle)
+    ASTSymbolTable::Instance().EraseLocalAngle(MId);
+
+  MId->SetSymbolType(Ty);
+  MId->SetBits(Bits);
+  if (!STE) {
+    STE = new ASTSymbolTableEntry(MId, Ty);
+    assert(STE && "Could not create a SymbolTable Entry for array formal!");
+  } else {
+    STE->SetValueType(Ty);
+  }
+  MId->SetSymbolTableEntry(STE);
+  STE->SetLocalScope();
+
+  // LocalScope() only relocates matching entries; insert explicitly so
+  // CreateAST*ArrayNode Lookup(name, bits, Ty) succeeds.
+  if (!ASTSymbolTable::Instance().InsertLocal(MId, STE)) {
+    // Already present under this name — update in place via InsertLocal.
+  }
+  return true;
+}
+
+static bool AllowArrayInCurrentContext(const ASTToken *TK,
+                                       const ASTIdentifierNode *Id, ASTType Ty,
+                                       const ASTDeclarationContext *CTX) {
+  if (ASTScopeController::Instance().CheckArrayContextType(
+          CTX->GetContextType()))
+    return true;
+  if (ASTIdentifierTypeController::Instance().IsFunctionArgument(TK, Id, Ty,
+                                                                 CTX))
+    return true;
+  if (ASTIdentifierTypeController::Instance().IsGateParameterArgument(TK, Ty))
+    return true;
+
+  // Fallback: callable parameter lists provisionally open gate/function
+  // context before the declaration context type is set. Array formals are
+  // reduced on the Identifier token, so allow them until '{' is seen.
+  if (ASTExpressionValidator::Instance().IsArrayType(Ty) &&
+      !ASTIdentifierTypeController::Instance().SeenLBrace() &&
+      ASTIdentifierTypeController::Instance().SeenLParen() &&
+      (ASTGateContextBuilder::Instance().InOpenContext() ||
+       ASTFunctionContextBuilder::Instance().InOpenContext()))
+    return true;
+
+  // Last resort for typed gate formals: declaration context already Gate.
+  if (ASTExpressionValidator::Instance().IsArrayType(Ty) &&
+      (CTX->GetContextType() == ASTTypeGate ||
+       CTX->GetContextType() == ASTTypeGateDeclaration) &&
+      !ASTIdentifierTypeController::Instance().SeenLBrace())
+    return true;
+
+  return false;
+}
+
 ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTToken *TK, const ASTIdentifierNode *Id,
     const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
     ASTType Ty, bool Unsigned) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
 
@@ -7707,13 +7786,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy) &&
-      !ASTIdentifierTypeController::Instance().IsFunctionArgument(TK, Id, Ty,
-                                                                  CTX)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7729,6 +7805,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
     if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits,
@@ -7742,7 +7821,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     }
   }
 
-  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 1U, Unsigned);
+  // TyBits 0 ⇒ ConstructASTArray uses per-type defaults (e.g. AngleBits).
+  // Do not pass 1: that forces 1-bit angle/mpdecimal elements.
+  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 0U, Unsigned);
   AN->SetLocation(TK->GetLocation());
   AN->Mangle();
   return AN;
@@ -7754,8 +7835,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTStringNode *TS, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(TS && "Invalid ASTStringNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7764,11 +7843,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7784,6 +7862,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
     if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits,
@@ -7819,8 +7900,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTStringNode *TS, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(TS && "Invalid ASTStringNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7829,11 +7908,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7849,6 +7927,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned DBits = ASTProductionFactory::Instance().GetVariantBits(DX);
   if (ASTIdentifierNode::InvalidBits(DBits)) {
@@ -7893,8 +7974,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTDurationOfNode *DON, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(DON && "Invalid ASTDurationOfNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7903,11 +7982,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7923,6 +8001,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
     if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits,
@@ -7958,8 +8039,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTDurationOfNode *DON, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(DON && "Invalid ASTDurationOfNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7968,11 +8047,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7988,6 +8066,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned DBits = ASTProductionFactory::Instance().GetVariantBits(DX);
   if (ASTIdentifierNode::InvalidBits(DBits)) {
@@ -8033,8 +8114,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     ASTType Ty, bool Unsigned) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
 
@@ -8042,11 +8121,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -8062,6 +8140,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned TyBits = ASTProductionFactory::Instance().GetVariantBits(CX);
   if (ASTIdentifierNode::InvalidBits(TyBits)) {
@@ -8098,8 +8179,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     ASTType Ty, bool Unsigned) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
 
@@ -8107,11 +8186,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -8127,6 +8205,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned TyBits = ASTProductionFactory::Instance().GetVariantBits(CX);
   if (ASTIdentifierNode::InvalidBits(TyBits)) {
@@ -17978,44 +18059,38 @@ ASTProductionFactory::ProductionRule_10000(const ASTToken *TK,
   return DN;
 }
 
-ASTDeclarationNode * //adding a data type Unitary KH
-ASTProductionFactory::ProductionRule_10003(
-    const ASTToken *TK,
-    const ASTIdentifierNode *DId) const {
+ASTDeclarationNode * // adding a data type Unitary KH
+ASTProductionFactory::ProductionRule_10003(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(DId && "Invalid ASTIdentifierNode argument!");
 
   unsigned Bits = DId->GetBits() == 0 ? 1 : DId->GetBits();
   DId->SetBits(Bits);
 
-  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(
-          DId, Bits, ASTTypeUnitary)) {
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(DId, Bits,
+                                                          ASTTypeUnitary)) {
     std::stringstream M;
     M << "Could not transfer Symbol Table Entry for ASTTypeUnitary.";
 
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(DId),
-        M.str(),
-        DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::ICE);
 
     return ASTDeclarationNode::DeclarationError(DId, M.str());
   }
 
   if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
     std::stringstream M;
-    M << "Declaration " << DId->GetName()
-      << " shadows a previous declaration.";
+    M << "Declaration " << DId->GetName() << " shadows a previous declaration.";
 
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(DId),
-        M.str(),
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(),
         DiagLevel::Error);
 
     return ASTDeclarationNode::DeclarationError(DId, M.str());
   }
 
-  ASTUnitaryNode *UN =
-      ASTBuilder::Instance().CreateASTUnitaryNode(DId);
+  ASTUnitaryNode *UN = ASTBuilder::Instance().CreateASTUnitaryNode(DId);
 
   assert(UN && "Could not create a valid ASTUnitaryNode!");
 
@@ -29697,8 +29772,7 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
     break;
 
   case ASTTypeUnitary: {
-    ASTUnitaryNode *UN =
-        STE->GetValue()->GetValue<ASTUnitaryNode *>();
+    ASTUnitaryNode *UN = STE->GetValue()->GetValue<ASTUnitaryNode *>();
     GN = UN;
     break;
   }
@@ -29713,6 +29787,12 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return nullptr;
+  }
+
+  if (GN->IsFullyTyped() &&
+      !ASTTypeDiscovery::Instance().ValidateTypedGateCall(TK, GN, ANL, ATL)) {
+    return ASTGateQOpNode::StatementError(Id, "Typed gate call argument "
+                                              "type mismatch.");
   }
 
   ASTGateNode *GGN = GN->CloneCall(Id, ANL, ATL);
@@ -29751,11 +29831,6 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
   }
 
   ASTGateQOpNode *RQO = nullptr;
-
-  //debugging code
-  std::cerr << "STE->GetValueType() = "
-          << PrintTypeEnum(STE->GetValueType())
-          << std::endl;
 
   switch (STE->GetValueType()) {
   case ASTTypeDefcal:
@@ -30404,16 +30479,209 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
   return RG;
 }
 
-ASTAngleArrayNode *
+static bool IsExplicitClassicalGateParamType(ASTType Ty) {
+  switch (Ty) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger:
+  case ASTTypeMPDecimal:
+  case ASTTypeMPComplex:
+  case ASTTypeBool:
+  case ASTTypeBitset:
+  case ASTTypeDuration:
+  case ASTTypeAngle:
+  case ASTTypeLambdaAngle:
+  case ASTTypePhiAngle:
+  case ASTTypeThetaAngle:
+  case ASTTypeAngleArray:
+  case ASTTypeFloatArray:
+  case ASTTypeMPDecimalArray:
+  case ASTTypeIntArray:
+  case ASTTypeMPIntegerArray:
+  case ASTTypeBoolArray:
+  case ASTTypeMPComplexArray:
+  case ASTTypeDurationArray:
+  case ASTTypeCBitArray:
+    // Includes explicit `angle` NamedTypeDecls. Bare Identifier formals also
+    // become ASTTypeAngle and are accepted here when paired with typed
+    // quantum operands (fully-typed path); legacy bare-qubit gates stay on
+    // ProductionRule_1430 / 1431 without call-site checks.
+    return true;
+  default:
+    return false;
+  }
+}
+
+ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
+    const ASTToken *TK, const ASTIdentifierNode *GId, ASTDeclarationList *DL,
+    ASTIdentifierList *QIL, ASTGateQOpList *GOL) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GId && "Invalid ASTIdentifierNode argument!");
+  assert(DL && "Invalid ASTDeclarationList argument!");
+  assert(QIL && "Invalid GateQubitParamList argument!");
+  assert(GOL && "Invalid ASTGateQOpList argument!");
+
+  if (DL->Empty()) {
+    std::stringstream M;
+    M << "Fully-typed gate declarations require at least one explicitly "
+         "typed classical parameter.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+  }
+
+  for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
+       ++DI) {
+    const ASTDeclarationNode *DN = *DI;
+    assert(DN && "Invalid ASTDeclarationNode in typed gate parameter list!");
+    ASTType PTy = DN->GetASTType();
+    if (!IsExplicitClassicalGateParamType(PTy)) {
+      std::stringstream M;
+      M << "Fully-typed gate parameter '" << DN->GetName()
+        << "' must have an explicit classical type (got " << PrintTypeEnum(PTy)
+        << ").";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(DN), M.str(),
+          DiagLevel::Error);
+      return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+    }
+  }
+
+  for (ASTIdentifierList::const_iterator II = QIL->begin(); II != QIL->end();
+       ++II) {
+    const ASTIdentifierNode *QId = *II;
+    assert(QId && "Invalid quantum operand in typed gate declaration!");
+    ASTType PTy = QId->GetPolymorphicType();
+    if (PTy != ASTTypeQubit && PTy != ASTTypeQumode) {
+      std::stringstream M;
+      M << "Fully-typed gate operands must be declared as qubit or qumode "
+           "(operand '"
+        << QId->GetName() << "').";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+          DiagLevel::Error);
+      return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+    }
+  }
+
+  std::vector<ASTType> FormalParamTypes;
+  FormalParamTypes.reserve(DL->Size());
+  std::vector<unsigned> FormalParamArraySizes;
+  FormalParamArraySizes.reserve(DL->Size());
+  for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
+       ++DI) {
+    const ASTDeclarationNode *DN = *DI;
+    ASTType PTy = DN->GetASTType();
+    if (const ASTIdentifierNode *PId = DN->GetIdentifier()) {
+      ASTType STy = PId->GetSymbolType();
+      if (STy == ASTTypeMPComplexArray || STy == ASTTypeAngleArray ||
+          STy == ASTTypeFloatArray || STy == ASTTypeMPDecimalArray)
+        PTy = STy;
+    }
+    FormalParamTypes.push_back(PTy);
+
+    unsigned ArrSZ = 0U;
+    if (PTy == ASTTypeAngleArray || PTy == ASTTypeFloatArray ||
+        PTy == ASTTypeMPDecimalArray || PTy == ASTTypeMPComplexArray) {
+      if (const ASTExpressionNode *EX = DN->GetExpression()) {
+        if (const ASTArrayNode *ARN = dynamic_cast<const ASTArrayNode *>(EX))
+          ArrSZ = ARN->Size();
+      }
+    }
+    FormalParamArraySizes.push_back(ArrSZ);
+  }
+
+  std::vector<ASTType> FormalQuantumTypes;
+  FormalQuantumTypes.reserve(QIL->Size());
+  for (ASTIdentifierList::const_iterator II = QIL->begin(); II != QIL->end();
+       ++II)
+    FormalQuantumTypes.push_back((*II)->GetPolymorphicType());
+
+  // Same AST construction path as the untyped-operand GateDecl form.
+  ASTGateDeclarationNode *GDN = ProductionRule_1430(TK, GId, DL, QIL, GOL);
+  if (!GDN || GDN->IsError())
+    return GDN;
+
+  ASTGateNode *GN = const_cast<ASTGateNode *>(GDN->GetGateNode());
+  assert(GN && "Fully-typed gate declaration has no ASTGateNode!");
+  GN->SetFormalParamTypes(FormalParamTypes);
+  GN->SetFormalParamArraySizes(FormalParamArraySizes);
+  GN->SetFormalQuantumTypes(FormalQuantumTypes);
+  GN->SetFullyTyped(true);
+  return GDN;
+}
+
+ASTExpressionNode *
 ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
   assert(EL && "Invalid ASTExpressionList argument!");
 
   if (EL->Empty()) {
     std::stringstream M;
-    M << "Gate angle-array parameter cannot be empty.";
+    M << "Gate array parameter cannot be empty.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return ASTAngleArrayNode::ExpressionError(M.str());
+  }
+
+  auto ResolveElementType = [](const ASTExpressionNode *EN) -> ASTType {
+    ASTType ElTy = EN->GetASTType();
+    if (ElTy == ASTTypeIdentifier || ElTy == ASTTypeIdentifierRef) {
+      if (const ASTIdentifierNode *EId = EN->GetIdentifier()) {
+        ElTy = EId->GetSymbolType();
+        if (const ASTSymbolTableEntry *ESTE = EId->GetSymbolTableEntry())
+          ElTy = ESTE->GetValueType();
+      }
+    }
+    return ElTy;
+  };
+
+  // Same classification used at call-site validation (ASTGateType).
+  bool HasComplex = ASTGateType::ExpressionListHasComplex(EL);
+
+  if (HasComplex) {
+    ASTMPComplexList CXL(*EL);
+    if (CXL.Size() != EL->Size()) {
+      std::stringstream M;
+      M << "Could not construct a complex array from gate array literal.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      return ASTMPComplexArrayNode::ExpressionError(M.str(), nullptr);
+    }
+
+    std::vector<ASTMPComplexNode *> Complexes;
+    Complexes.reserve(CXL.Size());
+    for (unsigned I = 0; I < CXL.Size(); ++I) {
+      ASTMPComplexNode *MPC = CXL.GetComplex(I);
+      if (!MPC) {
+        std::stringstream M;
+        M << "Invalid complex expression in gate array parameter at index " << I
+          << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
+        return ASTMPComplexArrayNode::ExpressionError(M.str(), nullptr);
+      }
+      MPC->Mangle();
+      Complexes.push_back(MPC);
+    }
+
+    std::stringstream ArrName;
+    ArrName << "ast-gate-complex-array-lit-" << Complexes.size();
+    ASTIdentifierNode *ArrId =
+        new ASTIdentifierNode(ArrName.str(), ASTTypeMPComplexArray,
+                              static_cast<unsigned>(Complexes.size()));
+    assert(ArrId && "Could not create a Complex Array ASTIdentifierNode!");
+
+    ArrId->SetPolymorphicName("gatearraycomplex");
+    ASTMPComplexArrayNode *CAN = new ASTMPComplexArrayNode(
+        ArrId, Complexes, ASTMPComplexNode::DefaultBits);
+    assert(CAN && "Could not create a valid ASTMPComplexArrayNode!");
+
+    CAN->Mangle();
+    return CAN;
   }
 
   std::vector<ASTAngleNode *> Angles;
@@ -30428,6 +30696,17 @@ ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
         << ".";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      return ASTAngleArrayNode::ExpressionError(M.str());
+    }
+
+    ASTType ElTy = ResolveElementType(EN);
+    if (ASTExpressionValidator::Instance().IsComplexType(ElTy)) {
+      std::stringstream M;
+      M << "Complex value is not valid as element " << C
+        << " of a real/angle gate array parameter.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(EN), M.str(),
+          DiagLevel::Error);
       return ASTAngleArrayNode::ExpressionError(M.str());
     }
 

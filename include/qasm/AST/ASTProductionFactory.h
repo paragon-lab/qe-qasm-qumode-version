@@ -1514,18 +1514,25 @@ public:
                                            const ASTIdentifierNode *DId,
                                            const ASTIdentifierNode *IXd) const;
 
-   // unitary
-    ASTDeclarationNode *
-    ProductionRule_10003(const ASTToken *TK,
-                        const ASTIdentifierNode *DId) const;
+  // unitary
+  ASTDeclarationNode *ProductionRule_10003(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const;
 
-  // Gate angle-array literal parameter: [θ0, ..., θk]
-  ASTAngleArrayNode *ProductionRule_10010(const ASTExpressionList *EL) const;
+  // Gate array literal parameter: [e0, ..., ek] as angle or complex array.
+  ASTExpressionNode *ProductionRule_10010(const ASTExpressionList *EL) const;
 
   // Builtin disp gate call: complex parameter + qumode operand.
   ASTGateQOpNode *ProductionRule_10020(const ASTToken *TK,
                                        const ASTArgumentNodeList *ANL,
                                        const ASTAnyTypeList *ATL) const;
+
+  // Fully-typed gate declaration: explicit classical params + typed
+  // qubit/qumode operands (e.g. ECD).
+  ASTGateDeclarationNode *ProductionRule_10030(const ASTToken *TK,
+                                               const ASTIdentifierNode *GId,
+                                               ASTDeclarationList *DL,
+                                               ASTIdentifierList *QIL,
+                                               ASTGateQOpList *GOL) const;
 };
 
 } // namespace QASM

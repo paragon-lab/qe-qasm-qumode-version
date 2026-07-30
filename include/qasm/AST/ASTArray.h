@@ -1868,6 +1868,14 @@ public:
     }
   }
 
+  /// Construct a complex-array literal from already-materialized elements.
+  ASTMPComplexArrayNode(const ASTIdentifierNode *Id,
+                        const std::vector<ASTMPComplexNode *> &Elements,
+                        unsigned Bits = ASTMPComplexNode::DefaultBits)
+      : ASTArrayNode(Id, ASTTypeMPComplexArray,
+                     static_cast<unsigned>(Elements.size())),
+        MPV(Elements), CB(Bits), CTy(ASTTypeMPDecimal), CTB(Bits) {}
+
   ASTMPComplexArrayNode(const ASTIdentifierNode *Id, unsigned Size,
                         unsigned Bits, const ASTFunctionCallNode *FN)
       : ASTArrayNode(Id, ASTTypeMPComplexArray, Size), MPV(), CB(Bits),

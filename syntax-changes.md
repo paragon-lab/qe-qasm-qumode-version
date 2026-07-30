@@ -117,7 +117,7 @@ Complex literals use OpenQASM's `im` suffix. Gate calls store complex args in
   `ctrl`/`negctrl`, e.g. `ctrl @ disp(alpha) qb, qm`
   (bare `disp(alpha) qb, qm` is rejected)
 
-SNAP and ECD remain opaque stubs in `cvgates.inc` until they become builtins
+SNAP remains an opaque stub in `cvgates.inc` until it becomes a builtin
 or gain typed gate-declaration syntax.
 
 
@@ -153,7 +153,7 @@ typed. gate declarations. For example, may be something like the following:
 ```qasm
 gate snap<uint N>(array[phases, N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl(i) @ gphase(thetas[i]) qm;
+        ctrl<i> @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 

@@ -26,6 +26,7 @@
 #include <qasm/AST/ASTDefcalContextBuilder.h>
 #include <qasm/AST/ASTFunctionContextBuilder.h>
 #include <qasm/AST/ASTGateContextBuilder.h>
+#include <qasm/AST/ASTGateType.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTKernelContextBuilder.h>
@@ -39,6 +40,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 namespace QASM {
@@ -267,6 +269,25 @@ bool ASTTypeDiscovery::IsGateQubitParam(
       !ASTGateContextBuilder::Instance().InOpenContext())
     return false;
 
+  // Typed classical formals must not be reclassified as gate qubit params.
+  switch (Id->GetSymbolType()) {
+  case ASTTypeMPComplex:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPDecimal:
+  case ASTTypeInt:
+  case ASTTypeUInt:
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger:
+  case ASTTypeBool:
+  case ASTTypeBitset:
+  case ASTTypeDuration:
+  case ASTTypeAngle:
+    return false;
+  default:
+    break;
+  }
+
   if (ASTIdentifierTypeController::Instance().SeenLBrace() && IsCallable(Id))
     return false;
 
@@ -335,6 +356,24 @@ bool ASTTypeDiscovery::IsGateAngleParam(
   if (DCX->GetContextType() != ASTTypeGate ||
       !ASTGateContextBuilder::Instance().InOpenContext())
     return false;
+
+  // Already-typed classical formals must not be redeclared as angles.
+  switch (Id->GetSymbolType()) {
+  case ASTTypeMPComplex:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPDecimal:
+  case ASTTypeInt:
+  case ASTTypeUInt:
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger:
+  case ASTTypeBool:
+  case ASTTypeBitset:
+  case ASTTypeDuration:
+    return false;
+  default:
+    break;
+  }
 
   if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName()))
     return false;
@@ -546,6 +585,12 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
              ASTIdentifierTypeController::Instance().InAngleList()) {
     Id = ASTBuilder::Instance().FindASTIdentifierNode(
         S, ASTAngleNode::AngleBits, ASTTypeAngle);
+    // Typed classical gate formals are not angles; still resolve them by name.
+    if (!Id && ASTGateContextBuilder::Instance().InOpenContext()) {
+      if (const ASTSymbolTableEntry *LSTE =
+              ASTSymbolTable::Instance().FindLocal(S))
+        Id = const_cast<ASTIdentifierNode *>(LSTE->GetIdentifier());
+    }
   } else {
     Id = ASTBuilder::Instance().FindASTIdentifierNode(S);
   }
@@ -900,11 +945,24 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       if (ASTGateContextBuilder::Instance().InOpenContext() &&
           (Id->GetSymbolType() == ASTTypeGateQubitParam ||
            Id->GetSymbolType() == ASTTypeAngle ||
-           Id->GetSymbolType() == ASTTypeGate)) {
+           Id->GetSymbolType() == ASTTypeGate ||
+           Id->GetSymbolType() == ASTTypeMPComplex ||
+           Id->GetSymbolType() == ASTTypeFloat ||
+           Id->GetSymbolType() == ASTTypeDouble ||
+           Id->GetSymbolType() == ASTTypeMPDecimal ||
+           Id->GetSymbolType() == ASTTypeInt ||
+           Id->GetSymbolType() == ASTTypeUInt ||
+           Id->GetSymbolType() == ASTTypeMPInteger ||
+           Id->GetSymbolType() == ASTTypeMPUInteger ||
+           Id->GetSymbolType() == ASTTypeBool ||
+           Id->GetSymbolType() == ASTTypeBitset ||
+           Id->GetSymbolType() == ASTTypeDuration)) {
         return Id;
       } else if (ASTGateContextBuilder::Instance().InOpenContext() &&
                  (Id->GetSymbolType() == ASTTypeQubit ||
-                  Id->GetSymbolType() == ASTTypeQubitContainer)) {
+                  Id->GetSymbolType() == ASTTypeQubitContainer ||
+                  Id->GetSymbolType() == ASTTypeQumode ||
+                  Id->GetSymbolType() == ASTTypeQumodeContainer)) {
         std::string YB = DIAGLineBuffer::Instance().GetBuffer();
 
         if (ASTFunctionContextBuilder::Instance().InOpenContext() ||
@@ -2219,25 +2277,34 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
       ASTSymbolTable::Instance().Lookup(S, Bits, A->GetElementType());
 
   if (XSTE && XSTE->GetIdentifier()->IsReference()) {
-    if (ASN->IsInductionVariable()) {
-      ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-          US, S, A->GetElementType(), XSTE->GetIdentifier(), IX, true, XSTE,
-          ASN, ASL);
-      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-      IdR->SetSymbolTableEntry(XSTE);
-      IdR->SetPolymorphicName(S);
-      IdR->SetDeclarationContext(DCX);
-      IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
-      return IdR;
-    }
+    // Do not reuse element refs from a dead/prior gate or declaration
+    // context (ASTM keeps angle names across gates).
+    const ASTDeclarationContext *XCX = XSTE->GetContext();
+    const bool Reusable = XCX && XCX->IsAlive() && DCX &&
+                          (XCX == DCX || XCX->GetIndex() == DCX->GetIndex());
+    if (Reusable) {
+      if (ASN->IsInductionVariable()) {
+        ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+            US, S, A->GetElementType(), XSTE->GetIdentifier(), IX, true, XSTE,
+            ASN, ASL);
+        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+        IdR->SetBits(Bits);
+        IdR->SetSymbolTableEntry(XSTE);
+        IdR->SetPolymorphicName(S);
+        IdR->SetDeclarationContext(DCX);
+        IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+        return IdR;
+      }
 
-    return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+      return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+    }
   }
 
   ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
       US, S, A->GetElementType(), A->GetIdentifier(), IX, true, STE, ASN, ASL);
   assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
+  IdR->SetBits(Bits);
   IdR->SetPolymorphicName(S);
   IdR->SetDeclarationContext(DCX);
   IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -2988,6 +3055,136 @@ void ASTTypeDiscovery::ValidateDefcalQubitArgs(
           DiagLevel::Warning);
     }
   }
+}
+
+bool ASTTypeDiscovery::ValidateTypedGateCall(const ASTToken *TK,
+                                             const ASTGateNode *Decl,
+                                             const ASTArgumentNodeList &ANL,
+                                             const ASTAnyTypeList &ATL) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Decl && "Invalid ASTGateNode argument!");
+
+  if (!Decl->IsFullyTyped())
+    return true;
+
+  const std::vector<ASTType> &FPT = Decl->GetFormalParamTypes();
+  const std::vector<unsigned> &FPSZ = Decl->GetFormalParamArraySizes();
+  const std::vector<ASTType> &FQT = Decl->GetFormalQuantumTypes();
+
+  if (ANL.Size() != FPT.size()) {
+    std::stringstream M;
+    M << "Gate '" << Decl->GetName() << "' expects " << FPT.size()
+      << " classical parameter(s), but " << ANL.Size() << " were provided.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  if (ATL.Size() != FQT.size()) {
+    std::stringstream M;
+    M << "Gate '" << Decl->GetName() << "' expects " << FQT.size()
+      << " quantum operand(s), but " << ATL.Size() << " were provided.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  for (unsigned I = 0; I < FPT.size(); ++I) {
+    const ASTArgumentNode *Arg = ANL[I];
+    assert(Arg && "Invalid classical gate call argument!");
+
+    std::optional<unsigned> FormalSZ;
+    if (I < FPSZ.size() && FPSZ[I] > 0U)
+      FormalSZ = FPSZ[I];
+
+    ASTGateType F = ASTGateType::ClassifyFormal(FPT[I], FormalSZ);
+    ASTGateType A = ASTGateType::ClassifyArg(Arg);
+    ASTType ArgTy = A.GetType();
+    ASTType ExpTy = F.GetType();
+
+    if (!ASTGateType::Compatible(F, A)) {
+      std::stringstream M;
+      if (F.HasArraySize() && A.HasArraySize() &&
+          F.GetArraySize() != A.GetArraySize()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects an array of size " << F.GetArraySize()
+          << ", but got size " << A.GetArraySize() << ".";
+      } else if (F.IsComplexScalar()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects a complex value, but got " << PrintTypeEnum(ArgTy)
+          << ".";
+      } else if (F.IsRealArrayFamily()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects a real array, but got " << PrintTypeEnum(ArgTy) << ".";
+      } else if (F.IsComplexArray()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects a complex array, but got " << PrintTypeEnum(ArgTy)
+          << ".";
+      } else if (F.IsRealScalarFamily()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I << " expects "
+          << PrintTypeEnum(ExpTy) << ", but got " << PrintTypeEnum(ArgTy)
+          << ".";
+      } else {
+        M << "Unsupported fully-typed classical formal type "
+          << PrintTypeEnum(ExpTy) << " on gate '" << Decl->GetName() << "'.";
+      }
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+
+    // Real/angle/mpdecimal array formals reject complex elements.
+    if (F.IsRealArrayFamily() && ASTGateType::ArgHasComplexElements(Arg)) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' parameter " << I
+        << " expects a real array, but an element is a complex expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+  }
+
+  for (unsigned I = 0; I < FQT.size(); ++I) {
+    const ASTIdentifierNode *QId = nullptr;
+    if (ATL.IsIdentifier(I))
+      QId = ATL.GetIdentifier(I);
+    else if (ATL.IsIdentifierRef(I))
+      QId = ATL.GetIdentifierRef(I);
+
+    if (!QId) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' operand " << I
+        << " must be a quantum identifier.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+
+    const ASTSymbolTableEntry *QSTE = ASTSymbolTable::Instance().FindQubit(QId);
+    if (!QSTE)
+      QSTE = QId->GetSymbolTableEntry();
+    ASTType ArgTy = QSTE ? QSTE->GetValueType() : QId->GetSymbolType();
+    ASTType ExpTy = FQT[I];
+
+    const bool Ok =
+        (ExpTy == ASTTypeQubit && ASTUtils::Instance().IsQubitType(ArgTy)) ||
+        (ExpTy == ASTTypeQumode && ASTUtils::Instance().IsQumodeType(ArgTy));
+    if (!Ok) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' operand " << I << " expects "
+        << PrintTypeEnum(ExpTy) << ", but '" << QId->GetName() << "' has type "
+        << PrintTypeEnum(ArgTy) << ".";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 } // namespace QASM

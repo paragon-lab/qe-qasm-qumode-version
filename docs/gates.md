@@ -20,7 +20,7 @@ Gate definition (WIP):
 ```
 gate snap<uint N>(array[float[64], N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl(i) @ gphase(thetas[i]) qm;
+        ctrl<i> @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 ```
@@ -39,7 +39,7 @@ Also owing to using the `opaque` mechanism, the parser would throw warnings
 upon parsing SNAP gates.
 
 # ECD gate
-Gate definition (WIP):
+Gate definition:
 ```
 gate ecd(complex[float[64]] alpha) qubit ctrl, qumode target {
     negctrl @ disp(-alpha/2) ctrl, target;
@@ -48,26 +48,19 @@ gate ecd(complex[float[64]] alpha) qubit ctrl, qumode target {
 ```
 Include `tests/include/cvgates.inc` to use this gate.
 
-## Known Issues
-Currently, the gate definition in the `.inc` file lacks the typing of parameters
-and operands, because those are not supported yet. As a result, the parser is
-not able to detect syntactic errors such as
-```qasm
-ecd(0.3 + 0.5 im) qm, qb; // wrong order of operands: qubit should come before qumode
-```
+# Gate Declaration Syntax
+These qumode gates introduces new types of parameters and operands. In
+OPENQASM 3.0, all parameters and operands are of type `angle` and `qubit`
+respectively. This is no longer the case in our extension. In particular,
+- SNAP gate introduces using an array of angles as a parameter, and this array
+  is variable in length.
+- Displacement and ECD gates introduce using a complex number as a parameter.
+- All gates introduce using qumodes as operands.
+These extensions necessitate a proper extension of the gate declaration syntax
+that facilitates type checking at the syntactic level.
 
-# Gate Declaration Syntax (WIP)
-To fix the above limitations would require a proper extension of the gate f
-declaration syntax. Generally speaking, introducing `qumode`s, `disp`, `snap`,
-and `ecd` gates would require the following extensions:
-- Gate parameters should be typed. In OPENQASM 3.0, all parameters are floating
-  point numbers. In our extension, they can also be an array of floating point
-  numbers or complex numbers.
-- Gate operands should be typed. In OPENQASM 3.0, all operands are qubits.
-  In our extension, they can also be qumodes.
-- Ideally, we should still be able to parse `OPENQASM 3.0` gate definitions.
-
-A complete gate declaration syntax might look like the following:
+## Implemented
+Roughly speaking, our new gate declaration syntax looks like the following:
 ```
 GATE_DECLARATION :== gate IDENTIFIER(<TEMPLATE_PARAMS>)? (\(PARAMS\))? OPERANDS { GATE_BODY };
 
@@ -75,23 +68,35 @@ TEMPLATE_PARAMS :== TEMPLATE_PARAM (',' TEMPLATE_PARAM)*;
 TEMPLATE_PARAM :== CLASSICAL_TYPE IDENTIFIER;
 
 PARAMS :== PARAM (',' PARAM)*;
-PARAM :== CLASSICAL_TYPE? IDENTIFIER;
+PARAM :== CLASSICAL_TYPE IDENTIFIER;
 
 OPERANDS :== OPERAND (',' OPERAND)*;
-OPERAND :== QUANTUM_TYPE? IDENTIFIER;
+OPERAND :== QUANTUM_TYPE IDENTIFIER;
 
 GATE_BODY :== GATE_STATEMENT*;
 ```
+Currently, the supported classical types for parameters are `angle`, `float[N]`,
+`complex[float[N]]`, and fixed-length arrays of these types. This suffices to
+implement ECD gates and allow some flexibilities in defining custom gates.
+Type checkings for typed gate declarations are enforced both in definitions and
+in call sites. The syntax needed to implement SNAP gate is not yet implemented
+(See below).
 
-## Example 1: defining SNAP gate:
+## Variable-length arrays with compile-time known length (WIP)
+Here, we describe the syntax needed for gates with variable-length arrays with
+compile-time known length.
+For example, consider the fsfollowing definition of the SNAP gate:
 ```
 gate snap<uint N>(array[float[64], N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl(i) @ gphase(thetas[i]) qm;
+        ctrl<i> @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 ```
-At least for the moment, the length of the array `thetas` must be compile-time
+To enable this syntax, we still need to support the template parameter syntax,
+the `for` loop in gate bodies, and the `ctrl<i>` syntax that controls the i-th
+Fock level.
+The length of the array `thetas` must be compile-time
 known. The user would be able to leave out the template parameters:
 ```
 snap([pi/2, 0, 0.3]) qm[0];
@@ -104,63 +109,32 @@ snap<3>([pi/2, 0, 0.3]) qm[0];
 the compiler would be able to check whether the length of the array is 3 and
 throw an error if it is not.
 
-## Example 2: defining ECD gate:
-```
-gate ecd(complex[float[64]] alpha) qubit ctrl, qumode target {
-    negctrl @ disp(-alpha/2) ctrl, target;
-    ctrl @ disp(alpha/2) ctrl, target;
-}
-```
-We can see why typing is important with this example. Without the typing of
-`alpha` as a complex number, the parser wouldn't know whether the `0.3` is a
-real number (float[64]) or a complex number (complex[float[64]]).
-```qasm
-ecd(0.3) qb, qm; // would be parsed as a float[64]
-```
-On the other hand, without the typing of the operands as `qubit` and `qumode`,
-the parser couldn't catch the following errors:
-```qasm
-ecd(0.3 + 0.5 im) qm[0], qb[0];
-ecd(0.3 + 0.5 im) qb[0], qb[1];
-ecd(0.3 + 0.5 im) qm[0], qm[1];
-```
 
 ## Compatibility with OPENQASM 3.0 gate definitions
-It might be desirable to still be able to parse `OPENQASM 3.0` gate
-definitions. For example, the user might have a OPENQASM 3.0 qubit gate
-definition from some other sources:
+Since OPENQASM 3.0 is widely adopted, it would be desirable to still be able to
+parse `OPENQASM 3.0` gate declarations. For example, consider this declaration
+of the `rz` gate:
 ```
 gate rz(theta) q {
     ctrl @ gphase(theta) q;
 }
 ```
-We might want to be able to still understand this definition, so that the user
-wouldn't have to rewrite their existing OPENQASM 3.0 gate definitions.
-Practically, this means that the user would be able to leave out the typing of
-parameters and operands. Where the typing is omitted, the parser would assume
-parameters are `float[64]`s and operands are `qubit`s, so the above
-definition would be identical to
+Under the new typed syntax, this declaration would be illegal, requiring the
+users to rewrite their gate declarations.
+To alleviate this issue, we allow gate definitions with no typed parameters and
+operands to be accepted. In this case, all parameters would be
+treated as `angle`s and operands would be treated as `qubit`s. That is, the
+above definition would be treated as the following:
 ```
-gate rz(float[64] theta) qubit q {
+gate rz(angle theta) qubit q {
     ctrl @ gphase(theta) q;
 }
 ```
-fs
-### Potential footgun
-A possible scenario where this becomes a footgun is that the user might not
-be aware of the correct default type mechanism and write something like
+To avoid footguns, the untype and typed gate declaration syntax cannot be mixed
+with each other. As soon as one parameter or operand is typed,
+all other parameters and operands must also be typed.
+```qasm
+gate ecd(complex[float[64]] alpha) qubit c, qumode t {...} // ok
+gate ecd(alpha) qubit c, qumode t {...} // error, alpha is not typed
+gate ecd(complex[float[64]] alpha) c, qumode t {...} // error, c is not typed
 ```
-gate ecd(alpha) qubit ctrl, qumode target {
-    ...
-}
-
-qubit qb; qumode qm;
-ecd(0.3 + 0.5 im) qb, qm; // error; expected float[64]
-                          // Might also be a rather hideous error message, e.g.,
-                          // "Error: expected ')' but got '+';
-```
-
-Default type mechanism has been known as a footgun in C and had to be
-retroactively banned. We could argue that we should just require the users to
-modify their existing OPENQASM 3.0 includes (maybe providing a script to do that
-automatically).

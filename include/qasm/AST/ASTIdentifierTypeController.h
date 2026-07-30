@@ -600,6 +600,9 @@ public:
 
   bool IsFunctionArgument(const ASTToken *TK, const ASTIdentifierNode *Id,
                           ASTType Ty, const ASTDeclarationContext *CTX) const;
+
+  /// True for classical formals in a gate parameter list (before '{').
+  bool IsGateParameterArgument(const ASTToken *TK, ASTType Ty) const;
 };
 
 } // namespace QASM

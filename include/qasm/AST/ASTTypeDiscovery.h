@@ -163,6 +163,12 @@ public:
 
   void ValidateDefcalQubitArgs(const ASTAnyTypeList *ATL,
                                const ASTDefcalGroupNode *DG) const;
+
+  /// Call-site type checks for fully-typed gate declarations.
+  /// Returns false and emits diagnostics on mismatch.
+  bool ValidateTypedGateCall(const ASTToken *TK, const ASTGateNode *Decl,
+                             const ASTArgumentNodeList &ANL,
+                             const ASTAnyTypeList &ATL) const;
 };
 
 } // namespace QASM
