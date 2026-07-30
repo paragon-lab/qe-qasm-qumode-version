@@ -1940,6 +1940,31 @@ void ASTGateNode::print() const {
               << "</GateDefinitionName>" << std::endl;
   }
 
+  std::cout << "<FullyTyped>" << std::boolalpha << FullyTyped << "</FullyTyped>"
+            << std::endl;
+
+  if (!FormalParamTypes.empty()) {
+    std::cout << "<FormalParamTypes>" << std::endl;
+    for (std::size_t I = 0; I < FormalParamTypes.size(); ++I) {
+      std::cout << "<FormalParamType>" << std::endl;
+      std::cout << "<Type>" << PrintTypeEnum(FormalParamTypes[I]) << "</Type>"
+                << std::endl;
+      if (I < FormalParamArraySizes.size() && FormalParamArraySizes[I] != 0U)
+        std::cout << "<ArraySize>" << std::dec << FormalParamArraySizes[I]
+                  << "</ArraySize>" << std::endl;
+      std::cout << "</FormalParamType>" << std::endl;
+    }
+    std::cout << "</FormalParamTypes>" << std::endl;
+  }
+
+  if (!FormalQuantumTypes.empty()) {
+    std::cout << "<FormalQuantumTypes>" << std::endl;
+    for (std::size_t I = 0; I < FormalQuantumTypes.size(); ++I)
+      std::cout << "<Type>" << PrintTypeEnum(FormalQuantumTypes[I]) << "</Type>"
+                << std::endl;
+    std::cout << "</FormalQuantumTypes>" << std::endl;
+  }
+
   if (!Params.empty()) {
     std::cout << "<Params>" << std::endl;
     for (std::vector<ASTAngleNode *>::const_iterator I = Params.begin();
@@ -3126,22 +3151,88 @@ void ASTGateNode::Mangle() {
       }
     }
   } else {
+    // Definition: encode classical formals then quantum formals.
     unsigned X = 0;
-    if (!Params.empty()) {
-      for (unsigned I = 0; I < Params.size(); ++I) {
-        M.GateParam(I, ASTStringUtils::Instance().SanitizeMangled(
-                           Params[I]->GetMangledName()));
-        X = I;
-      }
 
-      X += 1U;
+    auto EmitSanitizedParam = [&M, &X](ASTExpressionNode *Node) {
+      assert(Node && "Invalid gate formal for mangling!");
+      if (Node->GetMangledName().empty())
+        Node->Mangle();
+      M.GateParam(X, ASTStringUtils::Instance().SanitizeMangled(
+                         Node->GetMangledName()));
+      ++X;
+    };
+
+    if (FullyTyped && !FormalParamTypes.empty()) {
+      // Preserve declaration order via FormalParamTypes (carriers are split
+      // across typed buckets).
+      std::size_t AngleIX = 0;
+      std::size_t ArrIX = 0;
+      std::size_t CArrIX = 0;
+      std::size_t CplxIX = 0;
+      for (std::size_t I = 0; I < FormalParamTypes.size(); ++I) {
+        switch (FormalParamTypes[I]) {
+        case ASTTypeMPComplex:
+          assert(CplxIX < ComplexParams.size() &&
+                 "FormalParamTypes/ComplexParams mismatch!");
+          EmitSanitizedParam(ComplexParams[CplxIX++]);
+          break;
+        case ASTTypeMPComplexArray:
+          assert(CArrIX < ComplexArrayParams.size() &&
+                 "FormalParamTypes/ComplexArrayParams mismatch!");
+          EmitSanitizedParam(ComplexArrayParams[CArrIX++]);
+          break;
+        case ASTTypeAngleArray:
+        case ASTTypeFloatArray:
+        case ASTTypeMPDecimalArray:
+          assert(ArrIX < ArrayParams.size() &&
+                 "FormalParamTypes/ArrayParams mismatch!");
+          EmitSanitizedParam(ArrayParams[ArrIX++]);
+          break;
+        default:
+          // Angles and other scalars coerced into Params.
+          assert(AngleIX < Params.size() &&
+                 "FormalParamTypes/Params mismatch!");
+          EmitSanitizedParam(Params[AngleIX++]);
+          break;
+        }
+      }
+    } else {
+      // Untyped / opaque: same bucket order as gate-call mangling.
+      for (unsigned I = 0; I < Params.size(); ++I)
+        EmitSanitizedParam(Params[I]);
+      for (unsigned I = 0; I < ArrayParams.size(); ++I)
+        EmitSanitizedParam(ArrayParams[I]);
+      for (unsigned I = 0; I < ComplexArrayParams.size(); ++I)
+        EmitSanitizedParam(ComplexArrayParams[I]);
+      for (unsigned I = 0; I < ComplexParams.size(); ++I)
+        EmitSanitizedParam(ComplexParams[I]);
     }
 
-    if (!Qubits.empty()) {
-      for (unsigned I = 0; I < Qubits.size(); ++I) {
-        M.GateParam(X + I, ASTTypeQubit, 1U,
-                    Qubits[I]->GetIdentifier()->GetGateParamName());
+    for (unsigned I = 0; I < Qubits.size(); ++I) {
+      ASTType QTy = ASTTypeQubit;
+      if (I < FormalQuantumTypes.size() &&
+          (FormalQuantumTypes[I] == ASTTypeQubit ||
+           FormalQuantumTypes[I] == ASTTypeQumode)) {
+        QTy = FormalQuantumTypes[I];
+      } else if (I < QCParams.size() && QCParams[I] &&
+                 QCParams[I]->GetIdentifier()) {
+        const ASTIdentifierNode *QId = QCParams[I]->GetIdentifier();
+        ASTType PTy = QId->GetPolymorphicType();
+        if (PTy == ASTTypeQubit || PTy == ASTTypeQumode)
+          QTy = PTy;
+        else {
+          ASTType STy = QId->GetSymbolType();
+          if (STy == ASTTypeQubit || STy == ASTTypeQubitContainer ||
+              STy == ASTTypeQubitContainerAlias)
+            QTy = ASTTypeQubit;
+          else if (STy == ASTTypeQumode || STy == ASTTypeQumodeContainer)
+            QTy = ASTTypeQumode;
+        }
       }
+
+      M.GateParam(X + I, QTy, 1U,
+                  Qubits[I]->GetIdentifier()->GetGateParamName());
     }
   }
 

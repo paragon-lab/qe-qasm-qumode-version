@@ -30611,6 +30611,8 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
   GN->SetFormalParamArraySizes(FormalParamArraySizes);
   GN->SetFormalQuantumTypes(FormalQuantumTypes);
   GN->SetFullyTyped(true);
+  // Construction mangled before Formal* was attached; refresh the name.
+  GN->Mangle();
   return GDN;
 }
 
