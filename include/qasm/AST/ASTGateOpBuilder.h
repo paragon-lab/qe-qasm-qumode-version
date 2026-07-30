@@ -97,6 +97,10 @@ public:
       GLP->push(Node);
   }
 
+  // Remove Node from the active list when a ctrl/negctrl/inv/pow wraps a
+  // GateEOp that CreateAST*GateOpNode already appended as a bare sibling.
+  bool PopIfBack(ASTGateQOpNode *Node) { return GLP && GLP->PopIfBack(Node); }
+
   void Clear() { GLP->Clear(); }
 
   std::size_t Size() { return GLP->Size(); }

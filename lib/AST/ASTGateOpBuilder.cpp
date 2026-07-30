@@ -16,6 +16,7 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTGateContextBuilder.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTTypes.h>
@@ -27,6 +28,14 @@ namespace QASM {
 ASTGateQOpList *ASTGateOpBuilder::GLP;
 ASTGateOpBuilder ASTGateOpBuilder::B;
 
+// GateEOp construction always creates an op node; bare GateUOp relies on that
+// append. Under ctrl/negctrl the modifier statement is the list entry, so skip
+// appending the target here to avoid a bare sibling duplicate.
+static void AppendUnlessControlTarget(ASTGateQOpNode *Op) {
+  if (!ASTGateContextBuilder::Instance().InControlModifier())
+    ASTGateOpBuilder::Instance().Append(Op);
+}
+
 ASTGateQOpNode *
 ASTGateOpBuilder::CreateASTQGateOpNode(const ASTIdentifierNode *Id,
                                        const ASTGateNode *GateNode) {
@@ -36,7 +45,7 @@ ASTGateOpBuilder::CreateASTQGateOpNode(const ASTIdentifierNode *Id,
   ASTGateQOpNode *QG = new ASTGateQOpNode(Id, GateNode);
   assert(QG && "Failed to create an ASTHGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(QG);
+  AppendUnlessControlTarget(QG);
   return QG;
 }
 
@@ -49,7 +58,7 @@ ASTGateOpBuilder::CreateASTGenericGateOpNode(const ASTIdentifierNode *Id,
   ASTGenericGateOpNode *GG = new ASTGenericGateOpNode(Id, GateNode);
   assert(GG && "Failed to create an ASTGenericGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(GG);
+  AppendUnlessControlTarget(GG);
   return GG;
 }
 
@@ -61,7 +70,7 @@ ASTGenericGateOpNode *ASTGateOpBuilder::CreateASTGenericDefcalOpNode(
   ASTGenericGateOpNode *GG = new ASTGenericGateOpNode(Id, DefcalNode);
   assert(GG && "Failed to create an ASTGenericGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(GG);
+  AppendUnlessControlTarget(GG);
   return GG;
 }
 
@@ -74,7 +83,7 @@ ASTGateOpBuilder::CreateASTHGateOpNode(const ASTIdentifierNode *Id,
   ASTHGateOpNode *HG = new ASTHGateOpNode(Id, GateNode);
   assert(HG && "Failed to create an ASTHGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(HG);
+  AppendUnlessControlTarget(HG);
   return HG;
 }
 
@@ -87,7 +96,7 @@ ASTGateOpBuilder::CreateASTCXGateOpNode(const ASTIdentifierNode *Id,
   ASTCXGateOpNode *CXG = new ASTCXGateOpNode(Id, GateNode);
   assert(CXG && "Failed to create an ASTCXGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(CXG);
+  AppendUnlessControlTarget(CXG);
   return CXG;
 }
 
@@ -100,7 +109,7 @@ ASTGateOpBuilder::CreateASTCCXGateOpNode(const ASTIdentifierNode *Id,
   ASTCCXGateOpNode *CCXG = new ASTCCXGateOpNode(Id, GateNode);
   assert(CCXG && "Failed to create an ASTCCXGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(CCXG);
+  AppendUnlessControlTarget(CCXG);
   return CCXG;
 }
 
@@ -113,7 +122,7 @@ ASTGateOpBuilder::CreateASTCNotGateOpNode(const ASTIdentifierNode *Id,
   ASTCNotGateOpNode *CNG = new ASTCNotGateOpNode(Id, GateNode);
   assert(CNG && "Failed to create an ASTCNotGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(CNG);
+  AppendUnlessControlTarget(CNG);
   return CNG;
 }
 
@@ -126,7 +135,7 @@ ASTGateOpBuilder::CreateASTUGateOpNode(const ASTIdentifierNode *Id,
   ASTUGateOpNode *UG = new ASTUGateOpNode(Id, GateNode);
   assert(UG && "Failed to create an ASTUGateOpNode!");
 
-  ASTGateOpBuilder::Instance().Append(UG);
+  AppendUnlessControlTarget(UG);
   return UG;
 }
 

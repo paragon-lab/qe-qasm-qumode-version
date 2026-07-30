@@ -32,6 +32,16 @@ namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
+// GateEOp Create* appends to GateOpList; when a modifier wraps that GateEOp,
+// drop the bare sibling so only the modifier statement remains in the list.
+template <typename __Type>
+static inline void PopWrappedGateEOp(const __Type *TP) {
+  if constexpr (std::is_base_of_v<ASTGateQOpNode, __Type>) {
+    ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode *>(
+        static_cast<const ASTGateQOpNode *>(TP)));
+  }
+}
+
 template<typename __Type>
 ASTUnaryOpNode*
 ASTProductionFactory::ProductionRule_300(const ASTToken* TK,
@@ -525,6 +535,7 @@ ASTProductionFactory::ProductionRule_3850(const ASTToken* TK,
 
   GCN->SetLocation(TK->GetLocation());
   GCN->Mangle();
+  PopWrappedGateEOp(TP);
   return GCN;
 }
 
@@ -550,6 +561,7 @@ ASTProductionFactory::ProductionRule_3850(const ASTToken* TK,
 
   GCN->SetLocation(TK->GetLocation());
   GCN->Mangle();
+  PopWrappedGateEOp(TP);
   return GCN;
 }
 
@@ -574,6 +586,7 @@ ASTProductionFactory::ProductionRule_3850(const ASTToken* TK,
   GCN->SetLocation(TK->GetLocation());
   GCN->Mangle();
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GCN);
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GCN;
 }
 
@@ -600,6 +613,7 @@ ASTProductionFactory::ProductionRule_3850(const ASTToken* TK,
   GCN->SetLocation(TK->GetLocation());
   GCN->Mangle();
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GCN);
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GCN;
 }
 
@@ -623,6 +637,7 @@ ASTProductionFactory::ProductionRule_3851(const ASTToken* TK,
 
   GNCN->SetLocation(TK->GetLocation());
   GNCN->Mangle();
+  PopWrappedGateEOp(TP);
   return GNCN;
 }
 
@@ -648,6 +663,7 @@ ASTProductionFactory::ProductionRule_3851(const ASTToken* TK,
 
   GNCN->SetLocation(TK->GetLocation());
   GNCN->Mangle();
+  PopWrappedGateEOp(TP);
   return GNCN;
 }
 
@@ -672,6 +688,7 @@ ASTProductionFactory::ProductionRule_3851(const ASTToken* TK,
   GNCN->SetLocation(TK->GetLocation());
   GNCN->Mangle();
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GNCN);
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GNCN;
 }
 
@@ -697,6 +714,7 @@ ASTProductionFactory::ProductionRule_3851(const ASTToken* TK,
   GNCN->SetLocation(TK->GetLocation());
   GNCN->Mangle();
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GNCN);
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GNCN;
 }
 
@@ -722,6 +740,7 @@ ASTProductionFactory::ProductionRule_3852(const ASTToken* TK,
 
   GPN->SetLocation(TK->GetLocation());
   GPN->Mangle();
+  PopWrappedGateEOp(TP);
   return GPN;
 }
 
@@ -748,6 +767,7 @@ ASTProductionFactory::ProductionRule_3852(const ASTToken* TK,
   GPN->SetLocation(TK->GetLocation());
   GPN->Mangle();
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GPN);
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GPN;
 }
 
@@ -771,6 +791,7 @@ ASTProductionFactory::ProductionRule_3853(const ASTToken* TK,
 
   GIN->SetLocation(TK->GetLocation());
   GIN->Mangle();
+  PopWrappedGateEOp(TP);
   return GIN;
 }
 
@@ -795,6 +816,7 @@ ASTProductionFactory::ProductionRule_3853(const ASTToken* TK,
   GIN->SetLocation(TK->GetLocation());
   GIN->Mangle();
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GIN);
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GIN;
 }
 

@@ -48,8 +48,10 @@
 #include <qasm/AST/ASTFunctionCallExpr.h>
 #include <qasm/AST/ASTFunctions.h>
 #include <qasm/AST/ASTGPhase.h>
+#include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTIdentifier.h>
+
 #include <qasm/AST/ASTIfConditionals.h>
 #include <qasm/AST/ASTInverseAssocBuilder.h>
 #include <qasm/AST/ASTKernel.h>
@@ -76,6 +78,7 @@
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTValue.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
+#include <type_traits>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
