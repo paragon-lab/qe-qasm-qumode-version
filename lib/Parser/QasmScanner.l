@@ -184,7 +184,7 @@ inline void reset_colno() {
 extern void yyerror(const char* msg);
 extern int readinput();
 
-\\error message functions 
+
 
 void token_error() {
   std::cerr << "Error: Unrecognized token at line "
@@ -3016,8 +3016,44 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
+"bumper_max" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_BUMPER_MAX);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
 
-// Scanner rules that defines what text counts as a general identifier
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  return yylval->Tok->GetInt();
+}
+
+"bumper" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_BUMPER);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  return yylval->Tok->GetInt();
+}
+
 
 {L}{A}* {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
@@ -3180,9 +3216,6 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
-
-//end of rules to define general identifier token
-
 
 {HP}{H}+{IS}? {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);

@@ -76,6 +76,7 @@
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTValue.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
+#include <qasm/AST/ASTUnitaryAttribute.h>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -160,6 +161,17 @@ public:
 
   // const declaration
   ASTDeclarationNode *ProductionRule_170(ASTDeclarationNode *DN) const;
+
+
+  // Unitary attribute
+ ASTUnitaryAttributeNode *ProductionRule_1465(
+    const ASTToken *TK,
+    const ASTIdentifierNode *Target,
+    ASTUnitaryAttributeKind AttributeKind,
+    const ASTExpressionNode *Value,
+    ASTOpType OpType) const;
+
+
 
   // int[n]
   ASTDeclarationNode *ProductionRule_220(const ASTToken *TK,
@@ -257,6 +269,12 @@ public:
   // Aggregate Types suffix.
   ASTStringNode *ProductionRule_816(const ASTToken *ITK, const ASTToken *STK,
                                     bool D = true) const;
+
+  // Identifier-based Aggregate Types suffix.
+  ASTStringNode *ProductionRule_816(
+    const ASTIdentifierNode *Id,
+    const ASTToken *STK,
+    bool D = true) const;
 
   // Bitset
   ASTCBitNode *ProductionRule_817(const ASTToken *TK,

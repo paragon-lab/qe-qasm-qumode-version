@@ -59,6 +59,7 @@
 #include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTTypeDiscovery.h>
 #include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTUnitaryAttribute.h>
 #include <qasm/AST/ASTUnitary.h>
 #include <qasm/AST/ASTUtils.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
@@ -104,6 +105,7 @@ unsigned ASTProductionFactory::GetVariantBits(
 
   return static_cast<unsigned>(~0x0);
 }
+
 
 ASTDeclarationNode *
 ASTProductionFactory::ProductionRule_1000(const ASTToken *TK,
@@ -6593,6 +6595,43 @@ ASTStringNode *ASTProductionFactory::ProductionRule_816(const ASTToken *ITK,
 
   SN->SetLocation(STK->GetLocation());
   SN->Mangle();
+  return SN;
+}
+
+ASTStringNode *
+ASTProductionFactory::ProductionRule_816(
+    const ASTIdentifierNode *Id,
+    const ASTToken *STK,
+    bool D) const {
+
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+  assert(STK && "Invalid ASTToken argument!");
+
+  if (STK->GetString().find(u8' ') != std::string::npos) {
+    std::stringstream M;
+    M << "Malformed aggregate type element suffix.";
+
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(STK),
+        M.str(),
+        DiagLevel::Error);
+
+    return ASTStringNode::ExpressionError(M.str());
+  }
+
+  std::stringstream S;
+
+  if (D)
+    S << Id->GetName() << '.' << STK->GetString();
+  else
+    S << Id->GetName() << STK->GetString();
+
+  ASTStringNode *SN = new ASTStringNode(S.str());
+  assert(SN && "Could not create a valid ASTStringNode!");
+
+  SN->SetLocation(STK->GetLocation());
+  SN->Mangle();
+
   return SN;
 }
 
@@ -15410,6 +15449,38 @@ ASTProductionFactory::ProductionRule_450(const ASTToken *TK,
   BOP->SetLocation(TK->GetLocation());
   BOP->Mangle();
   return BOP;
+}
+
+ASTUnitaryAttributeNode *
+ASTProductionFactory::ProductionRule_1465(
+    const ASTToken *TK,
+    const ASTIdentifierNode *Target,
+    ASTUnitaryAttributeKind AttributeKind,
+    const ASTExpressionNode *Value,
+    ASTOpType OpType) const {
+
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Target && "Invalid unitary attribute target!");
+  assert((AttributeKind == ASTUnitaryAttributeBumper ||
+        AttributeKind == ASTUnitaryAttributeBumperMax) &&
+       "Invalid unitary attribute identifier!");
+  assert(Value && "Invalid unitary attribute value!");
+
+  assert((OpType == ASTOpTypeAssign ||
+          OpType == ASTOpTypeAddAssign) &&
+         "Invalid unitary attribute assignment operator!");
+
+  ASTUnitaryAttributeNode *UAN =
+      new ASTUnitaryAttributeNode(Target, AttributeKind, Value, OpType);
+
+  assert(UAN &&
+         "Could not create a valid ASTUnitaryAttributeNode!");
+
+  UAN->SetLocation(TK->GetLocation());
+
+  ASTStatementBuilder::Instance().Append(UAN);
+
+  return UAN;
 }
 
 ASTBinaryOpNode *
