@@ -2299,10 +2299,9 @@ void ASTGateNode::print() const {
           FormalParamArraySizeTemplateIndices[I] !=
               static_cast<unsigned>(~0U) &&
           FormalParamArraySizeTemplateIndices[I] < TemplateParams.size())
-        std::cout
-            << "<ArraySizeTemplate>"
-            << TemplateParams[FormalParamArraySizeTemplateIndices[I]].second
-            << "</ArraySizeTemplate>" << std::endl;
+        std::cout << "<ArraySizeTemplate>"
+                  << TemplateParams[FormalParamArraySizeTemplateIndices[I]].Name
+                  << "</ArraySizeTemplate>" << std::endl;
       std::cout << "</FormalParamType>" << std::endl;
     }
     std::cout << "</FormalParamTypes>" << std::endl;
@@ -2312,10 +2311,16 @@ void ASTGateNode::print() const {
     std::cout << "<TemplateParams>" << std::endl;
     for (std::size_t I = 0; I < TemplateParams.size(); ++I) {
       std::cout << "<TemplateParam>" << std::endl;
-      std::cout << "<Type>" << PrintTypeEnum(TemplateParams[I].first)
-                << "</Type>" << std::endl;
-      std::cout << "<Name>" << TemplateParams[I].second << "</Name>"
+      std::cout << "<Type>" << PrintTypeEnum(TemplateParams[I].Ty) << "</Type>"
                 << std::endl;
+      std::cout << "<Name>" << TemplateParams[I].Name << "</Name>" << std::endl;
+      // Decl: NaN placeholder (like angle Params). Call: bound value.
+      // Body identifiers named Name are not overwritten.
+      if (TemplateParams[I].HasBound())
+        std::cout << "<Value>" << std::dec << *TemplateParams[I].Bound
+                  << "</Value>" << std::endl;
+      else
+        std::cout << "<Value>NaN</Value>" << std::endl;
       std::cout << "</TemplateParam>" << std::endl;
     }
     std::cout << "</TemplateParams>" << std::endl;
@@ -3588,20 +3593,28 @@ void ASTGateFockControlNode::Mangle() {
   M.TypeIdentifier(GetASTType(), GetName());
   switch (LevelType) {
   case ASTTypeInt:
-    if (I)
-      M.Identifier(I->GetMangledName());
+    if (I) {
+      const std::string &MN = I->GetMangledName();
+      M.Identifier(MN.empty() ? I->GetName() : MN);
+    }
     break;
   case ASTTypeIdentifier:
-    if (ID)
-      M.Identifier(ID->GetMangledName());
+    if (ID) {
+      const std::string &MN = ID->GetMangledName();
+      M.Identifier(MN.empty() ? ID->GetName() : MN);
+    }
     break;
   case ASTTypeBinaryOp:
-    if (BOP)
-      M.Identifier(BOP->GetMangledName());
+    if (BOP) {
+      const std::string &MN = BOP->GetMangledName();
+      M.Identifier(MN.empty() ? BOP->GetName() : MN);
+    }
     break;
   case ASTTypeUnaryOp:
-    if (UOP)
-      M.Identifier(UOP->GetMangledName());
+    if (UOP) {
+      const std::string &MN = UOP->GetMangledName();
+      M.Identifier(MN.empty() ? UOP->GetName() : MN);
+    }
     break;
   default:
     break;
@@ -3633,20 +3646,28 @@ void ASTGateFockNegControlNode::Mangle() {
   M.TypeIdentifier(GetASTType(), GetName());
   switch (LevelType) {
   case ASTTypeInt:
-    if (I)
-      M.Identifier(I->GetMangledName());
+    if (I) {
+      const std::string &MN = I->GetMangledName();
+      M.Identifier(MN.empty() ? I->GetName() : MN);
+    }
     break;
   case ASTTypeIdentifier:
-    if (ID)
-      M.Identifier(ID->GetMangledName());
+    if (ID) {
+      const std::string &MN = ID->GetMangledName();
+      M.Identifier(MN.empty() ? ID->GetName() : MN);
+    }
     break;
   case ASTTypeBinaryOp:
-    if (BOP)
-      M.Identifier(BOP->GetMangledName());
+    if (BOP) {
+      const std::string &MN = BOP->GetMangledName();
+      M.Identifier(MN.empty() ? BOP->GetName() : MN);
+    }
     break;
   case ASTTypeUnaryOp:
-    if (UOP)
-      M.Identifier(UOP->GetMangledName());
+    if (UOP) {
+      const std::string &MN = UOP->GetMangledName();
+      M.Identifier(MN.empty() ? UOP->GetName() : MN);
+    }
     break;
   default:
     break;

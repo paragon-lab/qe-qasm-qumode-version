@@ -14,10 +14,11 @@ description: >-
 
 - **All-untyped** classical + bare quantum formals = legacy OpenQASM 3 (`ProductionRule_1430` / `1431`). No call-site type checks.
 - **Any typed classical formals** with **typed quantum operands** = fully typed (`ProductionRule_10030`). No partial typing.
-- **Templates (v1):** `gate foo[uint N](array[T, N] …)` — unsigned int templates used as array lengths. Call-site `foo([…])` infers `N` from literal arity or a sized named array’s declared length; `foo[N]([…])` checks. Uninitialized named arrays → “used before assigned.” Opaque `snap(thetas)` stays until `for` bodies land.
+- **Templates (v1):** `gate foo[uint N](array[T, N] …)` — unsigned int templates used as array lengths. Call-site `foo([…])` infers `N` from literal arity or a sized named array’s declared length; `foo[N]([…])` checks. Uninitialized named arrays → “used before assigned.” Call Gate `TemplateParams` carry `<Value>` (NaN on decl, bound int on call); body `N` is not overwritten.
 - **Fock ctrl:** `ctrl[3]` / `ctrl[N]` / `ctrl[N-1]` / `negctrl[i]` — level may be int, id, or binary/unary (or parenthesized) expression. Distinct from qubit `ctrl(n)`. See `docs/gates.md`.
+- **Gate-body `for`:** `GateForStmt` + nested `GateOpList` → `ASTGateForOpNode` (`ASTTypeGateFor`). SNAP in `cvgates.inc` uses `for i in [0:N] { ctrl[i] @ gphase(thetas[i]) qm; }`.
 - `ctrl` is a reserved token (`TOK_CTRL`); do not use `ctrl` as an operand name.
-- **Out of CV-core scope:** `for`/`while` in `GateOpList`; int/bool/duration/bit array formals; non-`uint` / non-size template params.
+- **Out of CV-core scope:** `while` in `GateOpList`; int/bool/duration/bit array formals; non-`uint` / non-size template params.
 
 ## Grammar / production
 
@@ -82,10 +83,13 @@ separate `GateCallArg` list — it LR-conflicts with function-call parsing.
 
 Gate param lists provisionally type identifiers as `ASTTypeAngle`. `ProductionRule_822` must **rebind** Angle/Undefined → array type and allow formals in gate/function contexts (`AllowArrayInCurrentContext` / `IsGateParameterArgument`). Do not leave hard `assert(Id->GetSymbolType() == Ty)` — that SIGABRTs on `array[float[64], N] thetas`.
 
-`GateOpList` does **not** include `for` loops yet; SNAP-style loop bodies need grammar work separately.
+`GateOpList` includes `for` (`GateForStmt`). After an `array[…]` formal,
+`SetCurrentType(ForStatement)` must win over leftover `PreviousType` array
+state or induction vars are typed as arrays.
 
 ## Tests
 
+- Positive: `tests/src/qumode/gate-for-fock.qasm` (gate-body `for` + Fock `ctrl[i]` + `thetas[i]`)
 - Positive: `tests/src/qumode/ecd-mixed.qasm` (`ecd(0.5) qb, qm`)
 - Positive: `tests/src/qumode/complex-array-param.qasm` (`array[complex[…], N]` formal + call)
 - Positive: `tests/src/qumode/float-array-param.qasm` (`array[float[64], N]` body index + call)

@@ -73,7 +73,9 @@
 #include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
 
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -167,11 +169,14 @@ public:
   /// Call-site type checks for fully-typed gate declarations.
   /// Returns false and emits diagnostics on mismatch.
   /// \p TemplateArgs optional explicit `gatecall[…](…)` template arguments.
-  bool
-  ValidateTypedGateCall(const ASTToken *TK, const ASTGateNode *Decl,
-                        const ASTArgumentNodeList &ANL,
-                        const ASTAnyTypeList &ATL,
-                        const ASTExpressionList *TemplateArgs = nullptr) const;
+  /// On success, \p OutBound (if non-null) receives one entry per Decl
+  /// TemplateParam (explicit or inferred). Caller attaches these to the call
+  /// Gate via SetTemplateParamBounds — do not overwrite body `N` STEs.
+  bool ValidateTypedGateCall(
+      const ASTToken *TK, const ASTGateNode *Decl,
+      const ASTArgumentNodeList &ANL, const ASTAnyTypeList &ATL,
+      const ASTExpressionList *TemplateArgs = nullptr,
+      std::vector<std::optional<unsigned>> *OutBound = nullptr) const;
 };
 
 } // namespace QASM

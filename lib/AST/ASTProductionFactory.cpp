@@ -73,6 +73,7 @@
 #include <cassert>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <string>
 
 namespace QASM {
@@ -23555,6 +23556,26 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
   assert(TK && "Invalid ASTToken argument!");
   assert(IId && "Invalid ASTIdentifierNode argument!");
 
+  // Loop induction vars are not compile-time constants. Build the subscript
+  // from the induction Identifier so AsIndexedString() yields `[i]` (not `[0]`
+  // from a stand-in IntNode value). Array resolution still uses element 0 only
+  // as a type stand-in when IsInductionVariable().
+  const ASTDeclarationContext *DCX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  const bool InFor = DCX && DCX->GetContextType() == ASTTypeForStatement;
+  if (IId->IsInductionVariable() ||
+      (InFor && (IId->GetSymbolType() == ASTTypeInt ||
+                 IId->GetSymbolType() == ASTTypeUInt ||
+                 IId->GetSymbolType() == ASTTypeMPInteger ||
+                 IId->GetSymbolType() == ASTTypeMPUInteger))) {
+    const_cast<ASTIdentifierNode *>(IId)->SetInductionVariable(true);
+    ASTArraySubscriptNode *ASN = new ASTArraySubscriptNode(IId);
+    assert(ASN && "Could not create a valid ASTArraySubscriptNode!");
+    ASN->SetInductionVariable(IId);
+    ASN->SetLocation(TK->GetLocation());
+    return ASN;
+  }
+
   std::variant<const ASTIntNode *, const ASTMPIntegerNode *,
                const ASTCBitNode *>
       IIV;
@@ -29022,6 +29043,65 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3211(
   return FSN;
 }
 
+static ASTStatementList *
+GateQOpListToStatementList(const ASTGateQOpList *Body) {
+  ASTStatementList *SL = new ASTStatementList();
+  assert(SL && "Could not create a valid ASTStatementList!");
+  if (!Body)
+    return SL;
+  for (ASTGateQOpList::const_iterator I = Body->begin(); I != Body->end(); ++I)
+    SL->Append(*I);
+  return SL;
+}
+
+ASTGateQOpNode *ASTProductionFactory::ProductionRule_3220(
+    const ASTToken *TK, ASTIdentifierNode *LId,
+    ASTForLoopRangeExpressionNode *FLR, ASTGateQOpList *Body) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(LId && "Invalid ASTIdentifierNode argument!");
+  assert(FLR && "Invalid ASTForLoopRangeExpressionNode argument!");
+  assert(Body && "Invalid ASTGateQOpList argument!");
+
+  ASTStatementList *SL = GateQOpListToStatementList(Body);
+  ASTForStatementNode *FSN = ProductionRule_3204(TK, LId, FLR, SL);
+  if (!FSN || FSN->IsError()) {
+    std::stringstream M;
+    M << (FSN ? FSN->GetError() : "Could not create gate-body for statement.");
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  ASTGateForOpNode *GFN =
+      new ASTGateForOpNode(ASTIdentifierNode::GateQOp.Clone(), FSN);
+  assert(GFN && "Could not create a valid ASTGateForOpNode!");
+  GFN->SetLocation(TK->GetLocation());
+  GFN->Mangle();
+  return GFN;
+}
+
+ASTGateQOpNode *ASTProductionFactory::ProductionRule_3221(
+    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    ASTGateQOpList *Body) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(LId && "Invalid ASTIdentifierNode argument!");
+  assert(IL && "Invalid ASTIntegerList argument!");
+  assert(Body && "Invalid ASTGateQOpList argument!");
+
+  ASTStatementList *SL = GateQOpListToStatementList(Body);
+  ASTForStatementNode *FSN = ProductionRule_3200(TK, LId, IL, SL);
+  if (!FSN || FSN->IsError()) {
+    std::stringstream M;
+    M << (FSN ? FSN->GetError() : "Could not create gate-body for statement.");
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  ASTGateForOpNode *GFN =
+      new ASTGateForOpNode(ASTIdentifierNode::GateQOp.Clone(), FSN);
+  assert(GFN && "Could not create a valid ASTGateForOpNode!");
+  GFN->SetLocation(TK->GetLocation());
+  GFN->Mangle();
+  return GFN;
+}
+
 ASTWhileStatementNode *ASTProductionFactory::ProductionRule_3300(
     const ASTToken *TK, ASTExpressionNode *EN, ASTStatementList *SL) const {
   assert(TK && "Invalid ASTToken argument!");
@@ -29832,10 +29912,30 @@ CreateGateCall(const ASTToken *TK, const ASTSymbolTableEntry *STE,
     return nullptr;
   }
 
-  if (GN->IsFullyTyped() && !ASTTypeDiscovery::Instance().ValidateTypedGateCall(
-                                TK, GN, ANL, ATL, TemplateArgs)) {
-    return ASTGateQOpNode::StatementError(Id, "Typed gate call argument "
-                                              "type mismatch.");
+  if (GN->IsFullyTyped()) {
+    std::vector<std::optional<unsigned>> TemplateBounds;
+    if (!ASTTypeDiscovery::Instance().ValidateTypedGateCall(
+            TK, GN, ANL, ATL, TemplateArgs, &TemplateBounds)) {
+      return ASTGateQOpNode::StatementError(Id, "Typed gate call argument "
+                                                "type mismatch.");
+    }
+
+    ASTGateNode *GGN = GN->CloneCall(Id, ANL, ATL);
+    assert(GGN && "Could not create a valid ASTGateNode call!");
+    // Store bindings on the call TemplateParams only — do not overwrite body
+    // identifiers named N (OpList is shared with the definition; N may appear
+    // many times). Same pattern as Params: formals stay placeholders in the
+    // body; call-site values live on the call Gate.
+    GGN->SetTemplateParamBounds(TemplateBounds);
+
+    ASTGateNodeBuilder::Instance().Append(GGN);
+    ASTGateQOpNode *RG =
+        ASTGateOpBuilder::Instance().CreateASTGenericGateOpNode(Id, GGN);
+    assert(RG && "Failed to create a valid ASTGenericGateOpNode!");
+
+    RG->SetLocation(TK->GetLocation());
+    RG->Mangle();
+    return RG;
   }
 
   ASTGateNode *GGN = GN->CloneCall(Id, ANL, ATL);
@@ -30779,6 +30879,20 @@ void ASTProductionFactory::ProductionRule_10031(
     }
     IN->SetLocation(TK->GetLocation());
   }
+
+  // CreateASTIntNode MangleLiteral() embeds the stand-in 0 as
+  // `_QLj32_0EEE_`, which looks like a compile-time literal zero. Unbound
+  // template formals are a NaN analogue (like angle Params); keep the
+  // numeric placeholder on the IntNode but make MangledLiteralName track
+  // the named formal (same pattern as angle `lambda`).
+  if (IId->GetMangledName().empty()) {
+    if (STE->HasValue()) {
+      if (ASTIntNode *IN = STE->GetValue()->GetValue<ASTIntNode *>())
+        IN->Mangle();
+    }
+  }
+  if (!IId->GetMangledName().empty())
+    IId->SetMangledLiteralName(IId->GetMangledName());
 }
 
 ASTExpressionNode *

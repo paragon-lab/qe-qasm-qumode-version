@@ -3017,7 +3017,6 @@ $[a-zA-Z_][0-9]+ {
   return yylval->Tok->GetInt();
 }
 
-// Scanner rules that defines what text counts as a general identifier
 
 {L}{A}* {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
@@ -3180,8 +3179,6 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
-
-//end of rules to define general identifier token
 
 
 {HP}{H}+{IS}? {

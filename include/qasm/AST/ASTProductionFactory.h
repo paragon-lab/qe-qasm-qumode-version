@@ -49,6 +49,7 @@
 #include <qasm/AST/ASTFunctions.h>
 #include <qasm/AST/ASTGPhase.h>
 #include <qasm/AST/ASTGateFockControl.h>
+#include <qasm/AST/ASTGateFor.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTIdentifier.h>
@@ -1301,6 +1302,16 @@ public:
                                            ASTIdentifierNode *LId,
                                            ASTForLoopRangeExpressionNode *FLR,
                                            ASTStatement *ST) const;
+
+  /// Gate-body `for` with nested GateOpList (range or integer list).
+  ASTGateQOpNode *ProductionRule_3220(const ASTToken *TK,
+                                      ASTIdentifierNode *LId,
+                                      ASTForLoopRangeExpressionNode *FLR,
+                                      ASTGateQOpList *Body) const;
+  ASTGateQOpNode *ProductionRule_3221(const ASTToken *TK,
+                                      ASTIdentifierNode *LId,
+                                      ASTIntegerList *IL,
+                                      ASTGateQOpList *Body) const;
 
   // While Loop
   ASTWhileStatementNode *ProductionRule_3300(const ASTToken *TK,

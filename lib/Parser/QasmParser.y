@@ -747,7 +747,7 @@ int readinput() {
 
 %type <GateQOpNode>                 GateQOp GateCtrlStmt GateNegCtrlStmt
                                     GateInvStmt GatePowStmt GateGPhaseStmt
-                                    GateFockGPhaseStmt
+                                    GateFockGPhaseStmt GateForStmt
 %type <GateUOpNode>                 GateUOp
 %type <GateEOpNode>                 GateEOp
 %type <BarrierNode>                 Barrier
@@ -780,7 +780,7 @@ int readinput() {
 %type <ElseStatementList>           ElseStmtList ElseStmtListImpl
 %type <KernelStatementList>         KernelStmtList KernelStmtListImpl
 %type <DefcalStatementList>         DefcalStmtList DefcalStmtListImpl
-%type <GateOpList>                  GateOpList
+%type <GateOpList>                  GateOpList GateForBody
 %type <ExpressionList>              ExprList ExprListImpl
 %type <IntegerList>                 IntegerList IntegerListImpl
 %type <QubitConcatList>             QubitConcatList QubitConcatListImpl
@@ -3727,6 +3727,29 @@ GateOpList
   }
   | GateOpList FileDirective {
     // Ignored. Only used by the Preprocessor and DIAGLineCounter.
+  }
+  | GateOpList GateForStmt {
+    ASTGateOpBuilder::Instance().Append($2);
+  }
+  ;
+
+GateForBody
+  : '{' {
+    ASTGateOpBuilder::Instance().PushList();
+  } GateOpList '}' {
+    $$ = ASTGateOpBuilder::Instance().PopList();
+    assert($$ && "Invalid nested GateOpList for gate-body for!");
+  }
+  ;
+
+GateForStmt
+  : TOK_FOR Identifier TOK_IN '[' ForLoopRangeExpr ']' GateForBody {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3220(GET_TOKEN(6), $2,
+                                                              $5, $7);
+  }
+  | TOK_FOR Identifier TOK_IN '[' IntegerList ']' GateForBody {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3221(GET_TOKEN(6), $2,
+                                                              $5, $7);
   }
   ;
 
@@ -7007,6 +7030,13 @@ ForLoopRangeExpr
     $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
                                                              $1, $4,
                                                              ASTOpTypeRightShiftAssign);
+  }
+  // Bare end bound: `for i in [0:N]` (desugar end as N+0).
+  | IntegerList Identifier {
+    ASTIntNode *Zero = new ASTIntNode(static_cast<int32_t>(0));
+    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(1), $2,
+                                                             $1, Zero,
+                                                             ASTOpTypeAdd);
   }
   ;
 

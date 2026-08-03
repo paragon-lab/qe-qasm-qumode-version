@@ -216,6 +216,15 @@ public:
       return;
     }
 
+    // for/while must always take effect. Otherwise a leftover PreviousType of
+    // Array / *Array (e.g. after `array[float[64], N] thetas`) rewrites CT
+    // back to that array type and induction vars are typed as arrays.
+    if (Ty == ASTTypeForStatement || Ty == ASTTypeWhileStatement) {
+      PT = CT = Ty;
+      IA = false;
+      return;
+    }
+
     switch (CT) {
     case ASTTypeMPInteger:
     case ASTTypeMPDecimal:

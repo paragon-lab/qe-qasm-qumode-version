@@ -25,6 +25,7 @@
 #include <qasm/AST/ASTArray.h>
 #include <qasm/AST/ASTExpression.h>
 #include <qasm/AST/ASTGateOpList.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTParameterList.h>
 #include <qasm/AST/ASTQubit.h>
@@ -33,6 +34,7 @@
 
 #include <cassert>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -85,7 +87,8 @@ protected:
   /// Declared quantum formal kinds (Qubit/Qumode) in order.
   std::vector<ASTType> FormalQuantumTypes;
   /// Gate template parameters (`uint N`, …) from `gate foo[…](…)`.
-  std::vector<std::pair<ASTType, std::string>> TemplateParams;
+  /// Decl: Bound unset (NaN analogue). Call: Bound set; body `N` left alone.
+  std::vector<ASTGateTemplateParam> TemplateParams;
   /// Parallel to FormalParamTypes: template index when array size is symbolic,
   /// else ~0U.
   std::vector<unsigned> FormalParamArraySizeTemplateIndices;
@@ -380,14 +383,22 @@ public:
     return FormalQuantumTypes;
   }
 
-  virtual void
-  SetTemplateParams(const std::vector<std::pair<ASTType, std::string>> &TPs) {
+  virtual void SetTemplateParams(const std::vector<ASTGateTemplateParam> &TPs) {
     TemplateParams = TPs;
   }
 
-  virtual const std::vector<std::pair<ASTType, std::string>> &
-  GetTemplateParams() const {
+  virtual const std::vector<ASTGateTemplateParam> &GetTemplateParams() const {
     return TemplateParams;
+  }
+
+  /// Attach call-site bindings without mutating body identifiers named `N`.
+  /// Parallel to replacing Params with call args while leaving GateQOpList
+  /// formals as placeholders (angles use NaN; template formals stay unbound).
+  virtual void
+  SetTemplateParamBounds(const std::vector<std::optional<unsigned>> &Bounds) {
+    for (std::size_t I = 0; I < TemplateParams.size() && I < Bounds.size(); ++I)
+      if (Bounds[I])
+        TemplateParams[I].Bound = *Bounds[I];
   }
 
   virtual void

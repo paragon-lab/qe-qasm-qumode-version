@@ -417,6 +417,9 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGateFockNegControl:
     return "ASTTypeGateFockNegControl";
     break;
+  case ASTTypeGateFor:
+    return "ASTTypeGateFor";
+    break;
   case ASTTypeGateNegControl:
     return "ASTTypeGateNegControl";
     break;

@@ -773,3 +773,6 @@ add_test(NAME qumode-t00026
 
 add_test(NAME qumode-t00027
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-template-expr.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-template-expr.qasm.out 2>&1")
+
+add_test(NAME qumode-t00028
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-for-fock.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-for-fock.qasm.out 2>&1")

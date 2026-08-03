@@ -734,9 +734,12 @@ private:
   void SetIndex(const std::string &IdS) {
     std::string::size_type SP = IdS.find_last_of('[');
     std::string::size_type EP = IdS.find_last_of(']');
-    if (SP != std::string::npos && EP != std::string::npos)
-      Index =
-          static_cast<unsigned>(std::stoul(IdS.substr(SP + 1, EP - (SP + 1))));
+    if (SP != std::string::npos && EP != std::string::npos) {
+      std::string IX = IdS.substr(SP + 1, EP - (SP + 1));
+      // Induction / symbolic indices are not numeric; leave Index as ~0.
+      if (!IX.empty() && isdigit(IX.c_str()[0]))
+        Index = static_cast<unsigned>(std::stoul(IX));
+    }
   }
 
   ASTType ResolveReferenceType(ASTType ITy) const;

@@ -18,42 +18,45 @@ Gate signature:
 ```qasm
 gate disp(complex[float[64]] alpha) qumode qm;
 ```
-The displacement gate is treated as a builtin gate. The user doesn't need to include
-any file to use this gate.
+Example Usage:
+```qasm
+disp(0.5 + 0.5im) qm;
+disp(0.5) qm; // equivalent to disp(0.5 + 0.0im)
+```
+The displacement gate is treated as a builtin gate. The user doesn't need to
+include any file to use this gate.
 
 ## SNAP gate
 
-Gate definition (WIP):
-```
+Gate definition:
+```qasm
 gate snap[uint N](array[float[64], N] thetas) qumode qm {
     for i in [0:N] {
         ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 ```
-Include `tests/include/cvgates.inc` to use this gate.
-
-### Known Issues
-The parser is not able to parse the above definition at the moment. As a result,
-`snap` is currently implemented as an `opaque` gate. Essentially, the parser is
-told that the definition of snap gate exists without actually seeing it.
-Owing to this, the parser is not able to detect syntactic errors such as
+Example Usage:
 ```qasm
-snap(pi/2, 0, 0.3) qm[0]; // missing array bracket [...]
-snap([pi/2, 0, 0.3]) qm[0], qm[1]; // wrong number of operands
-```
-Since `opaque` gates are deprecated, the parser would throw warnings
-upon parsing `opaque` SNAP gates. This is an issue that will be addressed in
-in the future.
-
+snap([pi/2, 0, 0.3]) qm; // infer N = 3
+snap[3]([pi/2, 0, 0.3]) qm; // check length == 3
+Include `tests/include/cvgates.inc` to use this gate. Call sites may omit the
+template argument when `N` can be inferred from the array literal or a sized
+named array (`snap([pi/2, 0, 0.3]) qm`), or pass it explicitly (`snap[3](…)`).
+fs
 ## ECD gate
 
 Gate definition:
-```
-gate ecd(complex[float[64]] alpha) qubit ctrl, qumode target {
-    negctrl @ disp(-alpha/2) ctrl, target;
-    ctrl @ disp(alpha/2) ctrl, target;
+```qasm
+gate ecd(complex[float[64]] alpha) qubit qb, qumode qm {
+    negctrl @ disp(-alpha/2) qb, qm;
+    ctrl @ disp(alpha/2) qb, qm;
 }
+```
+Example Usage:
+```qasm
+ecd(0.5 + 0.5im) qb, qm;
+ecd(0.5) qb, qm; // equivalent to ecd(0.5 + 0.0im) qb, qm;
 ```
 Include `tests/include/cvgates.inc` to use this gate.
 
@@ -63,26 +66,22 @@ Include `tests/include/cvgates.inc` to use this gate.
 
 These qumode gates introduce new types of parameters and operands. In
 OpenQASM 3.0, all parameters and operands are of type `angle` and `qubit`
-respectively. This is no longer the case in our extension. In particular,
-- SNAP gate introduces using an array of angles as a parameter, and this array
-  is variable in length.
-- Displacement and ECD gates introduce using a complex number as a parameter.
-- All gates introduce using qumodes as operands.
-These extensions necessitate a proper extension of the gate declaration syntax
-that facilitates type checking at the syntactic level.
+respectively. This is no longer the case in our extension. Therefore,
+we introduce a typed gate declaration syntax that facilitates type checking at
+the syntactic level.
+
 
 Currently, the supported classical types for parameters are `angle`, `float[N]`,
-`complex[float[N]]`, and fixed-length arrays of these types. This suffices to
-implement ECD gates and allow some flexibility in defining custom gates.
-Type checking for typed gate declarations are enforced both in definitions and
-in call sites. The syntax needed to implement SNAP gate is not yet implemented.
+`complex[float[N]]`, and fixed-length arrays of these types (including lengths
+bound by template parameters). Type checking for typed gate declarations is
+enforced both in definitions and in call sites.
 
 ## Examples for the new syntax
 
 The main addition to the syntax is that the types of parameters and operands are
 specified before the name of the parameter or operand (à la C). For example,
 the following is a valid gate declaration:
-```
+```qasm
 gate ecd(complex[float[64]] alpha) qubit c, qumode t {
     negctrl @ disp(-alpha/2) c, t;
     ctrl @ disp(alpha/2) c, t;
@@ -91,7 +90,7 @@ gate ecd(complex[float[64]] alpha) qubit c, qumode t {
 
 Arrays of `angle`s, `float[N]`s, or `complex[float[N]]`s can also be used as
 parameters:
-```
+```qasm
 gate foo(array[angle, 3] phases) qubit q {
     ctrl @ gphase(phases[0]) q;
     ctrl @ gphase(phases[1]) q;
@@ -105,7 +104,7 @@ gate bar(array[complex[float[64]], 3] alphas) qumode qm {
 ```
 
 It is also possible to mix and match different types of parameters and operands:
-```
+```qasm
 gate baz(array[complex[float[64]], 3] alphas, angle beta) qubit qb, qumode qm {
     ctrl @ gphase(beta) qb;
     ecd(alphas[0]/2) qb, qm;
@@ -114,41 +113,28 @@ gate baz(array[complex[float[64]], 3] alphas, angle beta) qubit qb, qumode qm {
 }
 ```
 
-The above syntaxes are already implemented in the parser. However, SNAP gates
-cannot yet be fully defined because the gate *body* still needs `for` loops
-(below). Fock-level `ctrl[i]` / `ctrl[N]` (single identifier or integer) is
-implemented; see the next sections. The **template / array-length** piece is
-also implemented.
-
-## Template parameters (array length `N`)
-
-Fully-typed gates may declare unsigned integer template parameters used as
-array lengths:
-
+Arrays with variable lengths can also be used as parameters through
+template parameters:
 ```qasm
 gate foo[uint N](array[float[64], N] thetas) qubit q {
+    ...
 }
 ```
 
+
 Call sites may bind `N` explicitly or omit it when it can be inferred from an
-array literal’s arity or a **sized** named array’s declared length:
+array literal’s arity or a **sized** named array’s declared length
 
 ```qasm
 foo([pi/2, 0, 0.3]) q;   // infer N = 3
 foo[3]([pi/2, 0, 0.3]) q; // check length == 3
 ```
 
-Inference is a call-site semantic check (not a lexer rule): each template
-param must be uniquely determined by an array size at the call. An
-uninitialized named array (declared but not assigned) is rejected with a
-“variable used before assigned” diagnostic — not a cannot-infer error.
-v1 supports only `uint` templates used as array sizes.
-Note (design decision): In the proposed syntax, we used to use angle brackets
-for template parameters. This was problematic because `>` is also a comparison
-operator. As a result, putting expressions inside angle brackets would be
-problematic to parse. Also, square brackets are already used for types in the
-OQ3 standard, not unlike what we use templates for: `int[32]` is a 32-bit
-integer, and `array[int[32], 5]` is a 5-element array of 32-bit integers.
+Each template parameter must be uniquely determined by an array size at the
+call. An uninitialized named array (declared but not assigned) is rejected with
+a “variable used before assigned” diagnostic. v1 supports only `uint` templates
+used as array sizes. Template parameters use square brackets (`gate foo[uint N]`
+/ `foo[3](…)`), not angle brackets.
 
 ## Fock-level `ctrl[…]` / `negctrl[…]`
 
@@ -166,56 +152,96 @@ negctrl[i] @ disp(alpha) qm;
 Existing forms are unchanged: `ctrl @`, `ctrl(2) @`, `negctrl @`, `negctrl(2) @`.
 
 The level may be an integer literal, identifier, or a `+`/`-`/`*`/`/` expression
-(including parentheses). A dedicated Fock-level grammar accepts forms like
-`N-1` even when the scanner glues `-1` into one integer token. Background:
-[issue #12](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/12).
+(including parentheses). Template parameters (`uint N`) are bound as gate-local
+ints so `ctrl[N]` / `ctrl[N-1]` in a gate body resolve.
 
-**Limitation:** Multi-control syntaxes `ctrl[level](n_ctrls)` are not supported.
-This would be a reasonable syntax given what we have implemented so far,
-but there is little evidence that it would be useful in practice.
+**Limitation:** Multi-control syntaxes `ctrl[level](n_ctrls)` are currently not
+supported.
 
-Template parameters (`uint N`) are bound as gate-local ints so `ctrl[N]` /
-`ctrl[N-1]` in a gate body resolve.
+## Gate-body `for`
 
-## WIP: SNAP gate body (`for`)
+Gate bodies may contain `for` loops whose body is a list of gate operations
+(range or integer list):
 
-SNAP still needs loops in gate bodies; Fock `ctrl[i]` / `ctrl[N-1]` is available
-for the loop body once `for` lands:
-
-```
-gate snap[uint N](array[float[64], N] thetas) qumode qm {
+```qasm
+gate snap[uint N](array[angle, N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
+        ctrl[i] @ gphase(thetas[i]) qm;
     }
 }
 ```
 
-Until `for` lands, `snap` remains an opaque declaration in `cvgates.inc`.
+Induction variables are gate-local ints. The body of the `for` loop is subject
+to the same limitations as elsewhere in gate bodies. In particular, only
+gate calls and `barrier`s are allowed in the body. Non-unitary operations, such
+as `measure` and `reset`, are not allowed.
+
+**Limitation:** While the parser can parse a forward traversal `for` loop, more
+complicated loops may not parse correctly at the moment.
+For example, the following two gate declarations will not parse:
+```qasm
+gate foo[uint N](array[angle, N] thetas) qubit q {
+    for i in [0:N] {
+        ctrl @ gphase(thetas[N - i - 1]) q;
+    }
+}
+gate bar[uint N](array[angle, N] thetas) qubit q {
+    for i in [0:(N/2)] {
+        ctrl @ gphase(thetas[i]) q;
+        ctrl @ gphase(thetas[N - i - 1]) q;
+    }
+}
+```
+This is in part due to the stock parser's defect in parsing expressions
+(see [issue #12](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/12)).
+For now, we only support forward traversal, which is hopefully sufficient for
+most use cases.
+
+## Type Errors at Call Sites
+Typed gate declarations allows the following errors to be caught at the
+syntactic/semantic level:
+```qasm
+qubit[2] qb; qumode[2] qm;
+
+ecd(0.5 + 0.5im) qb[0], qb[1]; // error, qb[1] is not a qumode
+ecd(0.5 + 0.5im) qm[0], qm[1]; // error, qm[0] is not a qubit
+snap(pi/2) qm[0]; // error, pi/2 is not an array of angles
+snap[2]([pi/2, 0, 0.3]) qm[0]; // error, the array length is not 2
+
+gate foo[uint N](array[angle, N] alphas, array[float[64], N] betas) qubit q {
+    ...
+}
+foo([pi/2, 0, 0.3], [0.5, 0.5]) qb; // error, template parameter N cannot be inferred
+
+gate bar[uint N](complex[float[64]] alpha) qumode qm {
+   ...
+}
+bar(0.5 + 0.5im) qm; // error, template parameter N cannot be inferred
+```
 
 ## Compatibility with OpenQASM 3.0 gate definitions
 
-Since OpenQASM 3.0 is widely adopted, it would be desirable to still be able to
-parse `OpenQASM 3.0` gate declarations. For example, consider this declaration
-of the `rz` gate:
-```
+Since OpenQASM 3.0 is widely adopted, users may still want to use gate
+definitions written in the untyped OpenQASM 3.0 syntax.
+To facilitate this, the parser is backward compatible with
+the `OpenQASM 3.0` gate declaration syntax. For example, consider this
+declaration of the `rz` gate, which does not contain typing information:
+```qasm
 gate rz(theta) q {
     ctrl @ gphase(theta) q;
 }
 ```
-Under the new typed syntax, this declaration would be illegal, requiring the
-users to rewrite their gate declarations.
-To alleviate this issue, we allow gate definitions with no typed parameters and
-operands to be accepted. In this case, all parameters would be
-treated as `angle`s and operands would be treated as `qubit`s. That is, the
-above definition would be treated as the following:
-```
+In this case, all parameters would be treated as `angle`s, and operands would be
+treated as `qubit`s. That is, the above definition would be equivalent to the
+following typed definition:
+```qasm
 gate rz(angle theta) qubit q {
     ctrl @ gphase(theta) q;
 }
 ```
 To avoid footguns, the untyped and typed gate declaration syntaxes cannot be
-mixed with each other. As soon as one parameter or operand is typed,
-all other parameters and operands must also be typed.
+mixed with each other. As soon as one parameter or operand is typed, all other
+parameters and operands must also be typed.
 ```qasm
 gate ecd(complex[float[64]] alpha) qubit c, qumode t {...} // ok
 gate ecd(alpha) qubit c, qumode t {...} // error, alpha is not typed
@@ -224,12 +250,39 @@ gate ecd(complex[float[64]] alpha) c, qumode t {...} // error, c is not typed
 
 
 
-# AST representation
+# Notes for developers
 
-This section describes how the AST representation of gates works. If you are not
-a compiler developer, you can skip this section.
+This section is for compiler developers. Users of the language can skip it.
 
-## The `<Gate/>` node
+## Syntax Change for Template Parameters
+
+- **Square brackets for templates.** This matches how OpenQASM 3 already uses
+  `[]` for sized types (`int[32]`, `array[int[32], 5]`).
+
+  An earlier proposal used angle brackets (`gate foo<uint N>`), which proved
+  to be problematic for parsing.
+  For example, suppose we want to support expressions like `ctrl[N-1]` or
+  `ctrl[3*2]`, we would have a rule like `TOK_CTRL '[' Expr ']' ...`.
+  But `']'` can also be a part of `Expr`, making it very annoying to parse.
+  Currently, we disallow expressions inside square brackets to avoid this
+  problem. Granted, the user might not have an incentive to put expressions
+  inside square brackets, but if they do, it would be hard to support that.
+  This is why the current implementation uses square brackets for template
+  parameters.
+  It doesn't help that expression parsing in this repo is not very robust to
+  begin with (see
+  [issue #12](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/12)).
+
+- **Fock `ctrl[…]` vs qubit `ctrl(n)`.** An earlier proposal used `ctrl(n)`
+  for Fock-level control, which conflicts with the existing   n-control form. For
+  example `ctrl(2) @ x a, b, c;` already exists in OpenQASM 3.0 and is
+  equivalent to a CCX gate. Therefore, for qumode Fock-level control, we use
+  square brackets to avoid conflicts. We can view `ctrl[N]` as an analogy of
+  the template syntax elsewhere in the language.
+
+## AST Structure for Gate Declarations and Calls
+
+### The `<Gate/>` node
 
 The AST representation of a gate declaration is enclosed in the
 `<GateDeclarationNode/> --> <Gate/>` node. Inside the `<Gate/>` node, we have
@@ -238,22 +291,31 @@ The AST representation of a gate declaration is enclosed in the
   `lib/AST/ASTMangler.cpp`.
 - `<Opaque/>`: whether the gate is opaque. If the gate is opaque, the parser is
   told that the definition of the gate exists without actually seeing it. This
-  is similar to how in C/C++, we can declare a function or `extern` a variable,
-  without the parser seeing its definition. This option is technically deprecated.
+  option is deprecated and would typically be set to `false`.
 - `<GateCall/>`: whether the gate is a gate call. This would be false at
   a gate declaration, and true at a gate call.
 - `<FullyTyped/>`: whether the gate is fully typed. If the gate is fully typed,
    `<FormalParamTypes/>` and `<FormalQuantumTypes/>` would be present.
 - `<FormalParamTypes/>`: the types of the gate parameters.
 - `<FormalQuantumTypes/>`: the types of the gate quantum operands.
+- `<TemplateParams/>`: unsigned template formals (`uint N` in `gate foo[uint N](…)`).
+  Each entry has `<Type/>`, `<Name/>`, and `<Value/>`. On a **declaration**,
+  `<Value/>` is `NaN` (placeholder — same idea as angle `<Params/>` on decls).
+  On a **call**, `<Value/>` holds the explicit or inferred binding (e.g. `3`
+  for `snap_body[3](…)`). Body uses of `N` are **not** overwritten; `GateQOpList`
+  may still mention symbolic `N` in several places (shared with the definition).
 - `<Params/>`: the parameters of the gate.
   Each parameter can be a `<Angle/>`, a `<Float/>`, a `<MPComplex/>`,
   or a fixed-length array of these types.
-- `<Operands/>`: the operands of the gate. Each operand can be a `<Qubit/>` or a `<Qumode/>`.
+  On declarations, scalar/array elements typically hold `NaN` placeholders;
+  on calls they are replaced with the call-site arguments.
+- `<Operands/>`: the operands of the gate. Each operand can be a `<Qubit/>` or a
+  `<Qumode/>`.
   NOTE: In the original OpenQASM 3.0 parser, this field was called `<Qubits/>`.
-- `<GateQOpList/>`: the list of operations in the gate body.
+- `<GateQOpList/>`: the list of operations in the gate body (may include
+  gate-body `for` nodes).
 
-## How Gate declarations and calls are represented
+### How Gate Declarations and Calls are Represented in the AST
 
 For definitions, the parser sees a gate declaration and creates a
 `<GateDeclarationNode/>` node with a `<Gate/>` node inside and populates the
@@ -268,7 +330,9 @@ opaque gate.
 - For builtin gates, the parser builds a `<Gate/>` for that gate.
 - For declared and opaque gates, the parser clones the `<Gate/>` node from the
   definition, and replaces the fields in `<Params/>` and `<Operands/>` with
-  the actual values from the call site.
+  the actual values from the call site. For templated gates it also fills
+  `<TemplateParams/><Value/>` with the bound size(s); it does **not** rewrite
+  body identifiers named `N`.
 - A quirk is that the parser does **NOT** substitute the parameters and operands
   with the actual values in the gate body (the contents of `<GateQOpList/>`).
   The parameters in the body still need to be substituted with what the call

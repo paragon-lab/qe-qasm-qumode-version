@@ -21,11 +21,31 @@
 
 #include <qasm/AST/ASTTypes.h>
 
+#include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace QASM {
+
+/// One gate template formal (`uint N` in `gate foo[uint N](…)`).
+/// On declarations Bound is unset (NaN analogue for ints — do not mutate body
+/// identifiers named Name). On calls Bound holds the explicit or inferred
+/// value.
+struct ASTGateTemplateParam {
+  ASTType Ty;
+  std::string Name;
+  std::optional<unsigned> Bound;
+
+  ASTGateTemplateParam() : Ty(ASTTypeInt), Name(), Bound() {}
+
+  ASTGateTemplateParam(ASTType T, std::string N)
+      : Ty(T), Name(std::move(N)), Bound() {}
+
+  ASTGateTemplateParam(ASTType T, std::string N, unsigned V)
+      : Ty(T), Name(std::move(N)), Bound(V) {}
+
+  bool HasBound() const { return Bound.has_value(); }
+};
 
 /// Pending gate template parameters while parsing a gate declaration
 /// (`gate foo[uint N](...)`). Cleared at the start of each
@@ -33,7 +53,7 @@ namespace QASM {
 class ASTGateTemplateParamBuilder {
 private:
   static ASTGateTemplateParamBuilder TPB;
-  std::vector<std::pair<ASTType, std::string>> Params;
+  std::vector<ASTGateTemplateParam> Params;
 
 protected:
   ASTGateTemplateParamBuilder() = default;
@@ -53,7 +73,7 @@ public:
 
   bool IsTemplateParam(const std::string &Name) const {
     for (std::size_t I = 0; I < Params.size(); ++I)
-      if (Params[I].second == Name)
+      if (Params[I].Name == Name)
         return true;
     return false;
   }
@@ -61,14 +81,12 @@ public:
   /// Index into Params, or ~0U if Name is not a template param.
   unsigned IndexOf(const std::string &Name) const {
     for (std::size_t I = 0; I < Params.size(); ++I)
-      if (Params[I].second == Name)
+      if (Params[I].Name == Name)
         return static_cast<unsigned>(I);
     return static_cast<unsigned>(~0U);
   }
 
-  const std::vector<std::pair<ASTType, std::string>> &GetParams() const {
-    return Params;
-  }
+  const std::vector<ASTGateTemplateParam> &GetParams() const { return Params; }
 };
 
 } // namespace QASM

@@ -27,6 +27,7 @@ namespace QASM {
 
 ASTGateQOpList *ASTGateOpBuilder::GLP;
 ASTGateOpBuilder ASTGateOpBuilder::B;
+std::vector<ASTGateQOpList *> ASTGateOpBuilder::GLV;
 
 // GateEOp construction always creates an op node; bare GateUOp relies on that
 // append. Under ctrl/negctrl the modifier statement is the list entry, so skip
