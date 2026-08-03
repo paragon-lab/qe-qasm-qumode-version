@@ -28,9 +28,9 @@ include any file to use this gate.
 
 ## SNAP gate
 
-Gate definition:
+Gate definition (`tests/include/cvgates.inc`):
 ```qasm
-gate snap[uint N](array[float[64], N] thetas) qumode qm {
+gate snap[uint N](array[angle, N] thetas) qumode qm {
     for i in [0:N] {
         ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
@@ -40,10 +40,11 @@ Example Usage:
 ```qasm
 snap([pi/2, 0, 0.3]) qm; // infer N = 3
 snap[3]([pi/2, 0, 0.3]) qm; // check length == 3
+```
 Include `tests/include/cvgates.inc` to use this gate. Call sites may omit the
 template argument when `N` can be inferred from the array literal or a sized
 named array (`snap([pi/2, 0, 0.3]) qm`), or pass it explicitly (`snap[3](…)`).
-fs
+
 ## ECD gate
 
 Gate definition:
@@ -282,13 +283,57 @@ This section is for compiler developers. Users of the language can skip it.
 
 ## AST Structure for Gate Declarations and Calls
 
+### Frozen call-node contract (compiler-facing)
+
+For **gate calls** (`GateCall=true`) of the shipped CV gates, treat the
+following as the stable interface. Declaration syntax, `GateQOpList` bodies,
+and mangled-name spelling are **not** part of this contract and may change.
+
+| Gate | How to get it | Classical `Params` | Templates | Quantum |
+|------|---------------|--------------------|-----------|---------|
+| `disp` | builtin | one `MPComplex` (`alpha`; real promotes to real+0i) | none | one `qumode` (see note) |
+| `snap` | `cvgates.inc` | one `AngleArray` (`thetas`) | `N` with bound `Value` = array length | one `qumode` |
+| `ecd` | `cvgates.inc` | one `MPComplex` (`alpha`; real promotes) | none | `qubit`, then `qumode` |
+
+**Note on `disp`:** As a builtin, call nodes may omit `FullyTyped` /
+`FormalParamTypes` / `FormalQuantumTypes`. Identify by `Name=disp`, read
+`Params` as `MPComplex`, and take the qumode from `OperandParams` (a controlled
+`disp` in an `ecd` body can list the control qubit first — the target qumode is
+still present). Typed `snap` / `ecd` calls always carry the Formal* fields.
+
+**Read these fields on a call:**
+
+1. `Name` / `GateDefinitionName` — which gate.
+2. `FullyTyped` — must be `true` for the rows above.
+3. `TemplateParams` — for `snap`, `Name=N` and `Value` is the bound size
+   (inferred or explicit). Empty for `disp` / `ecd`.
+4. `Params` — classical argument **values**. On fully typed calls,
+   `Params[i]/Type` matches the formal classical type (`MPComplex`,
+   `AngleArray`, …). Prefer this over re-deriving types from expressions.
+5. `FormalQuantumTypes` — declared qubit vs qumode per operand slot
+   (parallel to call operands).
+6. `OperandParams` — call-site operand names / refs (`qb`, `qm`, `qm[0]`, …),
+   same order as `FormalQuantumTypes`. Always present on typed CV calls.
+7. `Operands` — when present, `Qubit` / `Qumode` nodes for those slots; may be
+   absent on some call shapes. Do **not** require it; use (5)+(6).
+
+**The Following Parts of the AST has not Stabilized**
+
+- `GateQOpList` (body is shared with the definition; parameters are **not**
+  substituted at the call site — intentional).
+- `MangledName` spelling (useful for debug; not an ABI).
+- Exact element node names under array literals (`ast-gate-…`).
+
+Illegal calls are rejected by the parser; a well-typed program should not
+present e.g. `ecd` with two qubits.
+
 ### The `<Gate/>` node
 
 The AST representation of a gate declaration is enclosed in the
 `<GateDeclarationNode/> --> <Gate/>` node. Inside the `<Gate/>` node, we have
 - `<Name/>`: the name of the gate.
 - `<MangledName/>`: the mangled name of the gate. The mangling logic resides in
-  `lib/AST/ASTMangler.cpp`.
+  `lib/AST/ASTMangler.cpp`. Debug aid only for the call contract above.
 - `<Opaque/>`: whether the gate is opaque. If the gate is opaque, the parser is
   told that the definition of the gate exists without actually seeing it. This
   option is deprecated and would typically be set to `false`.
@@ -296,24 +341,36 @@ The AST representation of a gate declaration is enclosed in the
   a gate declaration, and true at a gate call.
 - `<FullyTyped/>`: whether the gate is fully typed. If the gate is fully typed,
    `<FormalParamTypes/>` and `<FormalQuantumTypes/>` would be present.
-- `<FormalParamTypes/>`: the types of the gate parameters.
-- `<FormalQuantumTypes/>`: the types of the gate quantum operands.
 - `<TemplateParams/>`: unsigned template formals (`uint N` in `gate foo[uint N](…)`).
-  Each entry has `<Type/>`, `<Name/>`, and `<Value/>`. On a **declaration**,
-  `<Value/>` is `NaN` (placeholder — same idea as angle `<Params/>` on decls).
+  Printed before classical `<Params/>` to match source order
+  `gate name[N](…) qubits`. Each entry has `<Type/>`, `<Name/>`, and
+  `<Value/>`. On a **declaration**, `<Value/>` is `NaN` (placeholder).
   On a **call**, `<Value/>` holds the explicit or inferred binding (e.g. `3`
-  for `snap_body[3](…)`). Body uses of `N` are **not** overwritten; `GateQOpList`
-  may still mention symbolic `N` in several places (shared with the definition).
-- `<Params/>`: the parameters of the gate.
-  Each parameter can be a `<Angle/>`, a `<Float/>`, a `<MPComplex/>`,
-  or a fixed-length array of these types.
-  On declarations, scalar/array elements typically hold `NaN` placeholders;
-  on calls they are replaced with the call-site arguments.
-- `<Operands/>`: the operands of the gate. Each operand can be a `<Qubit/>` or a
-  `<Qumode/>`.
+  for `snap[3](…)` / inferred `snap([…])`). Body uses of `N` are **not**
+  overwritten; `GateQOpList` may still mention symbolic `N`.
+- `<FormalParamTypes/>`: declared classical types (and array size / size
+  template metadata). Parallel to `<Params/>`. On fully typed calls,
+  `Params[i]/Type` matches; keep Formal* for `ArraySize` /
+  `ArraySizeTemplate` until that metadata moves onto Params.
+- `<FormalQuantumTypes/>`: declared quantum operand kinds (qubit vs qumode).
+- `<Params/>`: the parameters of the gate (value carrier).
+  On **fully typed** definitions, float/mpdecimal scalars and
+  `array[float|mpdecimal, N]` formals are stored with their declared types
+  (no synthetic `.gatearray` angle view). Angle/complex formals match their
+  declared types. Some other classical scalars (int/bool/…) may still appear
+  as angle placeholders. On **fully typed** calls, `<Params/>` matches the
+  formal type (float/mpdecimal arrays from real literals become
+  `MPDecimalArray`; complex stays `MPComplex`; angle arrays stay
+  `AngleArray`). Untyped OQ3 calls still coerce reals to angles.
+- `<OperandParams/>`: quantum operand bindings (names / indexed refs). Printed
+  for declarations and calls. Prefer this plus `<FormalQuantumTypes/>` for
+  call-site quantum slots.
+- `<Operands/>`: `Qubit` / `Qumode` nodes when materialized. Optional on some
+  call shapes; see the frozen call contract.
   NOTE: In the original OpenQASM 3.0 parser, this field was called `<Qubits/>`.
 - `<GateQOpList/>`: the list of operations in the gate body (may include
-  gate-body `for` nodes).
+  gate-body `for` nodes). Unstable for compiler ABI when treating CV gates as
+  basis operations.
 
 ### How Gate Declarations and Calls are Represented in the AST
 

@@ -1692,6 +1692,14 @@ public:
     }
   }
 
+  /// Construct an mpdecimal-array literal from already-materialized elements.
+  ASTMPDecimalArrayNode(const ASTIdentifierNode *Id,
+                        const std::vector<ASTMPDecimalNode *> &Decimals,
+                        unsigned Bits = ASTMPDecimalNode::DefaultBits)
+      : ASTArrayNode(Id, ASTTypeMPDecimalArray,
+                     static_cast<unsigned>(Decimals.size())),
+        MPV(Decimals), DB(Bits) {}
+
   virtual ~ASTMPDecimalArrayNode() = default;
 
   virtual ASTType GetASTType() const override { return ASTTypeMPDecimalArray; }

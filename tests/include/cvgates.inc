@@ -2,7 +2,7 @@
 // disp is a builtin gate with the following signature:
 // gate disp(complex[float[64]] alpha) qumode qm;
 
-gate snap[uint N](array[float[64], N] thetas) qumode qm {
+gate snap[uint N](array[angle, N] thetas) qumode qm {
     for i in [0:N] {
         ctrl[i] @ gphase(thetas[i]) qm;
     }

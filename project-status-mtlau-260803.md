@@ -4,7 +4,9 @@ Mu-Te Lau
 This file documents the status of the project, as of 2026-08-03, focusing on the
 tasks I'm in charge of.
 
-# Completed Features
+# Stable Features
+The following features work as expected:
+
 - `qumode` declarations: mirrors qubit declaration syntaxes
   ```qasm
   qumode qm;
@@ -18,33 +20,48 @@ tasks I'm in charge of.
       CV gates (`disp` / `snap` / `ecd`) are no longer declared via `opaque`.
     - [docs/gates.md#type-errors-at-call-sites](docs/gates.md#type-errors-at-call-sites)
     lists the types of errors that the type system can catch.
-- Gate declaration syntaxes: see [docs/gates.md#gate-declaration-syntax](docs/gates.md#gate-declaration-syntax) for more details.
-- Typed gate template parameters (`uint N` as array length) with call-site
-  inference from array literals / declared named-array sizes and explicit
-  `gatecall[N](…)`; uninitialized named arrays reject as used-before-assigned.
+
+The AST subtrees of qumodes and gate calls are considered stable and not
+expected to change much. With these, I believe the compiler has enough data to
+build the program level IR.
+
+
+# Work-In-Progress Features
+The following features are implemented, but the syntax and the ASTs are not stable yet.
+- Gate declaration syntaxes: see [docs/gates.md#gate-declaration-syntax](docs/gates.md#gate-declaration-syntax)
+  for more details.
+    - Typed gate template parameters (`uint N` as array length) with call-site
+    inference from array literals / declared named-array sizes and explicit
+    `gatecall[N](…)`; uninitialized named arrays reject as used-before-assigned.
+    - We proposed using angle brackets for template parameters. I decided to use
+    square brackets instead to avoid parsing issues. See
+    [docs/gates.md#syntax-change-for-template-parameters](docs/gates.md#syntax-change-for-template-parameters)
+    for more details.
 - Fock-level `ctrl[…]` / `negctrl[…]` (distinct from qubit `ctrl(n)`): level may
   be an integer, identifier, or expression (`ctrl[3]`, `ctrl[N]`, `ctrl[N-1]`);
   see [docs/gates.md#fock-level-ctrl-negctrl](docs/gates.md#fock-level-ctrl-negctrl).
 - Gate-body `for` (`GateForStmt` / `ASTGateForOpNode`); SNAP is a real typed
   definition in `cvgates.inc`.
-- We proposed using angle brackets for template parameters. I decided to use
-  square brackets instead to avoid parsing issues. See
-  [docs/gates.md#syntax-change-for-template-parameters](docs/gates.md#syntax-change-for-template-parameters)
-  for more details.
 
-# Gate-Level IR (Not Implemented)
+These features are implemented to support a stable gate call AST, as the
+subtrees of gate declarations and gate calls are intimately related.
+To be specific:
+- The gate signature (names, template params, params, operands) is largely
+  stable in terms of AST shapes, but the frontend syntax is not.
+- Treat everything inside the gate body as unstable, including the syntax and the ASTs.
+
+# Not Implemented: Gate-Level IR
 Ended up not having time to implement it.
-I prioritized other features and fixes because:
-- While examining what I had already implemented, I found out that the ASTs
-  didn't contain enough information for the program level IR. Fixing those would
-  be more important, so others wouldn't need to fix my mistakes.
-- I decided that a proper type system and gate declaration syntax are
-  more important to implement first. Without these, the parser would be very
-  fragile, not being able to catch a lot of illegal gate calls.
-- For single-qumode programs now, the DAG view that the gate-level IR would
-  provide is not useful yet. I believe the S+D Unitary decomposition pass
-  can be applied to the program level IR, and it wouldn't be too hard to migrate
-  that pass to the gate level IR after we have that.
+I decided that a proper type system and gate declaration syntax are
+more important to implement first, since gate declarations and gate calls ASTs
+are tightly related. Also, it would fortify the parser by allowing it to catch
+type errors at call sites.
+
+In addition, I believe the implementation of gate-level IR can be delayed.
+For single-qumode programs, the DAG view that the gate-level IR would provide
+is not useful yet. I believe the S+D Unitary decomposition pass can be applied
+to the program level IR, and it wouldn't be too hard to migrate that pass to
+the gate level IR after we have that.
 
 # Known Issues
 - Proposed array literal syntax conflicts with the OQ3 standard ([Issue #13](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/13)).

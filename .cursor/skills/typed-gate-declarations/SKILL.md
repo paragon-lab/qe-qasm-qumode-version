@@ -16,7 +16,8 @@ description: >-
 - **Any typed classical formals** with **typed quantum operands** = fully typed (`ProductionRule_10030`). No partial typing.
 - **Templates (v1):** `gate foo[uint N](array[T, N] …)` — unsigned int templates used as array lengths. Call-site `foo([…])` infers `N` from literal arity or a sized named array’s declared length; `foo[N]([…])` checks. Uninitialized named arrays → “used before assigned.” Call Gate `TemplateParams` carry `<Value>` (NaN on decl, bound int on call); body `N` is not overwritten.
 - **Fock ctrl:** `ctrl[3]` / `ctrl[N]` / `ctrl[N-1]` / `negctrl[i]` — level may be int, id, or binary/unary (or parenthesized) expression. Distinct from qubit `ctrl(n)`. See `docs/gates.md`.
-- **Gate-body `for`:** `GateForStmt` + nested `GateOpList` → `ASTGateForOpNode` (`ASTTypeGateFor`). SNAP in `cvgates.inc` uses `for i in [0:N] { ctrl[i] @ gphase(thetas[i]) qm; }`.
+- **Gate-body `for`:** `GateForStmt` + nested `GateOpList` → `ASTGateForOpNode` (`ASTTypeGateFor`). SNAP in `cvgates.inc` is `array[angle, N]` with `for i in [0:N] { ctrl[i] @ gphase(thetas[i]) qm; }`.
+- **Compiler call ABI:** see `docs/gates.md` § Frozen call-node contract — `disp` / `snap` / `ecd` call fields only; decls and `GateQOpList` are unstable.
 - `ctrl` is a reserved token (`TOK_CTRL`); do not use `ctrl` as an operand name.
 - **Out of CV-core scope:** `while` in `GateOpList`; int/bool/duration/bit array formals; non-`uint` / non-size template params.
 
@@ -55,18 +56,30 @@ Hook: `ASTTypeDiscovery::ValidateTypedGateCall` from `CreateGateCall` **before**
 
 | Formal kind | Storage | Read for checking |
 |-------------|---------|-------------------|
-| `complex[…]` | `ComplexParams` | Prefer `FormalParamTypes[i]` on fully-typed gates |
-| other scalars | coerced into `Params` (angles) — **original type lost** | Must use `FormalParamTypes` |
-| `array[float/angle/mpdecimal, N]` | Declared STE in GSTM + optional `.gatearray` angle alias in `ArrayParams` | `FormalParamTypes` + size; body `thetas[i]` uses float STE |
-| `array[complex[…], N]` | `ComplexArrayParams` (declared STE; no angle view) | `FormalParamTypes` + size |
-| qubit / qumode | `QCParams` STE; polymorphic type restored | Prefer `FormalQuantumTypes[i]` |
-| `Qubits` vector | synthetic GateQubitParam-shaped nodes | **Do not** use for qubit vs qumode |
+| `complex[…]` | `Params` as `MPComplex` | Prefer `FormalParamTypes[i]` on fully-typed gates |
+| `float` / `double` / `mpdecimal` scalars | `Params` as declared type (type-faithful) | Prefer `FormalParamTypes[i]` |
+| other non-float scalars (int/bool/…) | still coerced to angle `.gateparam` in `Params` | Must use `FormalParamTypes` |
+| `array[float/mpdecimal, N]` | Declared STE in GSTM + same node in `Params` (no `.gatearray`) | `FormalParamTypes` + size |
+| `array[angle, N]` | `Params` as `AngleArray` | `FormalParamTypes` + size |
+| `array[complex[…], N]` | `Params` as `MPComplexArray` | `FormalParamTypes` + size |
+| qubit / qumode | `OperandParams` STE; polymorphic type restored | Prefer `FormalQuantumTypes[i]` |
+| `Operands` vector | synthetic GateQubitParam-shaped nodes | **Do not** use for qubit vs qumode |
 
-Array formals share one ctor path in `ASTGates.cpp`: erase LSTM, bind declared STE into GSTM, then push angle-family into `ArrayParams` or complex into `ComplexArrayParams`.
+Array formals share one ctor path in `ASTGates.cpp`: erase LSTM, bind declared STE into GSTM, then `AddParam` with the declared array type (float/mpdecimal/angle/complex).
+
+## Call-site Params (Phase 2)
+
+`ArgumentNodeList` ctor keeps `Params` type-faithful when `FormalParamTypes` say so:
+
+- `FormalWantsComplex` → `MPComplex` (unchanged)
+- `FormalWantsFloatArray` + `ProductionRule_10010` AngleArray literal → convert to `MPDecimalArray` (`ast-gate-mpdecimal-array-lit-*`)
+- `FormalWantsFloatScalar` → keep float/double/mpdecimal (no angle coercion)
+- Angle / complex-array formals → store as AngleArray / MPComplexArray
+- Untyped OQ3 calls → still angle-shaped Params
 
 ## Literals (`ProductionRule_10010`)
 
-`ASTGateType::ExpressionListHasComplex` decides complex vs angle-array literal. Call-site and builder share that classification.
+`ASTGateType::ExpressionListHasComplex` decides complex vs angle-array literal. Call-site and builder share that classification. Real array literals stay AngleArray at 10010; float formals convert at call materialization.
 
 Gate call `ArgsList` is `'(' ExprList ')'`. Array literals are `ExprList`
 elements (`[ExprList]`), so `foo([a,b], theta)` works alongside `… im`

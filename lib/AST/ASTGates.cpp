@@ -168,6 +168,72 @@ bool ASTGateNode::FormalWantsComplex(unsigned Index) const {
   return false;
 }
 
+bool ASTGateNode::FormalWantsFloatScalar(unsigned Index) const {
+  if (Index >= FormalParamTypes.size())
+    return false;
+  ASTType T = FormalParamTypes[Index];
+  return T == ASTTypeFloat || T == ASTTypeDouble || T == ASTTypeMPDecimal;
+}
+
+bool ASTGateNode::FormalWantsFloatArray(unsigned Index) const {
+  if (Index >= FormalParamTypes.size())
+    return false;
+  ASTType T = FormalParamTypes[Index];
+  return T == ASTTypeFloatArray || T == ASTTypeMPDecimalArray;
+}
+
+ASTMPDecimalArrayNode *
+ASTGateNode::MaterializeMPDecimalArrayFromAngles(unsigned Index,
+                                                 const ASTAngleArrayNode *AAN) {
+  assert(AAN && "Invalid AngleArray for float-array materialization!");
+
+  const unsigned Bits = ASTMPDecimalNode::DefaultBits;
+  std::vector<ASTMPDecimalNode *> Decimals;
+  Decimals.reserve(AAN->Size());
+
+  for (unsigned I = 0; I < AAN->Size(); ++I) {
+    const ASTAngleNode *AN = AAN->GetElement(I);
+    assert(AN && "AngleArray element is null!");
+
+    std::stringstream SN;
+    SN << "ast-gate-array-mpdecimal-" << Index << '-' << I;
+    ASTIdentifierNode *EId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        SN.str(), Bits, ASTTypeMPDecimal);
+    assert(EId && "Could not create an MPDecimal ASTIdentifierNode!");
+
+    ASTMPDecimalNode *MPD = nullptr;
+    if (AN->IsExpression()) {
+      const ASTExpressionNode *E = AN->GetExpression();
+      assert(E && "Angle expression is null!");
+      MPD = ASTBuilder::Instance().CreateASTMPDecimalNodeFromExpression(
+          EId, Bits, E);
+    } else {
+      MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(EId, Bits,
+                                                          AN->GetMPValue());
+    }
+    assert(MPD && "Could not materialize MPDecimal from AngleArray element!");
+
+    MPD->Mangle();
+    MPD->MangleLiteral();
+    Decimals.push_back(MPD);
+  }
+
+  std::stringstream ArrName;
+  ArrName << "ast-gate-mpdecimal-array-lit-" << Decimals.size();
+  ASTIdentifierNode *ArrId =
+      new ASTIdentifierNode(ArrName.str(), ASTTypeMPDecimalArray,
+                            static_cast<unsigned>(Decimals.size()));
+  assert(ArrId && "Could not create an MPDecimal Array ASTIdentifierNode!");
+  ArrId->SetPolymorphicName("gatearraympdecimal");
+
+  ASTMPDecimalArrayNode *MDAN =
+      new ASTMPDecimalArrayNode(ArrId, Decimals, Bits);
+  assert(MDAN && "Could not create a valid ASTMPDecimalArrayNode!");
+  MDAN->Mangle();
+  (void)Index;
+  return MDAN;
+}
+
 ASTMPComplexNode *
 ASTGateNode::MaterializeComplexFromReal(unsigned Index,
                                         const ASTMPDecimalNode *R) {
@@ -860,6 +926,106 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           (void)OwnedR;
         }
 
+        // Named array / float-scalar args: keep type-faithful Params.
+        if (XSTE && XSTE->HasValue()) {
+          const ASTType VT = XSTE->GetValueType();
+          if (VT == ASTTypeMPDecimalArray || VT == ASTTypeFloatArray ||
+              VT == ASTTypeAngleArray || VT == ASTTypeMPComplexArray) {
+            ASTExpressionNode *Arr = nullptr;
+            if (VT == ASTTypeMPDecimalArray)
+              Arr = XSTE->GetValue()->GetValue<ASTMPDecimalArrayNode *>();
+            else if (VT == ASTTypeFloatArray)
+              Arr = XSTE->GetValue()->GetValue<ASTFloatArrayNode *>();
+            else if (VT == ASTTypeAngleArray)
+              Arr = XSTE->GetValue()->GetValue<ASTAngleArrayNode *>();
+            else
+              Arr = XSTE->GetValue()->GetValue<ASTMPComplexArrayNode *>();
+            if (!Arr) {
+              if (ASTArrayNode *ARN =
+                      XSTE->GetValue()->GetValue<ASTArrayNode *>())
+                Arr = ARN;
+            }
+            assert(Arr && "Named array gate arg has no array node!");
+            if (IsGateCall && FormalWantsFloatArray(C) &&
+                VT == ASTTypeAngleArray) {
+              ASTMPDecimalArrayNode *MDAN = MaterializeMPDecimalArrayFromAngles(
+                  C, dynamic_cast<ASTAngleArrayNode *>(Arr));
+              assert(MDAN && "Could not convert named AngleArray arg!");
+              AddParam(ASTTypeMPDecimalArray, MDAN);
+              PNS.insert(MDAN->GetName());
+            } else {
+              AddParam(VT, Arr);
+              PNS.insert(Arr->GetName());
+            }
+            PNS.insert(ID->GetName());
+            ID->SetNoQubit(true);
+            break;
+          }
+
+          if (IsGateCall && FormalWantsFloatScalar(C) &&
+              (VT == ASTTypeFloat || VT == ASTTypeDouble ||
+               VT == ASTTypeMPDecimal)) {
+            if (VT == ASTTypeMPDecimal) {
+              ASTMPDecimalNode *R =
+                  XSTE->GetValue()->GetValue<ASTMPDecimalNode *>();
+              assert(R && "Named MPDecimal gate arg is null!");
+              AddParam(ASTTypeMPDecimal, R);
+              PNS.insert(R->GetName());
+            } else if (VT == ASTTypeFloat) {
+              ASTFloatNode *FLT = XSTE->GetValue()->GetValue<ASTFloatNode *>();
+              assert(FLT && "Named Float gate arg is null!");
+              if (FormalParamTypes[C] == ASTTypeFloat) {
+                AddParam(ASTTypeFloat, FLT);
+                PNS.insert(FLT->GetName());
+              } else {
+                std::stringstream RSN;
+                RSN << "ast-gate-mpdecimal-" << C;
+                ASTIdentifierNode *RId =
+                    ASTBuilder::Instance().CreateASTIdentifierNode(
+                        RSN.str(), ASTMPDecimalNode::DefaultBits,
+                        ASTTypeMPDecimal);
+                ASTMPDecimalNode *R =
+                    ASTBuilder::Instance().CreateASTMPDecimalNode(
+                        RId, ASTMPDecimalNode::DefaultBits,
+                        static_cast<double>(FLT->GetValue()));
+                assert(R && "Could not promote Float id to MPDecimal!");
+                R->Mangle();
+                R->MangleLiteral();
+                ToGateParamSymbolTable(RId, RId->GetSymbolTableEntry());
+                AddParam(ASTTypeMPDecimal, R);
+                PNS.insert(R->GetName());
+              }
+            } else {
+              ASTDoubleNode *DBL =
+                  XSTE->GetValue()->GetValue<ASTDoubleNode *>();
+              assert(DBL && "Named Double gate arg is null!");
+              if (FormalParamTypes[C] == ASTTypeDouble) {
+                AddParam(ASTTypeDouble, DBL);
+                PNS.insert(DBL->GetName());
+              } else {
+                std::stringstream RSN;
+                RSN << "ast-gate-mpdecimal-" << C;
+                ASTIdentifierNode *RId =
+                    ASTBuilder::Instance().CreateASTIdentifierNode(
+                        RSN.str(), ASTMPDecimalNode::DefaultBits,
+                        ASTTypeMPDecimal);
+                ASTMPDecimalNode *R =
+                    ASTBuilder::Instance().CreateASTMPDecimalNode(
+                        RId, ASTMPDecimalNode::DefaultBits, DBL->GetValue());
+                assert(R && "Could not promote Double id to MPDecimal!");
+                R->Mangle();
+                R->MangleLiteral();
+                ToGateParamSymbolTable(RId, RId->GetSymbolTableEntry());
+                AddParam(ASTTypeMPDecimal, R);
+                PNS.insert(R->GetName());
+              }
+            }
+            PNS.insert(ID->GetName());
+            ID->SetNoQubit(true);
+            break;
+          }
+        }
+
         ASTAngleNode *XAN = nullptr;
         bool IMPC = false;
 
@@ -954,6 +1120,23 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           break;
         }
 
+        if (IsGateCall && FormalWantsFloatScalar(C)) {
+          std::stringstream RSN;
+          RSN << "ast-gate-mpdecimal-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create an MPDecimal ASTIdentifierNode!");
+          ASTMPDecimalNode *R =
+              ASTBuilder::Instance().CreateASTMPDecimalNodeFromExpression(
+                  RId, ASTMPDecimalNode::DefaultBits, BOP);
+          assert(R && "Could not materialize MPDecimal Param from BinaryOp!");
+          ToGateParamSymbolTable(RId, RId->GetSymbolTableEntry());
+          AddParam(ASTTypeMPDecimal, R);
+          PNS.insert(R->GetName());
+          break;
+        }
+
         const ASTIdentifierNode *BId = BOP->GetIdentifier();
         assert(BId && "Invalid ASTIdentifierNode for ASTBinaryOpNode!");
 
@@ -1016,6 +1199,23 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           assert(MPC && "Could not materialize complex gate Param!");
           AddParam(ASTTypeMPComplex, MPC);
           PNS.insert(MPC->GetName());
+          break;
+        }
+
+        if (IsGateCall && FormalWantsFloatScalar(C)) {
+          std::stringstream RSN;
+          RSN << "ast-gate-mpdecimal-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create an MPDecimal ASTIdentifierNode!");
+          ASTMPDecimalNode *R =
+              ASTBuilder::Instance().CreateASTMPDecimalNodeFromExpression(
+                  RId, ASTMPDecimalNode::DefaultBits, UOP);
+          assert(R && "Could not materialize MPDecimal Param from UnaryOp!");
+          ToGateParamSymbolTable(RId, RId->GetSymbolTableEntry());
+          AddParam(ASTTypeMPDecimal, R);
+          PNS.insert(R->GetName());
           break;
         }
 
@@ -1172,6 +1372,31 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           break;
         }
 
+        if (IsGateCall && FormalWantsFloatScalar(C)) {
+          ASTType FTy = FormalParamTypes[C];
+          if (FTy == ASTTypeFloat) {
+            AddParam(ASTTypeFloat, const_cast<ASTFloatNode *>(FLT));
+            PNS.insert(FLT->GetName());
+            break;
+          }
+          std::stringstream RSN;
+          RSN << "ast-gate-mpdecimal-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create an MPDecimal ASTIdentifierNode!");
+          ASTMPDecimalNode *R = ASTBuilder::Instance().CreateASTMPDecimalNode(
+              RId, ASTMPDecimalNode::DefaultBits,
+              static_cast<double>(FLT->GetValue()));
+          assert(R && "Could not create MPDecimal Param from float!");
+          R->Mangle();
+          R->MangleLiteral();
+          ToGateParamSymbolTable(RId, RId->GetSymbolTableEntry());
+          AddParam(ASTTypeMPDecimal, R);
+          PNS.insert(R->GetName());
+          break;
+        }
+
         if (FLT->GetValue() > static_cast<float>(M_PI * 2)) {
           std::stringstream M;
           M << "Angle value exceeds 2pi.";
@@ -1246,6 +1471,30 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           assert(MPC && "Could not materialize complex Param from double!");
           AddParam(ASTTypeMPComplex, MPC);
           PNS.insert(MPC->GetName());
+          break;
+        }
+
+        if (IsGateCall && FormalWantsFloatScalar(C)) {
+          ASTType FTy = FormalParamTypes[C];
+          if (FTy == ASTTypeDouble) {
+            AddParam(ASTTypeDouble, const_cast<ASTDoubleNode *>(DBL));
+            PNS.insert(DBL->GetName());
+            break;
+          }
+          std::stringstream RSN;
+          RSN << "ast-gate-mpdecimal-" << C;
+          ASTIdentifierNode *RId =
+              ASTBuilder::Instance().CreateASTIdentifierNode(
+                  RSN.str(), ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal);
+          assert(RId && "Could not create an MPDecimal ASTIdentifierNode!");
+          ASTMPDecimalNode *R = ASTBuilder::Instance().CreateASTMPDecimalNode(
+              RId, ASTMPDecimalNode::DefaultBits, DBL->GetValue());
+          assert(R && "Could not create MPDecimal Param from double!");
+          R->Mangle();
+          R->MangleLiteral();
+          ToGateParamSymbolTable(RId, RId->GetSymbolTableEntry());
+          AddParam(ASTTypeMPDecimal, R);
+          PNS.insert(R->GetName());
           break;
         }
 
@@ -1388,6 +1637,12 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           break;
         }
 
+        if (IsGateCall && FormalWantsFloatScalar(C)) {
+          AddParam(ASTTypeMPDecimal, const_cast<ASTMPDecimalNode *>(MPD));
+          PNS.insert(MPD->GetName());
+          break;
+        }
+
         mpfr_t MP2PI;
         mpfr_init2(MP2PI, MPD->GetBits());
         (void)mpfr_const_pi(MP2PI, MPFR_RNDN);
@@ -1506,8 +1761,75 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         ASTAngleArrayNode *AAN = dynamic_cast<ASTAngleArrayNode *>(EN);
         assert(AAN && "Failed to dynamic_cast to an ASTAngleArrayNode!");
 
-        AddParam(ASTTypeAngleArray, AAN);
-        PNS.insert(AAN->GetName());
+        if (IsGateCall && FormalWantsFloatArray(C)) {
+          ASTMPDecimalArrayNode *MDAN =
+              MaterializeMPDecimalArrayFromAngles(C, AAN);
+          assert(MDAN &&
+                 "Could not materialize MPDecimalArray from AngleArray!");
+          // float[64] formals use MPDecimalArray; Params match
+          // FormalParamTypes.
+          AddParam(ASTTypeMPDecimalArray, MDAN);
+          PNS.insert(MDAN->GetName());
+        } else {
+          AddParam(ASTTypeAngleArray, AAN);
+          PNS.insert(AAN->GetName());
+        }
+      } catch (const std::bad_any_cast &E) {
+        std::stringstream M;
+        M << "std::bad_any_cast caught at index " << C << ": " << E.what();
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      } catch (...) {
+        std::stringstream M;
+        M << "Unknown exception caught at index " << C << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      }
+    } break;
+    case ASTTypeFloatArray: {
+      try {
+        ASTExpressionNode *EN = nullptr;
+        try {
+          EN = const_cast<ASTExpressionNode *>(
+              std::any_cast<const ASTExpressionNode *>((*I)->GetValue()));
+        } catch (const std::bad_any_cast &) {
+          EN = std::any_cast<ASTExpressionNode *>((*I)->GetValue());
+        }
+        assert(EN && "Failed to any_cast to an ExpressionNode!");
+
+        ASTFloatArrayNode *FAN = dynamic_cast<ASTFloatArrayNode *>(EN);
+        assert(FAN && "Failed to dynamic_cast to an ASTFloatArrayNode!");
+
+        AddParam(ASTTypeFloatArray, FAN);
+        PNS.insert(FAN->GetName());
+      } catch (const std::bad_any_cast &E) {
+        std::stringstream M;
+        M << "std::bad_any_cast caught at index " << C << ": " << E.what();
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      } catch (...) {
+        std::stringstream M;
+        M << "Unknown exception caught at index " << C << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      }
+    } break;
+    case ASTTypeMPDecimalArray: {
+      try {
+        ASTExpressionNode *EN = nullptr;
+        try {
+          EN = const_cast<ASTExpressionNode *>(
+              std::any_cast<const ASTExpressionNode *>((*I)->GetValue()));
+        } catch (const std::bad_any_cast &) {
+          EN = std::any_cast<ASTExpressionNode *>((*I)->GetValue());
+        }
+        assert(EN && "Failed to any_cast to an ExpressionNode!");
+
+        ASTMPDecimalArrayNode *MDAN = dynamic_cast<ASTMPDecimalArrayNode *>(EN);
+        assert(MDAN && "Failed to dynamic_cast to an ASTMPDecimalArrayNode!");
+
+        AddParam(ASTTypeMPDecimalArray, MDAN);
+        PNS.insert(MDAN->GetName());
       } catch (const std::bad_any_cast &E) {
         std::stringstream M;
         M << "std::bad_any_cast caught at index " << C << ": " << E.what();
@@ -1888,43 +2210,33 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
           assert(CAN && "Typed complex-array gate param is not an "
                         "ASTMPComplexArrayNode!");
           AddParam(ASTTypeMPComplexArray, CAN);
-        } else {
-          ASTAngleArrayNode *AAN = nullptr;
-          if (PTy == ASTTypeAngleArray) {
-            AAN = ASTE->GetValue()->GetValue<ASTAngleArrayNode *>();
-            if (!AAN) {
-              ASTArrayNode *ARN = ASTE->GetValue()->GetValue<ASTArrayNode *>();
-              AAN = dynamic_cast<ASTAngleArrayNode *>(ARN);
-            }
-          } else {
-            // Float/mpdecimal: STE holds declared array; add .gatearray angle
-            // view as an extra GSTM alias for mangling/gphase without replacing
-            // the formal STE used by thetas[i] resolution.
+        } else if (PTy == ASTTypeAngleArray) {
+          ASTAngleArrayNode *AAN =
+              ASTE->GetValue()->GetValue<ASTAngleArrayNode *>();
+          if (!AAN) {
             ASTArrayNode *ARN = ASTE->GetValue()->GetValue<ASTArrayNode *>();
-            if (!ARN) {
-              if (PTy == ASTTypeMPDecimalArray)
-                ARN = ASTE->GetValue()->GetValue<ASTMPDecimalArrayNode *>();
-              else if (PTy == ASTTypeFloatArray)
-                ARN = ASTE->GetValue()->GetValue<ASTFloatArrayNode *>();
-            }
-            if (!ARN && PDN->GetExpression())
-              ARN = dynamic_cast<ASTArrayNode *>(
-                  const_cast<ASTExpressionNode *>(PDN->GetExpression()));
-            assert(ARN && "Typed array gate param is not an ASTArrayNode!");
-            unsigned N = ARN->Size();
-            std::stringstream SN;
-            SN << AId->GetName() << ".gatearray";
-            ASTIdentifierNode *SynId =
-                ASTBuilder::Instance().CreateASTIdentifierNode(
-                    SN.str(), N, ASTTypeAngleArray);
-            assert(SynId && "Could not create angle-array view Identifier!");
-            AAN = dynamic_cast<ASTAngleArrayNode *>(
-                ASTBuilder::Instance().CreateASTAngleArrayNode(SynId, N));
-            assert(AAN && "Could not create angle-array view for gate formal!");
-            ToGateParamSymbolTable(SynId, SynId->GetSymbolTableEntry());
+            AAN = dynamic_cast<ASTAngleArrayNode *>(ARN);
           }
+          if (!AAN && PDN->GetExpression())
+            AAN = dynamic_cast<ASTAngleArrayNode *>(
+                const_cast<ASTExpressionNode *>(PDN->GetExpression()));
           assert(AAN && "Could not obtain a valid ASTAngleArrayNode!");
           AddParam(ASTTypeAngleArray, AAN);
+        } else {
+          // FloatArray / MPDecimalArray: store the declared array in Params
+          // (type-faithful). Do not synthesize a .gatearray AngleArray view.
+          ASTArrayNode *ARN = ASTE->GetValue()->GetValue<ASTArrayNode *>();
+          if (!ARN) {
+            if (PTy == ASTTypeMPDecimalArray)
+              ARN = ASTE->GetValue()->GetValue<ASTMPDecimalArrayNode *>();
+            else if (PTy == ASTTypeFloatArray)
+              ARN = ASTE->GetValue()->GetValue<ASTFloatArrayNode *>();
+          }
+          if (!ARN && PDN->GetExpression())
+            ARN = dynamic_cast<ASTArrayNode *>(
+                const_cast<ASTExpressionNode *>(PDN->GetExpression()));
+          assert(ARN && "Typed array gate param is not an ASTArrayNode!");
+          AddParam(PTy, ARN);
         }
 
         PNS.insert(AP->GetName());
@@ -1934,12 +2246,46 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
       }
 
       if (PTy == ASTTypeFloat || PTy == ASTTypeDouble ||
-          PTy == ASTTypeMPDecimal || PTy == ASTTypeInt || PTy == ASTTypeUInt ||
-          PTy == ASTTypeMPInteger || PTy == ASTTypeMPUInteger ||
-          PTy == ASTTypeBool || PTy == ASTTypeBitset ||
-          PTy == ASTTypeDuration) {
-        // Keep the declared binding; represent non-complex scalars as
-        // gate angles so existing gate-body angle machinery still works.
+          PTy == ASTTypeMPDecimal) {
+        // Type-faithful Params: keep the declared float/decimal binding.
+        const ASTIdentifierNode *PId = AP->GetIdentifier();
+        assert(PId && "Typed classical gate param has no Identifier!");
+
+        ASTSymbolTableEntry *PSTE =
+            const_cast<ASTSymbolTableEntry *>(PId->GetSymbolTableEntry());
+        if (!PSTE)
+          PSTE = ASTSymbolTable::Instance().Lookup(PId->GetName(),
+                                                   PId->GetBits(), PTy);
+        assert(PSTE && PSTE->HasValue() &&
+               "Typed float/decimal gate param has no SymbolTable Entry!");
+
+        ToGateParamSymbolTable(PId, PSTE);
+        if (PId)
+          const_cast<ASTIdentifierNode *>(PId)->SetNoQubit(true);
+
+        ASTExpressionNode *EN = nullptr;
+        if (PTy == ASTTypeMPDecimal)
+          EN = PSTE->GetValue()->GetValue<ASTMPDecimalNode *>();
+        else if (PTy == ASTTypeFloat)
+          EN = PSTE->GetValue()->GetValue<ASTFloatNode *>();
+        else
+          EN = PSTE->GetValue()->GetValue<ASTDoubleNode *>();
+        if (!EN && PDN->GetExpression())
+          EN = const_cast<ASTExpressionNode *>(PDN->GetExpression());
+        assert(EN && "Typed float/decimal gate param has no value node!");
+
+        AddParam(PTy, EN);
+        PNS.insert(AP->GetName());
+        PNS.insert(PId->GetName());
+        ++C;
+        continue;
+      }
+
+      if (PTy == ASTTypeInt || PTy == ASTTypeUInt || PTy == ASTTypeMPInteger ||
+          PTy == ASTTypeMPUInteger || PTy == ASTTypeBool ||
+          PTy == ASTTypeBitset || PTy == ASTTypeDuration) {
+        // Non-float classical scalars still use an angle carrier so existing
+        // gate-body angle machinery keeps working (Phase 1 scope).
         const ASTIdentifierNode *PId = AP->GetIdentifier();
         assert(PId && "Typed classical gate param has no Identifier!");
 
@@ -2286,6 +2632,26 @@ void ASTGateNode::print() const {
   std::cout << "<FullyTyped>" << std::boolalpha << FullyTyped << "</FullyTyped>"
             << std::endl;
 
+  // Source order: gate name[TemplateParams](Params) quantum-operands
+  if (!TemplateParams.empty()) {
+    std::cout << "<TemplateParams>" << std::endl;
+    for (std::size_t I = 0; I < TemplateParams.size(); ++I) {
+      std::cout << "<TemplateParam>" << std::endl;
+      std::cout << "<Type>" << PrintTypeEnum(TemplateParams[I].Ty) << "</Type>"
+                << std::endl;
+      std::cout << "<Name>" << TemplateParams[I].Name << "</Name>" << std::endl;
+      // Decl: NaN placeholder (like angle Params). Call: bound value.
+      // Body identifiers named Name are not overwritten.
+      if (TemplateParams[I].HasBound())
+        std::cout << "<Value>" << std::dec << *TemplateParams[I].Bound
+                  << "</Value>" << std::endl;
+      else
+        std::cout << "<Value>NaN</Value>" << std::endl;
+      std::cout << "</TemplateParam>" << std::endl;
+    }
+    std::cout << "</TemplateParams>" << std::endl;
+  }
+
   if (!FormalParamTypes.empty()) {
     std::cout << "<FormalParamTypes>" << std::endl;
     for (std::size_t I = 0; I < FormalParamTypes.size(); ++I) {
@@ -2305,25 +2671,6 @@ void ASTGateNode::print() const {
       std::cout << "</FormalParamType>" << std::endl;
     }
     std::cout << "</FormalParamTypes>" << std::endl;
-  }
-
-  if (!TemplateParams.empty()) {
-    std::cout << "<TemplateParams>" << std::endl;
-    for (std::size_t I = 0; I < TemplateParams.size(); ++I) {
-      std::cout << "<TemplateParam>" << std::endl;
-      std::cout << "<Type>" << PrintTypeEnum(TemplateParams[I].Ty) << "</Type>"
-                << std::endl;
-      std::cout << "<Name>" << TemplateParams[I].Name << "</Name>" << std::endl;
-      // Decl: NaN placeholder (like angle Params). Call: bound value.
-      // Body identifiers named Name are not overwritten.
-      if (TemplateParams[I].HasBound())
-        std::cout << "<Value>" << std::dec << *TemplateParams[I].Bound
-                  << "</Value>" << std::endl;
-      else
-        std::cout << "<Value>NaN</Value>" << std::endl;
-      std::cout << "</TemplateParam>" << std::endl;
-    }
-    std::cout << "</TemplateParams>" << std::endl;
   }
 
   if (!FormalQuantumTypes.empty()) {
@@ -2355,7 +2702,9 @@ void ASTGateNode::print() const {
     std::cout << "</Operands>" << std::endl;
   }
 
-  if (!OperandParams.empty() && Operands.empty()) {
+  // Always print OperandParams when present (decls and calls). Call consumers
+  // use these names with FormalQuantumTypes; Operands may be empty.
+  if (!OperandParams.empty()) {
     std::cout << "<OperandParams>" << std::endl;
     unsigned XC = 0;
     std::map<unsigned, const ASTIdentifierNode *>::const_iterator MI;

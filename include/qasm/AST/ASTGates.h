@@ -129,9 +129,21 @@ private:
   /// True when call formal Index is complex (FormalParamTypes or builtin disp).
   bool FormalWantsComplex(unsigned Index) const;
 
+  /// True when call formal Index is float/double/mpdecimal scalar.
+  bool FormalWantsFloatScalar(unsigned Index) const;
+
+  /// True when call formal Index is float/mpdecimal array.
+  bool FormalWantsFloatArray(unsigned Index) const;
+
   /// Store a real scalar as complex real+0i for a complex formal.
   ASTMPComplexNode *MaterializeComplexFromReal(unsigned Index,
                                                const ASTMPDecimalNode *R);
+
+  /// Convert a ProductionRule_10010 AngleArray literal to MPDecimalArray
+  /// when the formal wants a float/mpdecimal array.
+  ASTMPDecimalArrayNode *
+  MaterializeMPDecimalArrayFromAngles(unsigned Index,
+                                      const ASTAngleArrayNode *AAN);
 
   template <typename NodeTy>
   NodeTy *GetParamOfType(ASTType Ty, unsigned Index) const {
