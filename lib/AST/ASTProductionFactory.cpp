@@ -38,13 +38,16 @@
 #include <qasm/AST/ASTGateControl.h>
 #include <qasm/AST/ASTGateNodeBuilder.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
-#include <qasm/AST/ASTGateQubitParamBuilder.h>
+#include <qasm/AST/ASTGateOperandParamBuilder.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
+#include <qasm/AST/ASTGateType.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTIfConditionalsGraphController.h>
 #include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/AST/ASTKernelBuilder.h>
 #include <qasm/AST/ASTLoops.h>
+#include <qasm/AST/ASTMPComplexList.h>
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTObjectTracker.h>
 #include <qasm/AST/ASTOpenQASMVersionTracker.h>
@@ -70,6 +73,7 @@
 #include <cassert>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <string>
 
 namespace QASM {
@@ -7288,7 +7292,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   Id->SetLocation(TK->GetLocation());
   ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
-  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 1U, Unsigned);
+  // TyBits 0 ⇒ ConstructASTArray uses per-type defaults (e.g. AngleBits).
+  // Do not pass 1: that forces 1-bit angle/mpdecimal elements.
+  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 0U, Unsigned);
 
   if (AN->IsError())
     return AN;
@@ -7692,14 +7698,123 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   return AN;
 }
 
+// Gate/function parameter lists provisionally type identifiers as Angle.
+// Array NamedTypeDecls must rebind that provisional type before construction.
+static bool RebindProvisionalArrayIdentifier(const ASTIdentifierNode *Id,
+                                             ASTType Ty, unsigned Bits) {
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+  ASTType Cur = Id->GetSymbolType();
+  if (Cur == Ty)
+    return true;
+
+  if (Cur != ASTTypeAngle && Cur != ASTTypeUndefined) {
+    std::stringstream M;
+    M << "Identifier '" << Id->GetName() << "' has type " << PrintTypeEnum(Cur)
+      << ", but array declaration requires " << PrintTypeEnum(Ty) << ".";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  ASTIdentifierNode *MId = const_cast<ASTIdentifierNode *>(Id);
+  ASTSymbolTableEntry *STE = MId->GetSymbolTableEntry();
+  if (!STE)
+    STE = ASTSymbolTable::Instance().Lookup(MId, MId->GetBits(), Cur);
+
+  if (Cur == ASTTypeAngle)
+    ASTSymbolTable::Instance().EraseLocalAngle(MId);
+
+  MId->SetSymbolType(Ty);
+  MId->SetBits(Bits);
+  if (!STE) {
+    STE = new ASTSymbolTableEntry(MId, Ty);
+    assert(STE && "Could not create a SymbolTable Entry for array formal!");
+  } else {
+    STE->SetValueType(Ty);
+  }
+  MId->SetSymbolTableEntry(STE);
+  STE->SetLocalScope();
+
+  // LocalScope() only relocates matching entries; insert explicitly so
+  // CreateAST*ArrayNode Lookup(name, bits, Ty) succeeds.
+  if (!ASTSymbolTable::Instance().InsertLocal(MId, STE)) {
+    // Already present under this name — update in place via InsertLocal.
+  }
+  return true;
+}
+
+static bool AllowArrayInCurrentContext(const ASTToken *TK,
+                                       const ASTIdentifierNode *Id, ASTType Ty,
+                                       const ASTDeclarationContext *CTX) {
+  if (ASTScopeController::Instance().CheckArrayContextType(
+          CTX->GetContextType()))
+    return true;
+  if (ASTIdentifierTypeController::Instance().IsFunctionArgument(TK, Id, Ty,
+                                                                 CTX))
+    return true;
+  if (ASTIdentifierTypeController::Instance().IsGateParameterArgument(TK, Ty))
+    return true;
+
+  // Fallback: callable parameter lists provisionally open gate/function
+  // context before the declaration context type is set. Array formals are
+  // reduced on the Identifier token, so allow them until '{' is seen.
+  if (ASTExpressionValidator::Instance().IsArrayType(Ty) &&
+      !ASTIdentifierTypeController::Instance().SeenLBrace() &&
+      ASTIdentifierTypeController::Instance().SeenLParen() &&
+      (ASTGateContextBuilder::Instance().InOpenContext() ||
+       ASTFunctionContextBuilder::Instance().InOpenContext()))
+    return true;
+
+  // Last resort for typed gate formals: declaration context already Gate.
+  if (ASTExpressionValidator::Instance().IsArrayType(Ty) &&
+      (CTX->GetContextType() == ASTTypeGate ||
+       CTX->GetContextType() == ASTTypeGateDeclaration) &&
+      !ASTIdentifierTypeController::Instance().SeenLBrace())
+    return true;
+
+  return false;
+}
+
+/// Resolve array length from Integer or Identifier. Gate template params
+/// (`uint N`) use a placeholder size of 1 and return the template name.
+static unsigned ResolveArrayLengthBits(
+    const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
+    std::string *SizeTemplateName) {
+  if (SizeTemplateName)
+    SizeTemplateName->clear();
+  if (II.index() == 1) {
+    if (const ASTIdentifierNode *IId = std::get<1>(II)) {
+      if (ASTGateTemplateParamBuilder::Instance().IsTemplateParam(
+              IId->GetName())) {
+        if (SizeTemplateName)
+          *SizeTemplateName = IId->GetName();
+        return 1U;
+      }
+    }
+  }
+  switch (II.index()) {
+  case 0:
+    if (const ASTIntNode *IIN = std::get<0>(II))
+      return ASTUtils::Instance().GetUnsignedValue(IIN);
+    return 0U;
+  case 1:
+    if (const ASTIdentifierNode *IId = std::get<1>(II)) {
+      ASTScopeController::Instance().CheckIdentifier(IId);
+      return ASTUtils::Instance().GetUnsignedValue(IId);
+    }
+    return 0U;
+  default:
+    break;
+  }
+  return static_cast<unsigned>(~0x0);
+}
+
 ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTToken *TK, const ASTIdentifierNode *Id,
     const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
     ASTType Ty, bool Unsigned) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
 
@@ -7707,19 +7822,17 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy) &&
-      !ASTIdentifierTypeController::Instance().IsFunctionArgument(TK, Id, Ty,
-                                                                  CTX)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  unsigned Bits = ASTProductionFactory::Instance().GetVariantBits(II);
+  std::string SizeTemplate;
+  unsigned Bits = ResolveArrayLengthBits(II, &SizeTemplate);
   if (ASTIdentifierNode::InvalidBits(Bits)) {
     std::stringstream M;
     M << "Invalid number of bits for array expression.";
@@ -7729,6 +7842,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
     if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits,
@@ -7742,8 +7858,12 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     }
   }
 
-  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 1U, Unsigned);
+  // TyBits 0 ⇒ ConstructASTArray uses per-type defaults (e.g. AngleBits).
+  // Do not pass 1: that forces 1-bit angle/mpdecimal elements.
+  ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 0U, Unsigned);
   AN->SetLocation(TK->GetLocation());
+  if (!SizeTemplate.empty())
+    AN->SetSizeTemplateName(SizeTemplate);
   AN->Mangle();
   return AN;
 }
@@ -7754,8 +7874,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTStringNode *TS, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(TS && "Invalid ASTStringNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7764,11 +7882,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7784,6 +7901,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
     if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits,
@@ -7819,8 +7939,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTStringNode *TS, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(TS && "Invalid ASTStringNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7829,11 +7947,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7849,6 +7966,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned DBits = ASTProductionFactory::Instance().GetVariantBits(DX);
   if (ASTIdentifierNode::InvalidBits(DBits)) {
@@ -7893,8 +8013,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTDurationOfNode *DON, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(DON && "Invalid ASTDurationOfNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7903,11 +8021,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7923,6 +8040,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
     if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits,
@@ -7958,8 +8078,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTDurationOfNode *DON, ASTType Ty) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
   assert(DON && "Invalid ASTDurationOfNode argument!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
@@ -7968,11 +8086,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -7988,6 +8105,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned DBits = ASTProductionFactory::Instance().GetVariantBits(DX);
   if (ASTIdentifierNode::InvalidBits(DBits)) {
@@ -8033,8 +8153,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     ASTType Ty, bool Unsigned) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
 
@@ -8042,17 +8160,17 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  unsigned Bits = ASTProductionFactory::Instance().GetVariantBits(II);
+  std::string SizeTemplate;
+  unsigned Bits = ResolveArrayLengthBits(II, &SizeTemplate);
   if (ASTIdentifierNode::InvalidBits(Bits)) {
     std::stringstream M;
     M << "Invalid number of bits for array expression.";
@@ -8062,6 +8180,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned TyBits = ASTProductionFactory::Instance().GetVariantBits(CX);
   if (ASTIdentifierNode::InvalidBits(TyBits)) {
@@ -8086,6 +8207,8 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
 
   ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, TyBits, Unsigned);
   AN->SetLocation(TK->GetLocation());
+  if (!SizeTemplate.empty())
+    AN->SetSizeTemplateName(SizeTemplate);
   AN->Mangle();
   return AN;
 }
@@ -8098,8 +8221,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     ASTType Ty, bool Unsigned) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(Id->GetSymbolType() == Ty &&
-         "Inconsistent ASTIdentifierNode <-> array symbol type!");
 
   ASTScopeController::Instance().CheckScopeAndUndefined(Id);
 
@@ -8107,11 +8228,10 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
       ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
-  ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!AllowArrayInCurrentContext(TK, Id, Ty, CTX)) {
     std::stringstream M;
-    M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
-      << " declaration context.";
+    M << "Arrays cannot be declared within an "
+      << PrintTypeEnum(CTX->GetContextType()) << " declaration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ArrayConstructionError(Ty, TK, M.str());
@@ -8127,6 +8247,9 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   }
 
   Id->SetBits(Bits);
+  if (!RebindProvisionalArrayIdentifier(Id, Ty, Bits))
+    return ArrayConstructionError(Ty, TK,
+                                  "Inconsistent array identifier type.");
 
   unsigned TyBits = ASTProductionFactory::Instance().GetVariantBits(CX);
   if (ASTIdentifierNode::InvalidBits(TyBits)) {
@@ -17978,44 +18101,38 @@ ASTProductionFactory::ProductionRule_10000(const ASTToken *TK,
   return DN;
 }
 
-ASTDeclarationNode * //adding a data type Unitary KH
-ASTProductionFactory::ProductionRule_10003(
-    const ASTToken *TK,
-    const ASTIdentifierNode *DId) const {
+ASTDeclarationNode * // adding a data type Unitary KH
+ASTProductionFactory::ProductionRule_10003(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(DId && "Invalid ASTIdentifierNode argument!");
 
   unsigned Bits = DId->GetBits() == 0 ? 1 : DId->GetBits();
   DId->SetBits(Bits);
 
-  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(
-          DId, Bits, ASTTypeUnitary)) {
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(DId, Bits,
+                                                          ASTTypeUnitary)) {
     std::stringstream M;
     M << "Could not transfer Symbol Table Entry for ASTTypeUnitary.";
 
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(DId),
-        M.str(),
-        DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::ICE);
 
     return ASTDeclarationNode::DeclarationError(DId, M.str());
   }
 
   if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
     std::stringstream M;
-    M << "Declaration " << DId->GetName()
-      << " shadows a previous declaration.";
+    M << "Declaration " << DId->GetName() << " shadows a previous declaration.";
 
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(DId),
-        M.str(),
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(),
         DiagLevel::Error);
 
     return ASTDeclarationNode::DeclarationError(DId, M.str());
   }
 
-  ASTUnitaryNode *UN =
-      ASTBuilder::Instance().CreateASTUnitaryNode(DId);
+  ASTUnitaryNode *UN = ASTBuilder::Instance().CreateASTUnitaryNode(DId);
 
   assert(UN && "Could not create a valid ASTUnitaryNode!");
 
@@ -20203,10 +20320,10 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_5000(
   return DN;
 }
 
-static void MaterializeGateQubitParams(const ASTToken *TK,
-                                       ASTIdentifierList *QIL,
-                                       ASTIdentifierList &LQIL,
-                                       const ASTDeclarationContext *CTX) {
+static void MaterializeGateOperandParams(const ASTToken *TK,
+                                         ASTIdentifierList *QIL,
+                                         ASTIdentifierList &LQIL,
+                                         const ASTDeclarationContext *CTX) {
   assert(QIL && "Invalid ASTIdentifierList argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
 
@@ -20215,7 +20332,7 @@ static void MaterializeGateQubitParams(const ASTToken *TK,
   for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
     ASTSymbolTableEntry *QSTE = (*II)->GetSymbolTableEntry();
     if (QSTE && QSTE->HasValue()) {
-      if (QSTE->GetValue()->GetASTType() == ASTTypeGateQubitParam) {
+      if (QSTE->GetValue()->GetASTType() == ASTTypeGateOperandParam) {
         (*II)->SetDeclarationContext(CTX);
         (*II)->SetGateLocal(true);
         (*II)->SetLocalScope();
@@ -20225,7 +20342,7 @@ static void MaterializeGateQubitParams(const ASTToken *TK,
             ASTProductionFactory::Instance().ProductionRule_1507(
                 TK, (*II)->GetName());
         assert(QId &&
-               "Could not create a valid GateQubitParam ASTIdentifierNode!");
+               "Could not create a valid GateOperandParam ASTIdentifierNode!");
 
         QId->SetDeclarationContext(CTX);
         QId->SetGateLocal(true);
@@ -20234,7 +20351,7 @@ static void MaterializeGateQubitParams(const ASTToken *TK,
         (*II)->RestoreType();
       }
     } else if (QSTE && !QSTE->HasValue()) {
-      if (QSTE->GetValueType() == ASTTypeGateQubitParam) {
+      if (QSTE->GetValueType() == ASTTypeGateOperandParam) {
         ASTIdentifierNode *QId = *II;
         QId->SetDeclarationContext(CTX);
         QId->SetGateLocal(true);
@@ -20246,7 +20363,7 @@ static void MaterializeGateQubitParams(const ASTToken *TK,
             ASTProductionFactory::Instance().ProductionRule_1507(
                 TK, (*II)->GetName());
         assert(QId &&
-               "Could not create a valid GateQubitParam ASTIdentifierNode!");
+               "Could not create a valid GateOperandParam ASTIdentifierNode!");
 
         QId->SetDeclarationContext(CTX);
         QId->SetGateLocal(true);
@@ -20259,7 +20376,7 @@ static void MaterializeGateQubitParams(const ASTToken *TK,
           ASTProductionFactory::Instance().ProductionRule_1507(
               TK, (*II)->GetName());
       assert(QId &&
-             "Could not create a valid GateQubitParam ASTIdentifierNode!");
+             "Could not create a valid GateOperandParam ASTIdentifierNode!");
 
       QId->SetDeclarationContext(CTX);
       QId->SetGateLocal(true);
@@ -20276,7 +20393,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
   assert(TK && "Invalid ASTToken argument!");
   assert(GId && "Invalid ASTIdentifierNode argument!");
   assert(DL && "Invalid ASTDeclarationList argument!");
-  assert(QIL && "Invalid GateQubitParamList argument!");
+  assert(QIL && "Invalid GateOperandParamList argument!");
   assert(GOL && "Invalid ASTGateQOpList argument!");
 
   ASTDeclarationContext *CTX =
@@ -20351,8 +20468,8 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   ASTParameterList *PAL = new ASTParameterList(DL);
   assert(PAL && "Could not create a valid ASTParameterList!");
@@ -20377,7 +20494,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
     return ASTGateDeclarationNode::DeclarationError(GId, M.str());
   }
 
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
   PAL->SetLocalScope();
 
   for (ASTParameterList::iterator PI = PAL->begin(); PI != PAL->end(); ++PI) {
@@ -20429,9 +20546,9 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
   QIL->Clear();
   PAL->DeleteSymbols();
   PAL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
-  GTN->ClearGateQubits();
+  GTN->ClearGateOperands();
   GTN->ClearLocalGateSymbols();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -20446,7 +20563,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
     ASTGateQOpList *GOL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(GId && "Invalid ASTIdentifierNode argument!");
-  assert(QIL && "Invalid GateQubitParamList argument!");
+  assert(QIL && "Invalid GateOperandParamList argument!");
   assert(GOL && "Invalid ASTGateQOpList argument!");
 
   ASTDeclarationContext *CTX =
@@ -20510,8 +20627,8 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   ASTParameterList *PAL = new ASTParameterList();
   assert(PAL && "Could not create a valid ASTParameterList!");
@@ -20528,7 +20645,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
     return ASTGateDeclarationNode::DeclarationError(GId, M.str());
   }
 
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
   std::stringstream M;
 
   const ASTDeclarationContext *GCX =
@@ -20559,9 +20676,9 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
   ASTGateQubitTracker::Instance().Erase();
   QIL->DeleteSymbols();
   QIL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
-  GTN->ClearGateQubits();
+  GTN->ClearGateOperands();
   GTN->ClearLocalGateSymbols();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -20574,7 +20691,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
 ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1432(
     const ASTToken *TK, ASTIdentifierList *QIL, const ASTLocation &Loc,
     ASTGateQOpList *GL) const {
-  assert(QIL && "Invalid ASTGateQubitParamList CX Gate argument!");
+  assert(QIL && "Invalid ASTGateOperandParamList CX Gate argument!");
   assert(GL && "Invalid ASTGateQOpList CX Gate argument!");
 
   ASTDeclarationContext *CTX =
@@ -20614,10 +20731,10 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1432(
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
   std::stringstream M;
 
   ASTParameterList PL;
@@ -20649,9 +20766,9 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1432(
 
   QIL->DeleteSymbols();
   QIL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
-  CXG->ClearGateQubits();
+  CXG->ClearGateOperands();
   CXG->ClearLocalGateSymbols();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -20667,7 +20784,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1433(
   assert(TK && "Invalid ASTToken argument!");
   assert(GS && "Invalid string argument!");
   assert(!GS->empty() && "Invalid string argument!");
-  assert(QIL && "Invalid ASTGateQubitParamList Hadamard Gate argument!");
+  assert(QIL && "Invalid ASTGateOperandParamList Hadamard Gate argument!");
   assert(GL && "Invalid ASTGateQOpList Hadamard Gate argument!");
 
   std::string CX = "CX";
@@ -20728,9 +20845,9 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1433(
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
 
   const ASTDeclarationContext *CXG =
       ASTDeclarationContextTracker::Instance().GetGlobalContext();
@@ -20767,9 +20884,9 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1433(
 
   QIL->DeleteSymbols();
   QIL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
-  GTN->ClearGateQubits();
+  GTN->ClearGateOperands();
   GTN->ClearLocalGateSymbols();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -20786,7 +20903,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1434(
   assert(GS && "Invalid string argument!");
   assert(!GS->empty() && "Invalid string argument!");
   assert(DL && "Invalid ASTDeclarationList argument!");
-  assert(QIL && "Invalid ASTGateQubitParamList Hadamard Gate argument!");
+  assert(QIL && "Invalid ASTGateOperandParamList Hadamard Gate argument!");
   assert(GOL && "Invalid ASTGateQOpList Hadamard Gate argument!");
 
   ASTDeclarationContext *CTX =
@@ -20850,7 +20967,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1434(
     return ASTGateDeclarationNode::DeclarationError(GId, M.str());
   }
 
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
   PAL->SetLocalScope();
 
   for (ASTParameterList::iterator PI = PAL->begin(); PI != PAL->end(); ++PI) {
@@ -20883,8 +21000,8 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1434(
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   const ASTDeclarationContext *GCX =
       ASTDeclarationContextTracker::Instance().GetGlobalContext();
@@ -20917,9 +21034,9 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1434(
   QIL->Clear();
   PAL->DeleteSymbols();
   PAL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
-  GTN->ClearGateQubits();
+  GTN->ClearGateOperands();
   GTN->ClearLocalGateSymbols();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -20995,7 +21112,7 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1435(
 
   PAL->SetLocation(TK->GetLocation());
   PAL->SetLocalScope();
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
 
   for (ASTParameterList::iterator PI = PAL->begin(); PI != PAL->end(); ++PI) {
     ASTParameter *P = dynamic_cast<ASTParameter *>(*PI);
@@ -21027,8 +21144,8 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1435(
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   const ASTDeclarationContext *GCX =
       ASTDeclarationContextTracker::Instance().GetGlobalContext();
@@ -21055,12 +21172,12 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1435(
   DN->SetDeclarationContext(GCX);
   ASTDeclarationBuilder::Instance().Append(DN);
   ASTGateQubitTracker::Instance().Erase();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   PAL->DeleteSymbols();
   PAL->Clear();
   QIL->DeleteSymbols();
   QIL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -21144,8 +21261,8 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken *TK,
 
   ASTIdentifierList LQIL;
 
-  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  MaterializeGateOperandParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   const ASTDeclarationContext *GCX =
       ASTDeclarationContextTracker::Instance().GetGlobalContext();
@@ -21156,7 +21273,7 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken *TK,
 
   PAL->SetLocation(TK->GetLocation());
   PAL->SetLocalScope();
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
+  ASTGateOperandParamBuilder::Instance().SetGateLocal();
 
   ASTGateNode *GTN =
       ASTBuilder::Instance().CreateASTGateNode(GId, GK, *PAL, LQIL, GOL);
@@ -21180,12 +21297,12 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken *TK,
   DN->SetDeclarationContext(GCX);
   ASTDeclarationBuilder::Instance().Append(DN);
   ASTGateQubitTracker::Instance().Erase();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   PAL->DeleteSymbols();
   PAL->Clear();
   QIL->DeleteSymbols();
   QIL->Clear();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().StopAngleList();
@@ -22267,7 +22384,7 @@ ASTProductionFactory::ProductionRule_1480(const ASTToken *TK,
     assert(QCAN && "Could not obtain a valid ASTQubitContainerAliasNode!");
     QCAN->Mangle();
   } break;
-  case ASTTypeGateQubitParam: {
+  case ASTTypeGateOperandParam: {
     std::stringstream M;
     M << "Attempting to reset a Gate Qubit Parameter.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
@@ -23395,12 +23512,13 @@ ASTProductionFactory::ProductionRule_1507(const ASTToken *TK,
   assert(TK && "Invalid ASTToken argument!");
   assert(!N.empty() && "Invalid Identifier Name!");
 
-  ASTIdentifierNode *QId = new ASTIdentifierNode(N, ASTTypeGateQubitParam, 1U);
-  assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
+  ASTIdentifierNode *QId =
+      new ASTIdentifierNode(N, ASTTypeGateOperandParam, 1U);
+  assert(QId && "Could not create a valid GateOperandParam ASTIdentifierNode!");
 
   ASTSymbolTableEntry *STE =
-      new ASTSymbolTableEntry(QId, ASTTypeGateQubitParam);
-  assert(STE && "Could not create a valid GateQubitParam SymbolTable Entry!");
+      new ASTSymbolTableEntry(QId, ASTTypeGateOperandParam);
+  assert(STE && "Could not create a valid GateOperandParam SymbolTable Entry!");
 
   STE->ResetValue();
   STE->SetLocalScope();
@@ -23408,7 +23526,8 @@ ASTProductionFactory::ProductionRule_1507(const ASTToken *TK,
   QId->SetLocalScope();
   ASTType CTy = ASTIdentifierTypeController::Instance().GetCurrentType();
   ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
-  ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateQubitParam);
+  ASTIdentifierTypeController::Instance().SetCurrentType(
+      ASTTypeGateOperandParam);
   return QId;
 }
 
@@ -23436,6 +23555,26 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
                                           const ASTIdentifierNode *IId) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(IId && "Invalid ASTIdentifierNode argument!");
+
+  // Loop induction vars are not compile-time constants. Build the subscript
+  // from the induction Identifier so AsIndexedString() yields `[i]` (not `[0]`
+  // from a stand-in IntNode value). Array resolution still uses element 0 only
+  // as a type stand-in when IsInductionVariable().
+  const ASTDeclarationContext *DCX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  const bool InFor = DCX && DCX->GetContextType() == ASTTypeForStatement;
+  if (IId->IsInductionVariable() ||
+      (InFor && (IId->GetSymbolType() == ASTTypeInt ||
+                 IId->GetSymbolType() == ASTTypeUInt ||
+                 IId->GetSymbolType() == ASTTypeMPInteger ||
+                 IId->GetSymbolType() == ASTTypeMPUInteger))) {
+    const_cast<ASTIdentifierNode *>(IId)->SetInductionVariable(true);
+    ASTArraySubscriptNode *ASN = new ASTArraySubscriptNode(IId);
+    assert(ASN && "Could not create a valid ASTArraySubscriptNode!");
+    ASN->SetInductionVariable(IId);
+    ASN->SetLocation(TK->GetLocation());
+    return ASN;
+  }
 
   std::variant<const ASTIntNode *, const ASTMPIntegerNode *,
                const ASTCBitNode *>
@@ -28904,6 +29043,65 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3211(
   return FSN;
 }
 
+static ASTStatementList *
+GateQOpListToStatementList(const ASTGateQOpList *Body) {
+  ASTStatementList *SL = new ASTStatementList();
+  assert(SL && "Could not create a valid ASTStatementList!");
+  if (!Body)
+    return SL;
+  for (ASTGateQOpList::const_iterator I = Body->begin(); I != Body->end(); ++I)
+    SL->Append(*I);
+  return SL;
+}
+
+ASTGateQOpNode *ASTProductionFactory::ProductionRule_3220(
+    const ASTToken *TK, ASTIdentifierNode *LId,
+    ASTForLoopRangeExpressionNode *FLR, ASTGateQOpList *Body) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(LId && "Invalid ASTIdentifierNode argument!");
+  assert(FLR && "Invalid ASTForLoopRangeExpressionNode argument!");
+  assert(Body && "Invalid ASTGateQOpList argument!");
+
+  ASTStatementList *SL = GateQOpListToStatementList(Body);
+  ASTForStatementNode *FSN = ProductionRule_3204(TK, LId, FLR, SL);
+  if (!FSN || FSN->IsError()) {
+    std::stringstream M;
+    M << (FSN ? FSN->GetError() : "Could not create gate-body for statement.");
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  ASTGateForOpNode *GFN =
+      new ASTGateForOpNode(ASTIdentifierNode::GateQOp.Clone(), FSN);
+  assert(GFN && "Could not create a valid ASTGateForOpNode!");
+  GFN->SetLocation(TK->GetLocation());
+  GFN->Mangle();
+  return GFN;
+}
+
+ASTGateQOpNode *ASTProductionFactory::ProductionRule_3221(
+    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    ASTGateQOpList *Body) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(LId && "Invalid ASTIdentifierNode argument!");
+  assert(IL && "Invalid ASTIntegerList argument!");
+  assert(Body && "Invalid ASTGateQOpList argument!");
+
+  ASTStatementList *SL = GateQOpListToStatementList(Body);
+  ASTForStatementNode *FSN = ProductionRule_3200(TK, LId, IL, SL);
+  if (!FSN || FSN->IsError()) {
+    std::stringstream M;
+    M << (FSN ? FSN->GetError() : "Could not create gate-body for statement.");
+    return ASTGateQOpNode::StatementError(M.str());
+  }
+
+  ASTGateForOpNode *GFN =
+      new ASTGateForOpNode(ASTIdentifierNode::GateQOp.Clone(), FSN);
+  assert(GFN && "Could not create a valid ASTGateForOpNode!");
+  GFN->SetLocation(TK->GetLocation());
+  GFN->Mangle();
+  return GFN;
+}
+
 ASTWhileStatementNode *ASTProductionFactory::ProductionRule_3300(
     const ASTToken *TK, ASTExpressionNode *EN, ASTStatementList *SL) const {
   assert(TK && "Invalid ASTToken argument!");
@@ -29041,13 +29239,13 @@ ASTDoWhileStatementNode *ASTProductionFactory::ProductionRule_3400(
   return DWSN;
 }
 
-static bool TransferGateQubitParams(const ASTAnyTypeList &ATL) {
+static bool TransferGateOperandParams(const ASTAnyTypeList &ATL) {
   for (unsigned I = 0; I < ATL.Size(); ++I) {
     const ASTIdentifierNode *AId = nullptr;
     if (ATL.IsIdentifier(I) && (AId = ATL.GetIdentifier(I)) != nullptr) {
       switch (AId->GetSymbolType()) {
-      case ASTTypeGateQubitParam:
-        if (!ASTSymbolTable::Instance().TransferGateQubitParam(AId))
+      case ASTTypeGateOperandParam:
+        if (!ASTSymbolTable::Instance().TransferGateOperandParam(AId))
           return false;
         break;
       default:
@@ -29196,8 +29394,8 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
             }
           }
         } break;
-        case ASTTypeGateQubitParam: {
-          if (!ASTSymbolTable::Instance().TransferGateQubitParam(AId)) {
+        case ASTTypeGateOperandParam: {
+          if (!ASTSymbolTable::Instance().TransferGateOperandParam(AId)) {
             std::stringstream M;
             M << "Failure transferring scope of Gate Qubit Parameter.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
@@ -29343,7 +29541,7 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
             }
           }
         } break;
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           break;
         default:
           break;
@@ -29683,11 +29881,11 @@ static ASTGateQOpNode *CreateDefcalGroupCall(const ASTToken *TK,
   return RD;
 }
 
-static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
-                                      const ASTSymbolTableEntry *STE,
-                                      const ASTIdentifierNode *Id,
-                                      const ASTArgumentNodeList &ANL,
-                                      const ASTAnyTypeList &ATL) {
+static ASTGateQOpNode *
+CreateGateCall(const ASTToken *TK, const ASTSymbolTableEntry *STE,
+               const ASTIdentifierNode *Id, const ASTArgumentNodeList &ANL,
+               const ASTAnyTypeList &ATL,
+               const ASTExpressionList *TemplateArgs = nullptr) {
   // ASTGateNode *GN = STE->GetValue()->GetValue<ASTGateNode *>();
   ASTGateNode *GN = nullptr;
 
@@ -29697,8 +29895,7 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
     break;
 
   case ASTTypeUnitary: {
-    ASTUnitaryNode *UN =
-        STE->GetValue()->GetValue<ASTUnitaryNode *>();
+    ASTUnitaryNode *UN = STE->GetValue()->GetValue<ASTUnitaryNode *>();
     GN = UN;
     break;
   }
@@ -29715,6 +29912,32 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
     return nullptr;
   }
 
+  if (GN->IsFullyTyped()) {
+    std::vector<std::optional<unsigned>> TemplateBounds;
+    if (!ASTTypeDiscovery::Instance().ValidateTypedGateCall(
+            TK, GN, ANL, ATL, TemplateArgs, &TemplateBounds)) {
+      return ASTGateQOpNode::StatementError(Id, "Typed gate call argument "
+                                                "type mismatch.");
+    }
+
+    ASTGateNode *GGN = GN->CloneCall(Id, ANL, ATL);
+    assert(GGN && "Could not create a valid ASTGateNode call!");
+    // Store bindings on the call TemplateParams only — do not overwrite body
+    // identifiers named N (OpList is shared with the definition; N may appear
+    // many times). Same pattern as Params: formals stay placeholders in the
+    // body; call-site values live on the call Gate.
+    GGN->SetTemplateParamBounds(TemplateBounds);
+
+    ASTGateNodeBuilder::Instance().Append(GGN);
+    ASTGateQOpNode *RG =
+        ASTGateOpBuilder::Instance().CreateASTGenericGateOpNode(Id, GGN);
+    assert(RG && "Failed to create a valid ASTGenericGateOpNode!");
+
+    RG->SetLocation(TK->GetLocation());
+    RG->Mangle();
+    return RG;
+  }
+
   ASTGateNode *GGN = GN->CloneCall(Id, ANL, ATL);
   assert(GGN && "Could not create a valid ASTGateNode call!");
 
@@ -29728,10 +29951,10 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
   return RG;
 }
 
-static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
-                                         const ASTIdentifierNode *Id,
-                                         const ASTArgumentNodeList &ANL,
-                                         const ASTAnyTypeList &ATL) {
+static ASTGateQOpNode *
+CreateQOpNodeCall(const ASTToken *TK, const ASTIdentifierNode *Id,
+                  const ASTArgumentNodeList &ANL, const ASTAnyTypeList &ATL,
+                  const ASTExpressionList *TemplateArgs = nullptr) {
   const ASTSymbolTableEntry *STE =
       ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
   if (!STE) {
@@ -29752,11 +29975,6 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
 
   ASTGateQOpNode *RQO = nullptr;
 
-  //debugging code
-  std::cerr << "STE->GetValueType() = "
-          << PrintTypeEnum(STE->GetValueType())
-          << std::endl;
-
   switch (STE->GetValueType()) {
   case ASTTypeDefcal:
     RQO = CreateDefcalCall(TK, STE, Id, ANL, ATL);
@@ -29766,7 +29984,7 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
     break;
   case ASTTypeGate:
   case ASTTypeUnitary:
-    RQO = CreateGateCall(TK, STE, Id, ANL, ATL);
+    RQO = CreateGateCall(TK, STE, Id, ANL, ATL, TemplateArgs);
     break;
   case ASTTypeCXGate:
     RQO = CreateCXGateCall(TK, Id, ANL, ATL);
@@ -29822,21 +30040,54 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
 ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
     const ASTToken *TK, const ASTIdentifierNode *Id,
     const ASTArgumentNodeList *ANL, const ASTAnyTypeList *ATL) const {
+  return ProductionRule_3500(TK, Id, nullptr, ANL, ATL);
+}
+
+ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
+    const ASTToken *TK, const ASTIdentifierNode *Id,
+    const ASTExpressionList *TemplateArgs, const ASTArgumentNodeList *ANL,
+    const ASTAnyTypeList *ATL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(ANL && "Invalid ASTArgumentNodeList argument!");
   assert(ATL && "Invalid ASTAnyTypeList argument!");
 
-  ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateCall);
-  ASTScopeController::Instance().CheckOutOfScope(Id);
-  ASTIdentifierTypeController::Instance().CheckIsCallable(Id);
+  // `foo[3](…)` parses as an indexed Identifier on a gate; rewrite to template
+  // args on the base gate name (square-bracket template call sugar).
+  const ASTExpressionList *ResolvedTemplateArgs = TemplateArgs;
+  const ASTIdentifierNode *CallId = Id;
+  ASTExpressionList *OwnedTemplateArgs = nullptr;
 
-  if (!TransferGateQubitParams(*ATL)) {
+  if (const ASTIdentifierRefNode *IdR =
+          dynamic_cast<const ASTIdentifierRefNode *>(Id)) {
+    const ASTIdentifierNode *Base = IdR->GetIdentifier();
+    if (Base && Base->GetSymbolType() == ASTTypeGate) {
+      CallId = Base;
+      if (!ResolvedTemplateArgs) {
+        const ASTArraySubscriptNode *ASN = IdR->GetArraySubscriptNode();
+        if (ASN) {
+          OwnedTemplateArgs = ASTExpressionBuilder::Instance().NewList();
+          ASTIntNode *IN =
+              new ASTIntNode(static_cast<int32_t>(ASN->GetIndex()));
+          assert(IN && "Could not create template arg ASTIntNode!");
+          OwnedTemplateArgs->Append(IN);
+          ResolvedTemplateArgs = OwnedTemplateArgs;
+        }
+      }
+    }
+  }
+
+  ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateCall);
+  ASTScopeController::Instance().CheckOutOfScope(CallId);
+  ASTIdentifierTypeController::Instance().CheckIsCallable(CallId);
+
+  if (!TransferGateOperandParams(*ATL)) {
     std::stringstream M;
     M << "Failure transferring scope of Gate Qubit Parameter.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ASTGateQOpNode::StatementError(Id, M.str());
+        DIAGLineCounter::Instance().GetLocation(CallId), M.str(),
+        DiagLevel::ICE);
+    return ASTGateQOpNode::StatementError(CallId, M.str());
   }
 
   if (ASTGateQOpNode *QOp = ValidateQubitArgs(*ATL)) {
@@ -29850,27 +30101,27 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
   ASTGateQOpNode *RQO = nullptr;
   ASTType CTy = ASTTypeGate;
 
-  if (Id->GetName() == "cx") {
-    RQO = CreateCXGateCall(TK, Id, *ANL, *ATL);
-  } else if (Id->GetName() == "ccx") {
-    RQO = CreateCCXGateCall(TK, Id, *ANL, *ATL);
-  } else if (Id->GetName() == "cnot") {
-    RQO = CreateCNOTGateCall(TK, Id, *ANL, *ATL);
-  } else if (Id->GetName() == "h") {
-    RQO = CreateHadamardGateCall(TK, Id, *ANL, *ATL);
+  if (CallId->GetName() == "cx") {
+    RQO = CreateCXGateCall(TK, CallId, *ANL, *ATL);
+  } else if (CallId->GetName() == "ccx") {
+    RQO = CreateCCXGateCall(TK, CallId, *ANL, *ATL);
+  } else if (CallId->GetName() == "cnot") {
+    RQO = CreateCNOTGateCall(TK, CallId, *ANL, *ATL);
+  } else if (CallId->GetName() == "h") {
+    RQO = CreateHadamardGateCall(TK, CallId, *ANL, *ATL);
   } else {
-    RQO = CreateQOpNodeCall(TK, Id, *ANL, *ATL);
-    CTy = Id->GetSymbolType();
+    RQO = CreateQOpNodeCall(TK, CallId, *ANL, *ATL, ResolvedTemplateArgs);
+    CTy = CallId->GetSymbolType();
   }
 
   assert(RQO && "Could not create a valid Gate Call!");
 
-  if (!ValidateQubitArgs(Id, ATL)) {
+  if (!ValidateQubitArgs(CallId, ATL)) {
     std::stringstream M;
     M << "Failure validating Qubit arguments.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTGateQOpNode::StatementError(Id, M.str());
+    return ASTGateQOpNode::StatementError(CallId, M.str());
   }
 
   RQO->SetLocation(TK->GetLocation());
@@ -30323,7 +30574,7 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
       QId->SetGateLocal(true);
 
     // Prefer the declared quantum-register entry; gate-call parsing may
-    // have reclassified the identifier as ASTTypeGateQubitParam.
+    // have reclassified the identifier as ASTTypeGateOperandParam.
     const ASTSymbolTableEntry *QSTE = ASTSymbolTable::Instance().FindQubit(QId);
     if (!QSTE)
       QSTE = QId->GetSymbolTableEntry();
@@ -30332,7 +30583,7 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
     const bool IsTarget = (I + 1U == ATL->Size());
     if (IsTarget) {
       if (!ASTUtils::Instance().IsQumodeType(QTy) &&
-          QTy != ASTTypeGateQubitParam) {
+          QTy != ASTTypeGateOperandParam) {
         std::stringstream M;
         M << "The disp gate target must be a qumode, but '" << QId->GetName()
           << "' has type " << PrintTypeEnum(QTy) << ".";
@@ -30342,7 +30593,7 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
         return ASTGateQOpNode::StatementError(QId, M.str());
       }
     } else if (!ASTUtils::Instance().IsQubitType(QTy) &&
-               QTy != ASTTypeGateQubitParam) {
+               QTy != ASTTypeGateOperandParam) {
       std::stringstream M;
       M << "Control operands of disp must be qubits, but '" << QId->GetName()
         << "' has type " << PrintTypeEnum(QTy) << ".";
@@ -30404,16 +30655,314 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
   return RG;
 }
 
-ASTAngleArrayNode *
+static bool IsExplicitClassicalGateParamType(ASTType Ty) {
+  switch (Ty) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger:
+  case ASTTypeMPDecimal:
+  case ASTTypeMPComplex:
+  case ASTTypeBool:
+  case ASTTypeBitset:
+  case ASTTypeDuration:
+  case ASTTypeAngle:
+  case ASTTypeLambdaAngle:
+  case ASTTypePhiAngle:
+  case ASTTypeThetaAngle:
+  case ASTTypeAngleArray:
+  case ASTTypeFloatArray:
+  case ASTTypeMPDecimalArray:
+  case ASTTypeIntArray:
+  case ASTTypeMPIntegerArray:
+  case ASTTypeBoolArray:
+  case ASTTypeMPComplexArray:
+  case ASTTypeDurationArray:
+  case ASTTypeCBitArray:
+    // Includes explicit `angle` NamedTypeDecls. Bare Identifier formals also
+    // become ASTTypeAngle and are accepted here when paired with typed
+    // quantum operands (fully-typed path); legacy bare-qubit gates stay on
+    // ProductionRule_1430 / 1431 without call-site checks.
+    return true;
+  default:
+    return false;
+  }
+}
+
+ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
+    const ASTToken *TK, const ASTIdentifierNode *GId, ASTDeclarationList *DL,
+    ASTIdentifierList *QIL, ASTGateQOpList *GOL) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GId && "Invalid ASTIdentifierNode argument!");
+  assert(DL && "Invalid ASTDeclarationList argument!");
+  assert(QIL && "Invalid GateOperandParamList argument!");
+  assert(GOL && "Invalid ASTGateQOpList argument!");
+
+  if (DL->Empty()) {
+    std::stringstream M;
+    M << "Fully-typed gate declarations require at least one explicitly "
+         "typed classical parameter.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+  }
+
+  for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
+       ++DI) {
+    const ASTDeclarationNode *DN = *DI;
+    assert(DN && "Invalid ASTDeclarationNode in typed gate parameter list!");
+    ASTType PTy = DN->GetASTType();
+    if (!IsExplicitClassicalGateParamType(PTy)) {
+      std::stringstream M;
+      M << "Fully-typed gate parameter '" << DN->GetName()
+        << "' must have an explicit classical type (got " << PrintTypeEnum(PTy)
+        << ").";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(DN), M.str(),
+          DiagLevel::Error);
+      return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+    }
+  }
+
+  for (ASTIdentifierList::const_iterator II = QIL->begin(); II != QIL->end();
+       ++II) {
+    const ASTIdentifierNode *QId = *II;
+    assert(QId && "Invalid quantum operand in typed gate declaration!");
+    ASTType PTy = QId->GetPolymorphicType();
+    if (PTy != ASTTypeQubit && PTy != ASTTypeQumode) {
+      std::stringstream M;
+      M << "Fully-typed gate operands must be declared as qubit or qumode "
+           "(operand '"
+        << QId->GetName() << "').";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+          DiagLevel::Error);
+      return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+    }
+  }
+
+  std::vector<ASTType> FormalParamTypes;
+  FormalParamTypes.reserve(DL->Size());
+  std::vector<unsigned> FormalParamArraySizes;
+  FormalParamArraySizes.reserve(DL->Size());
+  std::vector<unsigned> FormalParamArraySizeTemplateIndices;
+  FormalParamArraySizeTemplateIndices.reserve(DL->Size());
+  for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
+       ++DI) {
+    const ASTDeclarationNode *DN = *DI;
+    ASTType PTy = DN->GetASTType();
+    if (const ASTIdentifierNode *PId = DN->GetIdentifier()) {
+      ASTType STy = PId->GetSymbolType();
+      if (STy == ASTTypeMPComplexArray || STy == ASTTypeAngleArray ||
+          STy == ASTTypeFloatArray || STy == ASTTypeMPDecimalArray)
+        PTy = STy;
+    }
+    FormalParamTypes.push_back(PTy);
+
+    unsigned ArrSZ = 0U;
+    unsigned ArrTemplateIdx = static_cast<unsigned>(~0U);
+    if (PTy == ASTTypeAngleArray || PTy == ASTTypeFloatArray ||
+        PTy == ASTTypeMPDecimalArray || PTy == ASTTypeMPComplexArray) {
+      if (const ASTExpressionNode *EX = DN->GetExpression()) {
+        if (const ASTArrayNode *ARN = dynamic_cast<const ASTArrayNode *>(EX)) {
+          if (ARN->HasSizeTemplate()) {
+            ArrTemplateIdx = ASTGateTemplateParamBuilder::Instance().IndexOf(
+                ARN->GetSizeTemplateName());
+            ArrSZ = 0U;
+          } else {
+            ArrSZ = ARN->Size();
+          }
+        }
+      }
+    }
+    FormalParamArraySizes.push_back(ArrSZ);
+    FormalParamArraySizeTemplateIndices.push_back(ArrTemplateIdx);
+  }
+
+  std::vector<ASTType> FormalQuantumTypes;
+  FormalQuantumTypes.reserve(QIL->Size());
+  for (ASTIdentifierList::const_iterator II = QIL->begin(); II != QIL->end();
+       ++II)
+    FormalQuantumTypes.push_back((*II)->GetPolymorphicType());
+
+  // Same AST construction path as the untyped-operand GateDecl form.
+  ASTGateDeclarationNode *GDN = ProductionRule_1430(TK, GId, DL, QIL, GOL);
+  if (!GDN || GDN->IsError()) {
+    ASTGateTemplateParamBuilder::Instance().Clear();
+    return GDN;
+  }
+
+  ASTGateNode *GN = const_cast<ASTGateNode *>(GDN->GetGateNode());
+  assert(GN && "Fully-typed gate declaration has no ASTGateNode!");
+  GN->SetFormalParamTypes(FormalParamTypes);
+  GN->SetFormalParamArraySizes(FormalParamArraySizes);
+  GN->SetFormalParamArraySizeTemplateIndices(
+      FormalParamArraySizeTemplateIndices);
+  GN->SetTemplateParams(ASTGateTemplateParamBuilder::Instance().GetParams());
+  GN->SetFormalQuantumTypes(FormalQuantumTypes);
+  GN->SetFullyTyped(true);
+  // Construction mangled before Formal* was attached; refresh the name.
+  GN->Mangle();
+  ASTGateTemplateParamBuilder::Instance().Clear();
+  return GDN;
+}
+
+void ASTProductionFactory::ProductionRule_10031(
+    const ASTToken *TK, const ASTIdentifierNode *Id) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+
+  if (ASTGateTemplateParamBuilder::Instance().IsTemplateParam(Id->GetName())) {
+    std::stringstream M;
+    M << "Duplicate gate template parameter '" << Id->GetName() << "'.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    return;
+  }
+
+  // Record the name first so TypeDiscovery / array-size resolution can see it.
+  ASTGateTemplateParamBuilder::Instance().Add(ASTTypeInt, Id->GetName());
+
+  ASTIdentifierNode *IId = const_cast<ASTIdentifierNode *>(Id);
+  ASTType CurTy = IId->GetSymbolType();
+
+  // Template params are often provisionally typed as gate operand params /
+  // undefined during Identifier discovery. Rebind to a gate-local unsigned int
+  // so body uses like `ctrl[N]` resolve.
+  if (CurTy != ASTTypeInt && CurTy != ASTTypeUInt) {
+    ASTSymbolTable::Instance().EraseGateOperandParam(IId);
+    ASTSymbolTable::Instance().EraseLocal(IId, IId->GetBits(), CurTy);
+    ASTSymbolTable::Instance().EraseLocalSymbol(IId->GetName());
+    IId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        Id->GetName(), ASTIntNode::IntBits, ASTTypeInt);
+    if (!IId) {
+      std::stringstream M;
+      M << "Could not create identifier for gate template parameter '"
+        << Id->GetName() << "'.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
+      return;
+    }
+  }
+
+  IId->SetBits(ASTIntNode::IntBits);
+  IId->SetGateLocal(true);
+  IId->SetLocalScope();
+
+  ASTSymbolTableEntry *STE =
+      const_cast<ASTSymbolTableEntry *>(IId->GetSymbolTableEntry());
+  if (!STE) {
+    STE =
+        ASTSymbolTable::Instance().Lookup(IId, ASTIntNode::IntBits, ASTTypeInt);
+  }
+  if (!STE) {
+    STE = new ASTSymbolTableEntry(IId, ASTTypeInt);
+    assert(STE && "Could not create SymbolTable Entry for template param!");
+    IId->SetSymbolTableEntry(STE);
+    IId->SetHasSymbolTableEntry(true);
+    STE->SetLocalScope();
+    ASTSymbolTable::Instance().InsertLocal(IId, STE);
+  }
+
+  if (!STE->HasValue() || STE->GetValueType() != ASTTypeInt) {
+    ASTIntNode *IN = ASTBuilder::Instance().CreateASTIntNode(IId, uint32_t(0U));
+    if (!IN) {
+      // CreateASTIntNode may fail if Lookup disagrees; build manually.
+      IN = new ASTIntNode(IId, uint32_t(0U));
+      STE->ResetValue();
+      STE->SetValue(new ASTValue<>(IN, ASTTypeInt), ASTTypeInt);
+      IId->SetSymbolTableEntry(STE);
+      IN->Mangle();
+    }
+    IN->SetLocation(TK->GetLocation());
+  }
+
+  // CreateASTIntNode MangleLiteral() embeds the stand-in 0 as
+  // `_QLj32_0EEE_`, which looks like a compile-time literal zero. Unbound
+  // template formals are a NaN analogue (like angle Params); keep the
+  // numeric placeholder on the IntNode but make MangledLiteralName track
+  // the named formal (same pattern as angle `lambda`).
+  if (IId->GetMangledName().empty()) {
+    if (STE->HasValue()) {
+      if (ASTIntNode *IN = STE->GetValue()->GetValue<ASTIntNode *>())
+        IN->Mangle();
+    }
+  }
+  if (!IId->GetMangledName().empty())
+    IId->SetMangledLiteralName(IId->GetMangledName());
+}
+
+ASTExpressionNode *
 ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
   assert(EL && "Invalid ASTExpressionList argument!");
 
   if (EL->Empty()) {
     std::stringstream M;
-    M << "Gate angle-array parameter cannot be empty.";
+    M << "Gate array parameter cannot be empty.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return ASTAngleArrayNode::ExpressionError(M.str());
+  }
+
+  auto ResolveElementType = [](const ASTExpressionNode *EN) -> ASTType {
+    ASTType ElTy = EN->GetASTType();
+    if (ElTy == ASTTypeIdentifier || ElTy == ASTTypeIdentifierRef) {
+      if (const ASTIdentifierNode *EId = EN->GetIdentifier()) {
+        ElTy = EId->GetSymbolType();
+        if (const ASTSymbolTableEntry *ESTE = EId->GetSymbolTableEntry())
+          ElTy = ESTE->GetValueType();
+      }
+    }
+    return ElTy;
+  };
+
+  // Same classification used at call-site validation (ASTGateType).
+  bool HasComplex = ASTGateType::ExpressionListHasComplex(EL);
+
+  if (HasComplex) {
+    ASTMPComplexList CXL(*EL);
+    if (CXL.Size() != EL->Size()) {
+      std::stringstream M;
+      M << "Could not construct a complex array from gate array literal.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      return ASTMPComplexArrayNode::ExpressionError(M.str(), nullptr);
+    }
+
+    std::vector<ASTMPComplexNode *> Complexes;
+    Complexes.reserve(CXL.Size());
+    for (unsigned I = 0; I < CXL.Size(); ++I) {
+      ASTMPComplexNode *MPC = CXL.GetComplex(I);
+      if (!MPC) {
+        std::stringstream M;
+        M << "Invalid complex expression in gate array parameter at index " << I
+          << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
+        return ASTMPComplexArrayNode::ExpressionError(M.str(), nullptr);
+      }
+      MPC->Mangle();
+      Complexes.push_back(MPC);
+    }
+
+    std::stringstream ArrName;
+    ArrName << "ast-gate-complex-array-lit-" << Complexes.size();
+    ASTIdentifierNode *ArrId =
+        new ASTIdentifierNode(ArrName.str(), ASTTypeMPComplexArray,
+                              static_cast<unsigned>(Complexes.size()));
+    assert(ArrId && "Could not create a Complex Array ASTIdentifierNode!");
+
+    ArrId->SetPolymorphicName("gatearraycomplex");
+    ASTMPComplexArrayNode *CAN = new ASTMPComplexArrayNode(
+        ArrId, Complexes, ASTMPComplexNode::DefaultBits);
+    assert(CAN && "Could not create a valid ASTMPComplexArrayNode!");
+
+    CAN->Mangle();
+    return CAN;
   }
 
   std::vector<ASTAngleNode *> Angles;
@@ -30428,6 +30977,17 @@ ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
         << ".";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      return ASTAngleArrayNode::ExpressionError(M.str());
+    }
+
+    ASTType ElTy = ResolveElementType(EN);
+    if (ASTExpressionValidator::Instance().IsComplexType(ElTy)) {
+      std::stringstream M;
+      M << "Complex value is not valid as element " << C
+        << " of a real/angle gate array parameter.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(EN), M.str(),
+          DiagLevel::Error);
       return ASTAngleArrayNode::ExpressionError(M.str());
     }
 
@@ -30767,7 +31327,7 @@ ASTProductionFactory::ProductionRule_3854(const ASTToken *TK,
       assert(QSTE && "Could not obtain a valid SymbolTable Entry!");
       if (!QSTE) {
         std::stringstream M;
-        M << "Could not obtain a valid ASTGateQubitParam SymbolTable Entry.";
+        M << "Could not obtain a valid ASTGateOperandParam SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(TK), M.str(),
             DiagLevel::ICE);
@@ -30780,12 +31340,12 @@ ASTProductionFactory::ProductionRule_3854(const ASTToken *TK,
       QSTE->SetLocalScope();
 
       if (!QSTE->HasValue()) {
-        ASTGateQubitParamNode *QPN = new ASTGateQubitParamNode(
+        ASTGateOperandParamNode *QPN = new ASTGateOperandParamNode(
             QId, QIX++, QId->GetBits(), QId->GetName());
-        assert(QPN && "Could not create a valid ASTGateQubitParamNode!");
+        assert(QPN && "Could not create a valid ASTGateOperandParamNode!");
         if (!QPN) {
           std::stringstream M;
-          M << "Could not create a valid ASTGateQubitParamNode.";
+          M << "Could not create a valid ASTGateOperandParamNode.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
               DIAGLineCounter::Instance().GetLocation(TK), M.str(),
               DiagLevel::ICE);
@@ -30794,12 +31354,12 @@ ASTProductionFactory::ProductionRule_3854(const ASTToken *TK,
 
         QPN->SetDeclarationContext(CTX);
         QSTE->ResetValue();
-        QSTE->SetValue(new ASTValue<>(QPN, ASTTypeGateQubitParam),
-                       ASTTypeGateQubitParam);
+        QSTE->SetValue(new ASTValue<>(QPN, ASTTypeGateOperandParam),
+                       ASTTypeGateOperandParam);
         assert(QSTE->HasValue() && "SymbolTable Entry has no Value!");
         if (!QSTE->HasValue()) {
           std::stringstream M;
-          M << "ASTGateQubitParam SymbolTable Entry has no Value.";
+          M << "ASTGateOperandParam SymbolTable Entry has no Value.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
               DIAGLineCounter::Instance().GetLocation(TK), M.str(),
               DiagLevel::ICE);
@@ -31003,6 +31563,84 @@ ASTProductionFactory::ProductionRule_8001(const ASTToken *TK,
   }
 
   return EN;
+}
+
+ASTGateFockControlNode *ASTProductionFactory::ProductionRule_3855(
+    const ASTToken *TK, const ASTGateQOpNode *GQN,
+    const ASTExpressionNode *Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GQN && "Invalid ASTGateQOpNode argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  switch (Level->GetASTType()) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+    return ProductionRule_3855(TK, GQN,
+                               dynamic_cast<const ASTIntNode *>(Level));
+  case ASTTypeBinaryOp:
+    return ProductionRule_3855(TK, GQN,
+                               dynamic_cast<const ASTBinaryOpNode *>(Level));
+  case ASTTypeUnaryOp:
+    return ProductionRule_3855(TK, GQN,
+                               dynamic_cast<const ASTUnaryOpNode *>(Level));
+  case ASTTypeIdentifier: {
+    const ASTIdentifierNode *Id = Level->GetIdentifier();
+    if (!Id) {
+      std::stringstream M;
+      M << "Invalid identifier Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+      return ASTGateFockControlNode::ExpressionError(M.str());
+    }
+    return ProductionRule_3855(TK, GQN, Id);
+  }
+  default: {
+    std::stringstream M;
+    M << "Unsupported Fock level expression type.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateFockControlNode::ExpressionError(M.str());
+  }
+  }
+}
+
+ASTGateFockNegControlNode *ASTProductionFactory::ProductionRule_3856(
+    const ASTToken *TK, const ASTGateQOpNode *GQN,
+    const ASTExpressionNode *Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GQN && "Invalid ASTGateQOpNode argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  switch (Level->GetASTType()) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+    return ProductionRule_3856(TK, GQN,
+                               dynamic_cast<const ASTIntNode *>(Level));
+  case ASTTypeBinaryOp:
+    return ProductionRule_3856(TK, GQN,
+                               dynamic_cast<const ASTBinaryOpNode *>(Level));
+  case ASTTypeUnaryOp:
+    return ProductionRule_3856(TK, GQN,
+                               dynamic_cast<const ASTUnaryOpNode *>(Level));
+  case ASTTypeIdentifier: {
+    const ASTIdentifierNode *Id = Level->GetIdentifier();
+    if (!Id) {
+      std::stringstream M;
+      M << "Invalid identifier Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+      return ASTGateFockNegControlNode::ExpressionError(M.str());
+    }
+    return ProductionRule_3856(TK, GQN, Id);
+  }
+  default: {
+    std::stringstream M;
+    M << "Unsupported Fock level expression type.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateFockNegControlNode::ExpressionError(M.str());
+  }
+  }
 }
 
 } // namespace QASM

@@ -50,11 +50,13 @@ protected:
   unsigned SZ;
   unsigned EXT;
   const ASTInitializerList *INL;
+  /// When set, SZ is a placeholder and the true length is gate template `Name`.
+  std::string SizeTemplateName;
 
 protected:
   ASTArrayNode(const ASTIdentifierNode *Id, const std::string &ERM, ASTType Ty)
       : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
-        MM(), AType(Ty), SZ(0U), INL(nullptr) {}
+        MM(), AType(Ty), SZ(0U), INL(nullptr), SizeTemplateName() {}
 
 public:
   static const unsigned ArrayBits = 64U;
@@ -63,12 +65,12 @@ public:
   ASTArrayNode(const ASTIdentifierNode *Id, ASTType ATy, unsigned Size,
                const ASTInitializerList *IL = nullptr)
       : ASTExpressionNode(Id, ASTTypeArray), MM(), AType(ATy), SZ(Size),
-        EXT(1U), INL(IL) {}
+        EXT(1U), INL(IL), SizeTemplateName() {}
 
   ASTArrayNode(const ASTIdentifierNode *Id, ASTType ATy, unsigned Size,
                unsigned Extents, const ASTInitializerList *IL = nullptr)
       : ASTExpressionNode(Id, ASTTypeArray), MM(), AType(ATy), SZ(Size),
-        EXT(Extents), INL(IL) {}
+        EXT(Extents), INL(IL), SizeTemplateName() {}
 
   /// Validate the array access, emitting a diagnostic if invalid.
   void ValidateIndex(unsigned Index, QASM::ASTLocation location) const {
@@ -102,6 +104,16 @@ public:
   virtual unsigned Size() const { return SZ; }
 
   virtual unsigned Extents() const { return EXT; }
+
+  virtual void SetSizeTemplateName(const std::string &Name) {
+    SizeTemplateName = Name;
+  }
+
+  virtual bool HasSizeTemplate() const { return !SizeTemplateName.empty(); }
+
+  virtual const std::string &GetSizeTemplateName() const {
+    return SizeTemplateName;
+  }
 
   virtual std::any &Memory() = 0;
 
@@ -1680,6 +1692,14 @@ public:
     }
   }
 
+  /// Construct an mpdecimal-array literal from already-materialized elements.
+  ASTMPDecimalArrayNode(const ASTIdentifierNode *Id,
+                        const std::vector<ASTMPDecimalNode *> &Decimals,
+                        unsigned Bits = ASTMPDecimalNode::DefaultBits)
+      : ASTArrayNode(Id, ASTTypeMPDecimalArray,
+                     static_cast<unsigned>(Decimals.size())),
+        MPV(Decimals), DB(Bits) {}
+
   virtual ~ASTMPDecimalArrayNode() = default;
 
   virtual ASTType GetASTType() const override { return ASTTypeMPDecimalArray; }
@@ -1867,6 +1887,14 @@ public:
       MPV.push_back(new ASTMPComplexNode(IId, CE, Bits));
     }
   }
+
+  /// Construct a complex-array literal from already-materialized elements.
+  ASTMPComplexArrayNode(const ASTIdentifierNode *Id,
+                        const std::vector<ASTMPComplexNode *> &Elements,
+                        unsigned Bits = ASTMPComplexNode::DefaultBits)
+      : ASTArrayNode(Id, ASTTypeMPComplexArray,
+                     static_cast<unsigned>(Elements.size())),
+        MPV(Elements), CB(Bits), CTy(ASTTypeMPDecimal), CTB(Bits) {}
 
   ASTMPComplexArrayNode(const ASTIdentifierNode *Id, unsigned Size,
                         unsigned Bits, const ASTFunctionCallNode *FN)

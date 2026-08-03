@@ -179,12 +179,12 @@ inline void reset_colno() {
   } \
 }
 
-#define sym_type(ident) token::TOK_IDENTIFIER \\dead, unused code, delete in a later push request
+#define sym_type(ident) token::TOK_IDENTIFIER //dead, unused code, delete in a later push request
 
 extern void yyerror(const char* msg);
 extern int readinput();
 
-\\error message functions 
+//error message functions
 
 void token_error() {
   std::cerr << "Error: Unrecognized token at line "
@@ -3017,7 +3017,6 @@ $[a-zA-Z_][0-9]+ {
   return yylval->Tok->GetInt();
 }
 
-// Scanner rules that defines what text counts as a general identifier
 
 {L}{A}* {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
@@ -3180,8 +3179,6 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
-
-//end of rules to define general identifier token
 
 
 {HP}{H}+{IS}? {
@@ -3788,7 +3785,7 @@ $[a-zA-Z_][0-9]+ {
   ASTType CTy = ASTIdentifierTypeController::Instance().GetCurrentType();
 
   switch (CTy) {
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     break;
   default:
     ASTIdentifierTypeController::Instance().StopContextRecord();
