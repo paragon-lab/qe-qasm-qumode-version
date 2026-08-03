@@ -3009,6 +3009,17 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
       M << "Unknown Identifier '" << US << "'.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    } else if (CTy == ASTTypeGate) {
+      // `gatecall[N](…)`: keep as an indexed ref; ProductionRule_3500 rewrites
+      // the subscript into template arguments.
+      ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+          US, IS, ASTTypeGate, Id, /*NumBits=*/0U, /*LV=*/true,
+          const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()), ASN,
+          ASL);
+      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+      IdR->SetArraySubscriptNode(ASN);
+      IdR->SetArraySubscriptList(ASL);
+      return IdR;
     } else {
       M << "Type " << PrintTypeEnum(CTy) << " cannot be indexed "
         << "with C-style array index operator.";

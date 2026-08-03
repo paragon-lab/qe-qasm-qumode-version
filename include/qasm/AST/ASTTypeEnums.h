@@ -155,6 +155,8 @@ enum ASTType : unsigned {
   ASTTypeGateControl,
   ASTTypeGateControlStatement,
   ASTTypeGateDeclaration,
+  ASTTypeGateFockControl,
+  ASTTypeGateFockNegControl,
   ASTTypeGateGPhaseExpression,
   ASTTypeGateGPhaseStatement,
   ASTTypeGateInverse,

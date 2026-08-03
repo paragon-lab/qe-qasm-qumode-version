@@ -411,6 +411,12 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGateControlStatement:
     return "ASTTypeGateControlStatement";
     break;
+  case ASTTypeGateFockControl:
+    return "ASTTypeGateFockControl";
+    break;
+  case ASTTypeGateFockNegControl:
+    return "ASTTypeGateFockNegControl";
+    break;
   case ASTTypeGateNegControl:
     return "ASTTypeGateNegControl";
     break;

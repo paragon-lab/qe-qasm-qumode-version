@@ -29952,16 +29952,42 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
   assert(ANL && "Invalid ASTArgumentNodeList argument!");
   assert(ATL && "Invalid ASTAnyTypeList argument!");
 
+  // `foo[3](…)` parses as an indexed Identifier on a gate; rewrite to template
+  // args on the base gate name (square-bracket template call sugar).
+  const ASTExpressionList *ResolvedTemplateArgs = TemplateArgs;
+  const ASTIdentifierNode *CallId = Id;
+  ASTExpressionList *OwnedTemplateArgs = nullptr;
+
+  if (const ASTIdentifierRefNode *IdR =
+          dynamic_cast<const ASTIdentifierRefNode *>(Id)) {
+    const ASTIdentifierNode *Base = IdR->GetIdentifier();
+    if (Base && Base->GetSymbolType() == ASTTypeGate) {
+      CallId = Base;
+      if (!ResolvedTemplateArgs) {
+        const ASTArraySubscriptNode *ASN = IdR->GetArraySubscriptNode();
+        if (ASN) {
+          OwnedTemplateArgs = ASTExpressionBuilder::Instance().NewList();
+          ASTIntNode *IN =
+              new ASTIntNode(static_cast<int32_t>(ASN->GetIndex()));
+          assert(IN && "Could not create template arg ASTIntNode!");
+          OwnedTemplateArgs->Append(IN);
+          ResolvedTemplateArgs = OwnedTemplateArgs;
+        }
+      }
+    }
+  }
+
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateCall);
-  ASTScopeController::Instance().CheckOutOfScope(Id);
-  ASTIdentifierTypeController::Instance().CheckIsCallable(Id);
+  ASTScopeController::Instance().CheckOutOfScope(CallId);
+  ASTIdentifierTypeController::Instance().CheckIsCallable(CallId);
 
   if (!TransferGateOperandParams(*ATL)) {
     std::stringstream M;
     M << "Failure transferring scope of Gate Qubit Parameter.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ASTGateQOpNode::StatementError(Id, M.str());
+        DIAGLineCounter::Instance().GetLocation(CallId), M.str(),
+        DiagLevel::ICE);
+    return ASTGateQOpNode::StatementError(CallId, M.str());
   }
 
   if (ASTGateQOpNode *QOp = ValidateQubitArgs(*ATL)) {
@@ -29975,27 +30001,27 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
   ASTGateQOpNode *RQO = nullptr;
   ASTType CTy = ASTTypeGate;
 
-  if (Id->GetName() == "cx") {
-    RQO = CreateCXGateCall(TK, Id, *ANL, *ATL);
-  } else if (Id->GetName() == "ccx") {
-    RQO = CreateCCXGateCall(TK, Id, *ANL, *ATL);
-  } else if (Id->GetName() == "cnot") {
-    RQO = CreateCNOTGateCall(TK, Id, *ANL, *ATL);
-  } else if (Id->GetName() == "h") {
-    RQO = CreateHadamardGateCall(TK, Id, *ANL, *ATL);
+  if (CallId->GetName() == "cx") {
+    RQO = CreateCXGateCall(TK, CallId, *ANL, *ATL);
+  } else if (CallId->GetName() == "ccx") {
+    RQO = CreateCCXGateCall(TK, CallId, *ANL, *ATL);
+  } else if (CallId->GetName() == "cnot") {
+    RQO = CreateCNOTGateCall(TK, CallId, *ANL, *ATL);
+  } else if (CallId->GetName() == "h") {
+    RQO = CreateHadamardGateCall(TK, CallId, *ANL, *ATL);
   } else {
-    RQO = CreateQOpNodeCall(TK, Id, *ANL, *ATL, TemplateArgs);
-    CTy = Id->GetSymbolType();
+    RQO = CreateQOpNodeCall(TK, CallId, *ANL, *ATL, ResolvedTemplateArgs);
+    CTy = CallId->GetSymbolType();
   }
 
   assert(RQO && "Could not create a valid Gate Call!");
 
-  if (!ValidateQubitArgs(Id, ATL)) {
+  if (!ValidateQubitArgs(CallId, ATL)) {
     std::stringstream M;
     M << "Failure validating Qubit arguments.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTGateQOpNode::StatementError(Id, M.str());
+    return ASTGateQOpNode::StatementError(CallId, M.str());
   }
 
   RQO->SetLocation(TK->GetLocation());
@@ -30696,7 +30722,63 @@ void ASTProductionFactory::ProductionRule_10031(
     return;
   }
 
+  // Record the name first so TypeDiscovery / array-size resolution can see it.
   ASTGateTemplateParamBuilder::Instance().Add(ASTTypeInt, Id->GetName());
+
+  ASTIdentifierNode *IId = const_cast<ASTIdentifierNode *>(Id);
+  ASTType CurTy = IId->GetSymbolType();
+
+  // Template params are often provisionally typed as gate operand params /
+  // undefined during Identifier discovery. Rebind to a gate-local unsigned int
+  // so body uses like `ctrl[N]` resolve.
+  if (CurTy != ASTTypeInt && CurTy != ASTTypeUInt) {
+    ASTSymbolTable::Instance().EraseGateOperandParam(IId);
+    ASTSymbolTable::Instance().EraseLocal(IId, IId->GetBits(), CurTy);
+    ASTSymbolTable::Instance().EraseLocalSymbol(IId->GetName());
+    IId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        Id->GetName(), ASTIntNode::IntBits, ASTTypeInt);
+    if (!IId) {
+      std::stringstream M;
+      M << "Could not create identifier for gate template parameter '"
+        << Id->GetName() << "'.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
+      return;
+    }
+  }
+
+  IId->SetBits(ASTIntNode::IntBits);
+  IId->SetGateLocal(true);
+  IId->SetLocalScope();
+
+  ASTSymbolTableEntry *STE =
+      const_cast<ASTSymbolTableEntry *>(IId->GetSymbolTableEntry());
+  if (!STE) {
+    STE =
+        ASTSymbolTable::Instance().Lookup(IId, ASTIntNode::IntBits, ASTTypeInt);
+  }
+  if (!STE) {
+    STE = new ASTSymbolTableEntry(IId, ASTTypeInt);
+    assert(STE && "Could not create SymbolTable Entry for template param!");
+    IId->SetSymbolTableEntry(STE);
+    IId->SetHasSymbolTableEntry(true);
+    STE->SetLocalScope();
+    ASTSymbolTable::Instance().InsertLocal(IId, STE);
+  }
+
+  if (!STE->HasValue() || STE->GetValueType() != ASTTypeInt) {
+    ASTIntNode *IN = ASTBuilder::Instance().CreateASTIntNode(IId, uint32_t(0U));
+    if (!IN) {
+      // CreateASTIntNode may fail if Lookup disagrees; build manually.
+      IN = new ASTIntNode(IId, uint32_t(0U));
+      STE->ResetValue();
+      STE->SetValue(new ASTValue<>(IN, ASTTypeInt), ASTTypeInt);
+      IId->SetSymbolTableEntry(STE);
+      IN->Mangle();
+    }
+    IN->SetLocation(TK->GetLocation());
+  }
 }
 
 ASTExpressionNode *
@@ -31367,6 +31449,84 @@ ASTProductionFactory::ProductionRule_8001(const ASTToken *TK,
   }
 
   return EN;
+}
+
+ASTGateFockControlNode *ASTProductionFactory::ProductionRule_3855(
+    const ASTToken *TK, const ASTGateQOpNode *GQN,
+    const ASTExpressionNode *Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GQN && "Invalid ASTGateQOpNode argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  switch (Level->GetASTType()) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+    return ProductionRule_3855(TK, GQN,
+                               dynamic_cast<const ASTIntNode *>(Level));
+  case ASTTypeBinaryOp:
+    return ProductionRule_3855(TK, GQN,
+                               dynamic_cast<const ASTBinaryOpNode *>(Level));
+  case ASTTypeUnaryOp:
+    return ProductionRule_3855(TK, GQN,
+                               dynamic_cast<const ASTUnaryOpNode *>(Level));
+  case ASTTypeIdentifier: {
+    const ASTIdentifierNode *Id = Level->GetIdentifier();
+    if (!Id) {
+      std::stringstream M;
+      M << "Invalid identifier Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+      return ASTGateFockControlNode::ExpressionError(M.str());
+    }
+    return ProductionRule_3855(TK, GQN, Id);
+  }
+  default: {
+    std::stringstream M;
+    M << "Unsupported Fock level expression type.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateFockControlNode::ExpressionError(M.str());
+  }
+  }
+}
+
+ASTGateFockNegControlNode *ASTProductionFactory::ProductionRule_3856(
+    const ASTToken *TK, const ASTGateQOpNode *GQN,
+    const ASTExpressionNode *Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GQN && "Invalid ASTGateQOpNode argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  switch (Level->GetASTType()) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+    return ProductionRule_3856(TK, GQN,
+                               dynamic_cast<const ASTIntNode *>(Level));
+  case ASTTypeBinaryOp:
+    return ProductionRule_3856(TK, GQN,
+                               dynamic_cast<const ASTBinaryOpNode *>(Level));
+  case ASTTypeUnaryOp:
+    return ProductionRule_3856(TK, GQN,
+                               dynamic_cast<const ASTUnaryOpNode *>(Level));
+  case ASTTypeIdentifier: {
+    const ASTIdentifierNode *Id = Level->GetIdentifier();
+    if (!Id) {
+      std::stringstream M;
+      M << "Invalid identifier Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+      return ASTGateFockNegControlNode::ExpressionError(M.str());
+    }
+    return ProductionRule_3856(TK, GQN, Id);
+  }
+  default: {
+    std::stringstream M;
+    M << "Unsupported Fock level expression type.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateFockNegControlNode::ExpressionError(M.str());
+  }
+  }
 }
 
 } // namespace QASM

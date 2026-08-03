@@ -22,6 +22,7 @@
 #include <qasm/AST/ASTFunctionCallExpr.h>
 #include <qasm/AST/ASTGPhase.h>
 #include <qasm/AST/ASTGateContextBuilder.h>
+#include <qasm/AST/ASTGateFockControl.h>
 #include <qasm/AST/ASTGateNodeBuilder.h>
 #include <qasm/AST/ASTGateOpList.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
@@ -3579,6 +3580,186 @@ bool ASTGateQOpList::TransferToSymbolTable(
   }
 
   return true;
+}
+
+void ASTGateFockControlNode::Mangle() {
+  ASTMangler M;
+  M.Start();
+  M.TypeIdentifier(GetASTType(), GetName());
+  switch (LevelType) {
+  case ASTTypeInt:
+    if (I)
+      M.Identifier(I->GetMangledName());
+    break;
+  case ASTTypeIdentifier:
+    if (ID)
+      M.Identifier(ID->GetMangledName());
+    break;
+  case ASTTypeBinaryOp:
+    if (BOP)
+      M.Identifier(BOP->GetMangledName());
+    break;
+  case ASTTypeUnaryOp:
+    if (UOP)
+      M.Identifier(UOP->GetMangledName());
+    break;
+  default:
+    break;
+  }
+  switch (TType) {
+  case ASTTypeGate:
+    if (GN)
+      M.Identifier(GN->GetMangledName());
+    break;
+  case ASTTypeGateQOpNode:
+    if (GQN)
+      M.Identifier(GQN->GetMangledName());
+    break;
+  case ASTTypeGateGPhaseExpression:
+    if (GGEN)
+      M.Identifier(GGEN->GetMangledName());
+    break;
+  default:
+    break;
+  }
+  M.End();
+  const_cast<ASTIdentifierNode *>(GetIdentifier())
+      ->SetMangledName(M.AsString());
+}
+
+void ASTGateFockNegControlNode::Mangle() {
+  ASTMangler M;
+  M.Start();
+  M.TypeIdentifier(GetASTType(), GetName());
+  switch (LevelType) {
+  case ASTTypeInt:
+    if (I)
+      M.Identifier(I->GetMangledName());
+    break;
+  case ASTTypeIdentifier:
+    if (ID)
+      M.Identifier(ID->GetMangledName());
+    break;
+  case ASTTypeBinaryOp:
+    if (BOP)
+      M.Identifier(BOP->GetMangledName());
+    break;
+  case ASTTypeUnaryOp:
+    if (UOP)
+      M.Identifier(UOP->GetMangledName());
+    break;
+  default:
+    break;
+  }
+  switch (TType) {
+  case ASTTypeGate:
+    if (GN)
+      M.Identifier(GN->GetMangledName());
+    break;
+  case ASTTypeGateQOpNode:
+    if (GQN)
+      M.Identifier(GQN->GetMangledName());
+    break;
+  case ASTTypeGateGPhaseExpression:
+    if (GGEN)
+      M.Identifier(GGEN->GetMangledName());
+    break;
+  default:
+    break;
+  }
+  M.End();
+  const_cast<ASTIdentifierNode *>(GetIdentifier())
+      ->SetMangledName(M.AsString());
+}
+
+void ASTGateFockControlNode::print() const {
+  std::cout << "<GateFockControlNode>" << std::endl;
+  std::cout << "<FockLevel>" << std::endl;
+  switch (LevelType) {
+  case ASTTypeInt:
+    if (I)
+      I->print();
+    break;
+  case ASTTypeIdentifier:
+    if (ID)
+      ID->print();
+    break;
+  case ASTTypeBinaryOp:
+    if (BOP)
+      BOP->print();
+    break;
+  case ASTTypeUnaryOp:
+    if (UOP)
+      UOP->print();
+    break;
+  default:
+    break;
+  }
+  std::cout << "</FockLevel>" << std::endl;
+  std::cout << "<Target>" << std::endl;
+  switch (TType) {
+  case ASTTypeGate:
+    if (GN)
+      GN->print();
+    break;
+  case ASTTypeGateQOpNode:
+    if (GQN)
+      GQN->print();
+    break;
+  case ASTTypeGateGPhaseExpression:
+    if (GGEN)
+      GGEN->print();
+    break;
+  default:
+    break;
+  }
+  std::cout << "</Target>" << std::endl;
+  std::cout << "</GateFockControlNode>" << std::endl;
+}
+
+void ASTGateFockNegControlNode::print() const {
+  std::cout << "<GateFockNegControlNode>" << std::endl;
+  std::cout << "<FockLevel>" << std::endl;
+  switch (LevelType) {
+  case ASTTypeInt:
+    if (I)
+      I->print();
+    break;
+  case ASTTypeIdentifier:
+    if (ID)
+      ID->print();
+    break;
+  case ASTTypeBinaryOp:
+    if (BOP)
+      BOP->print();
+    break;
+  case ASTTypeUnaryOp:
+    if (UOP)
+      UOP->print();
+    break;
+  default:
+    break;
+  }
+  std::cout << "</FockLevel>" << std::endl;
+  std::cout << "<Target>" << std::endl;
+  switch (TType) {
+  case ASTTypeGate:
+    if (GN)
+      GN->print();
+    break;
+  case ASTTypeGateQOpNode:
+    if (GQN)
+      GQN->print();
+    break;
+  case ASTTypeGateGPhaseExpression:
+    if (GGEN)
+      GGEN->print();
+    break;
+  default:
+    break;
+  }
+  std::cout << "</Target>" << std::endl;
+  std::cout << "</GateFockNegControlNode>" << std::endl;
 }
 
 } // namespace QASM

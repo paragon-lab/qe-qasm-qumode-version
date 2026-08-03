@@ -5,73 +5,100 @@ This file documents the status of the project, as of 2026-07-29, focusing on the
 tasks I'm in charge of.
 
 # Completed Features
-- `qumode` declarations
-- Basic qumode gates: displacement, SNAP, ECD; gate declaration syntaxes
-    - See `docs/gates.md` for more details.
+- `qumode` declarations: mirrors qubit declaration syntaxes
+  ```qasm
+  qumode qm;
+  qumode[3] qms;
+  ```
+- Basic qumode gates: displacement, SNAP, ECD gates
+    - `disp(alpha) qm;`
+    - `snap[N]([theta_0, theta_1, theta_2,...]) qm;`
+    - `ecd(alpha) qb, qm;`
+    - A type system is implemented along with the gate declaration syntaxes.
+    `docs/gates.md` lists the types of errors that the type system can catch.
+- Gate declaration syntaxes: see `docs/gates.md` for more details.
 - Typed gate template parameters (`uint N` as array length) with call-site
   inference from array literals / declared named-array sizes and explicit
-  `gatecall<N>(…)`; uninitialized named arrays reject as used-before-assigned.
+  `gatecall[N](…)`; uninitialized named arrays reject as used-before-assigned.
+- Fock-level `ctrl[…]` / `negctrl[…]` (distinct from qubit `ctrl(n)`): level may
+  be an integer, identifier, or expression (`ctrl[3]`, `ctrl[N]`, `ctrl[N-1]`);
+  see `docs/gates.md`.
+- We proposed using angle brackets for template parameters. I decided to use
+  square brackets instead to avoid parsing issues. See `docs/gates.md` for more
+  details.
 
 # In Progress Features
-- SNAP gate *body*: `for` in `GateOpList`, and `ctrl<i>` Fock-level control
-  (template + sized array formals are done; see `docs/gates.md`)
+- SNAP gate *body*: `for` in `GateOpList` (Fock `ctrl[i]` / `ctrl[N-1]` is done;
+  template + sized array formals are done; see `docs/gates.md`)
 
 # Gate-Level IR (Not Implemented)
-Ended up not having time to implement it. To my defense, I deprioritized
-this feature because:
+Ended up not having time to implement it.
+I prioritized other features and fixes because:
 - While examining what I had already implemented, I found out that the ASTs
-  didn't contain enough information for the program level IR. Fixing that would
-  be more important, so Yuchen wouldn't need to fix my mistakes.
-- I decided that proper gate declaration syntaxes are more important to
-  implement first. Without a type system, the parser cannot reject a lot of
-  illegal gate calls, which, I believe, is more harmful than not having a
-  gate-level IR before I leave.
-- For single-qumode programs now, a DAG view that the gate-level IR would
-  provide is not useful yet. I believe the S+D Unitary decomposition
-  pass can be applied to the program level IR, and it wouldn't be too hard to
-  migrate that pass to the gate level IR after we have that.
+  didn't contain enough information for the program level IR. Fixing those would
+  be more important, so others wouldn't need to fix my mistakes.
+- I decided that a proper type system and gate declaration syntax are
+  more important to implement first. Without these, the parser would be very
+  fragile, not being able to catch a lot of illegal gate calls.
+- For single-qumode programs now, the DAG view that the gate-level IR would
+  provide is not useful yet. I believe the S+D Unitary decomposition pass  
+  can be applied to the program level IR, and it wouldn't be too hard to migrate
+  that pass to the gate level IR after we have that.
 
 # Known Issues
 
-- Apparently, [OpenQASM 3.0 has specified using curly braces for arrays](https://openqasm.com/language/types.html#arrays),
-  but we're using square brackets. The square brackets are used in the OQ3
-  standard to denote types, for example `int[32]` is a 32-bit integer, and
-  `array[int[32], 5]` is a 5-element array of 32-bit integers.
-  For this, the following options make the most sense to me:
-  1. Keep current syntax, accept that both [] and <> denote
-  typing in different contexts:
-  ```qasm
-  // [] denotes types and array literals, and <> denotes template parameters.
-  // Do not use {} for array literals anywhere in the grammar.
-  gate foo<uint N>(array[angle, N] alphas) qubit q {...}
+### Brackets
 
-  foo<3>([pi/2, pi/2, pi/2]) q;
+Apparently, [OpenQASM 3.0 has specified using curly braces for arrays](https://openqasm.com/language/types.html#arrays),
+but we're using square brackets. The square brackets are used in the OQ3
+standard to denote types, for example `int[32]` is a 32-bit integer, and
+`array[int[32], 5]` is a 5-element array of 32-bit integers.
 
-  array[angle, 3] alphas = [pi/2, pi/2, pi/2];
+Separately, using angle brackets prove to be problematic for parsing.
+For example, suppose we want to support expressions like `ctrl<N-1>` or
+`ctrl<3*2>`, we would have a rule like `TOK_CTRL '<' Expr '>' ...`.
+But `'>'` can also be a part of `Expr`, making it very annoying to parse.
+Currently, we disallow expressions inside angle brackets to avoid this problem.
+Granted, the user might not have an incentive to put expressions inside angle
+brackets, but if they do, it would be hard to support that.
 
-  unitary u = [[1, 0], [0, 1]];
-  ```
-  This is arguably the most Python-like syntax, as it uses [] for both types and
-  array literals. Python does not have template syntax, so we could argue that a
-  different syntax here is acceptable.
+Going forward, I think we have the following options:
+1. Use square brackets for everything:
+```qasm
+// [] denotes types, template parameters, and array literals.
+// No {} for anywhere in the grammar.
+gate foo[uint N](array[angle, N] alphas) qubit q {...}
 
-  2. Change our syntax to fully comply with the OQ3 standard:
-  ```qasm
-  // [] denotes types, and {} denotes array literals.
-  // Do not use <> anywhere in the grammar
-  gate foo[uint N](array[angle, N] alphas) qubit q {...}
+foo[3]([pi/2, pi/2, pi/2]) q;
 
-  foo[3]({pi/2, pi/2, pi/2}) q;
+// Would need to change existing parse rules to support this.
+array[angle, 3] alphas = [pi/2, pi/2, pi/2];
+```
+This makes the syntax more Python-like but inconsistent with the OQ3
+standard. We might be using square brackets for too many things.
 
-  // Specified by the OQ3 standard but not implemented in this codebase.
-  array[angle, 3] alphas = {pi/2, pi/2, pi/2};
+2. Change our syntax to fully comply with the OQ3 standard:
+```qasm
+// [] denotes types, and {} denotes array literals.
+// Do not use <> anywhere in the grammar
+gate foo[uint N](array[angle, N] alphas) qubit q {...}
 
-  // Note that unitary declarations would also be affected by this decision.
-  unitary u = {{1, 0}, {0, 1}};
-  ```
+foo[3]({pi/2, pi/2, pi/2}) q;
+
+// Specified by the OQ3 standard but not implemented in this codebase.
+array[angle, 3] alphas = {pi/2, pi/2, pi/2};
+
+// Note that unitary declarations would also be affected by this decision.
+unitary u = {{1, 0}, {0, 1}};
+```
+This makes our syntax fully compliant with the OQ3 standard, though using `{}`
+for array literals may be less intuitive for users---Using `{}` for initializers
+seems to be more common in system-level programming languages.
+
+### Other known issues
 - Discovered several bugs/gaps in the codebase (see the issues on GitHub).
-- SNAP remains opaque until gate-body `for` / `ctrl<i>` land; template array
-  lengths work. See `gates.md`.
+- SNAP remains opaque until gate-body `for` lands; Fock `ctrl[]` (including
+  level expressions like `N-1`) and template array lengths work. See `gates.md`.
 - If there are multiple gate declarations with the same name, the last one
   takes precedence. It is not clear if this is intended or a bug.
 - There are a few AST nodes related to generic operands still using `Qubit`

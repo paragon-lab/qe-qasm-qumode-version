@@ -931,6 +931,10 @@ ASTType ASTIdentifierRefNode::ResolveReferenceType(ASTType ITy) const {
   case ASTTypeAngle:
     return ASTTypeAngle;
     break;
+  case ASTTypeGate:
+    // Template call sugar: `foo[3](…)` is an indexed gate name.
+    return ASTTypeGate;
+    break;
   case ASTTypeOpenPulseFrameArray:
     return ASTTypeOpenPulseFrame;
     break;

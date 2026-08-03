@@ -764,3 +764,12 @@ add_test(NAME qumode-t00023
 
 add_test(NAME qumode-t00024
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-unused-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-unused-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00025
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-literal.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-literal.qasm.out 2>&1")
+
+add_test(NAME qumode-t00026
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-template.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-template.qasm.out 2>&1")
+
+add_test(NAME qumode-t00027
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-template-expr.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-template-expr.qasm.out 2>&1")

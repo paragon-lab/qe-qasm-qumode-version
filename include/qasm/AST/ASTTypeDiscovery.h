@@ -166,7 +166,7 @@ public:
 
   /// Call-site type checks for fully-typed gate declarations.
   /// Returns false and emits diagnostics on mismatch.
-  /// \p TemplateArgs optional explicit `gatecall<…>(…)` template arguments.
+  /// \p TemplateArgs optional explicit `gatecall[…](…)` template arguments.
   bool
   ValidateTypedGateCall(const ASTToken *TK, const ASTGateNode *Decl,
                         const ASTArgumentNodeList &ANL,

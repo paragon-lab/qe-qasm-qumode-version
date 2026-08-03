@@ -28,7 +28,7 @@
 namespace QASM {
 
 /// Pending gate template parameters while parsing a gate declaration
-/// (`gate foo<uint N>(...)`). Cleared at the start of each
+/// (`gate foo[uint N](...)`). Cleared at the start of each
 /// OptGateTemplateParams.
 class ASTGateTemplateParamBuilder {
 private:

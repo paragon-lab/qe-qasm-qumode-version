@@ -4002,6 +4002,8 @@ public:
 class ASTGateNode;
 class ASTGateControlNode;
 class ASTGateNegControlNode;
+class ASTGateFockControlNode;
+class ASTGateFockNegControlNode;
 class ASTGatePowerNode;
 class ASTGateInverseNode;
 class ASTGPhaseExpressionNode;
@@ -4047,6 +4049,12 @@ public:
 
   explicit ASTGateOpNode(const ASTIdentifierNode *Id,
                          const ASTGateNegControlNode *GNCN);
+
+  explicit ASTGateOpNode(const ASTIdentifierNode *Id,
+                         const ASTGateFockControlNode *GFCN);
+
+  explicit ASTGateOpNode(const ASTIdentifierNode *Id,
+                         const ASTGateFockNegControlNode *GFNCN);
 
   explicit ASTGateOpNode(const ASTIdentifierNode *Id,
                          const ASTGatePowerNode *GPN);
@@ -4140,6 +4148,18 @@ public:
       : ASTGateOpNode(Id, GNCN) {}
 
   explicit ASTGateQOpNode(const ASTGateNegControlNode *GNCN);
+
+  explicit ASTGateQOpNode(const ASTIdentifierNode *Id,
+                          const ASTGateFockControlNode *GFCN)
+      : ASTGateOpNode(Id, GFCN) {}
+
+  explicit ASTGateQOpNode(const ASTGateFockControlNode *GFCN);
+
+  explicit ASTGateQOpNode(const ASTIdentifierNode *Id,
+                          const ASTGateFockNegControlNode *GFNCN)
+      : ASTGateOpNode(Id, GFNCN) {}
+
+  explicit ASTGateQOpNode(const ASTGateFockNegControlNode *GFNCN);
 
   explicit ASTGateQOpNode(const ASTIdentifierNode *Id,
                           const ASTGatePowerNode *GPN)

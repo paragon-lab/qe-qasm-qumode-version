@@ -56,6 +56,7 @@
 #include <qasm/AST/ASTStringList.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTGateControl.h>
+#include <qasm/AST/ASTGateFockControl.h>
 #include <qasm/AST/ASTGateContextBuilder.h>
 #include <qasm/AST/ASTAngleContextControl.h>
 #include <qasm/AST/ASTReturn.h>
@@ -511,6 +512,8 @@ int readinput() {
 
     QASM::ASTGateControlNode* GateControlNode;
     QASM::ASTGateNegControlNode* GateNegControlNode;
+    QASM::ASTGateFockControlNode* GateFockControlNode;
+    QASM::ASTGateFockNegControlNode* GateFockNegControlNode;
     QASM::ASTGateInverseNode* GateInverseNode;
     QASM::ASTGatePowerNode* GatePowerNode;
     QASM::ASTGPhaseExpressionNode* GPhaseNode;
@@ -728,6 +731,9 @@ int readinput() {
 %type <CastExprNode>                CastExpr
 %type <GateControlNode>             GateCtrlExpr
 %type <GateNegControlNode>          GateNegCtrlExpr
+%type <GateFockControlNode>         GateFockCtrlExpr GateFockGPhaseExpr
+%type <GateFockNegControlNode>      GateFockNegCtrlExpr
+%type <ExpressionNode>              FockLevelExpr FockLevelPrimary FockLevelTerm
 %type <GateInverseNode>             GateInvExpr
 %type <GatePowerNode>               GatePowExpr
 %type <IntegerNode>                 CtrlNAt NegCtrlNAt
@@ -741,6 +747,7 @@ int readinput() {
 
 %type <GateQOpNode>                 GateQOp GateCtrlStmt GateNegCtrlStmt
                                     GateInvStmt GatePowStmt GateGPhaseStmt
+                                    GateFockGPhaseStmt
 %type <GateUOpNode>                 GateUOp
 %type <GateEOpNode>                 GateEOp
 %type <BarrierNode>                 Barrier
@@ -774,7 +781,7 @@ int readinput() {
 %type <KernelStatementList>         KernelStmtList KernelStmtListImpl
 %type <DefcalStatementList>         DefcalStmtList DefcalStmtListImpl
 %type <GateOpList>                  GateOpList
-%type <ExpressionList>              ExprList ExprListImpl GateTemplateArgList
+%type <ExpressionList>              ExprList ExprListImpl
 %type <IntegerList>                 IntegerList IntegerListImpl
 %type <QubitConcatList>             QubitConcatList QubitConcatListImpl
 %type <AnyList>                     AnyList AnyListImpl
@@ -2105,26 +2112,39 @@ FuncDecl
   ;
 
 GateDecl
-  : TOK_GATE Identifier '(' NamedTypeDeclList ')' GateOperandParamList '{' GateOpList '}' {
+  : TOK_GATE TOK_IDENTIFIER '(' NamedTypeDeclList ')' GateOperandParamList '{' GateOpList '}' {
+    /* Bare TOK_IDENTIFIER: Identifier allows `name[i]`, which steals `gate
+       foo[uint N]` template syntax. */
+    ASTIdentifierNode* Id =
+        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(7), *$2);
     $$ = ASTProductionFactory::Instance().ProductionRule_1430(GET_TOKEN(8),
-                                                              $2, $4, $6, $8);
+                                                              Id, $4, $6, $8);
   }
-  | TOK_GATE Identifier GateOperandParamList '{' GateOpList '}' {
+  | TOK_GATE TOK_IDENTIFIER GateOperandParamList '{' GateOpList '}' {
+    ASTIdentifierNode* Id =
+        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(4), *$2);
     $$ = ASTProductionFactory::Instance().ProductionRule_1431(GET_TOKEN(5),
-                                                              $2, $3, $5);
+                                                              Id, $3, $5);
   }
   /* Fully-typed gate declaration: classical NamedTypeDecl params (validated
      explicitly typed in ProductionRule_10030) + typed quantum operands.
      Lookahead after ')' is TOK_QUBIT / TOK_QUMODE (vs bare Identifier for
      the OQ3 untyped-operand production above). */
-  | TOK_GATE Identifier '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
+  | TOK_GATE TOK_IDENTIFIER '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
     ASTGateTemplateParamBuilder::Instance().Clear();
+    ASTIdentifierNode* Id =
+        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(7), *$2);
     $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(8),
-                                                               $2, $4, $6, $8);
+                                                               Id, $4, $6, $8);
   }
-  | TOK_GATE Identifier GateTemplateOpen GateTemplateParamList '>' '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(10),
-                                                               $2, $7, $9, $11);
+  | TOK_GATE TOK_IDENTIFIER '[' {
+      ASTGateTemplateParamBuilder::Instance().Clear();
+    } GateTemplateParamList ']' '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
+    /* Mid-rule counts as a symbol: $4. TOK_GATE is yystack_[12]. */
+    ASTIdentifierNode* Id =
+        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(11), *$2);
+    $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(12),
+                                                               Id, $8, $10, $12);
   }
   | TOK_GATE TOK_CX GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1432(GET_TOKEN(5), $3,
@@ -2141,11 +2161,9 @@ GateDecl
   }
   ;
 
-GateTemplateOpen
-  : '<' {
-    ASTGateTemplateParamBuilder::Instance().Clear();
-  }
-  ;
+/* GateTemplateOpen removed: templated GateDecl clears the builder in a
+   mid-rule action after '[' so IndexedSubscript cannot steal the bracket. */
+
 
 GateTemplateParamList
   : GateTemplateParam
@@ -3608,6 +3626,27 @@ GateOpList
 
     ASTGateOpBuilder::Instance().Append(GCS);
   }
+  | GateOpList GateFockCtrlExpr {
+    ASTGateFockControlNode* GFCN = $2;
+    assert(GFCN && "Invalid ASTGateFockControlNode argument!");
+
+    ASTGateQOpNode* GQN = new ASTGateQOpNode(GFCN);
+    assert(GQN && "Could not create a valid ASTGateQOpNode!");
+
+    ASTGateOpBuilder::Instance().Append(GQN);
+  }
+  | GateOpList GateFockGPhaseExpr {
+    ASTGateFockControlNode* GFCN = $2;
+    assert(GFCN && "Invalid ASTGateFockControlNode argument!");
+
+    ASTGateQOpNode* GQN = new ASTGateQOpNode(GFCN);
+    assert(GQN && "Could not create a valid ASTGateQOpNode!");
+
+    ASTGateOpBuilder::Instance().Append(GQN);
+  }
+  | GateOpList GateFockGPhaseStmt {
+    ASTGateOpBuilder::Instance().Append($2);
+  }
   | GateOpList GateNegCtrlExpr {
     ASTGateNegControlNode* GNCN = $2;
     assert(GNCN && "Invalid ASTGateNegControlNode argument!");
@@ -3622,6 +3661,15 @@ GateOpList
     assert(GCS && "Invalid GateNegCtrlStmt argument!");
 
     ASTGateOpBuilder::Instance().Append(GCS);
+  }
+  | GateOpList GateFockNegCtrlExpr {
+    ASTGateFockNegControlNode* GFNCN = $2;
+    assert(GFNCN && "Invalid ASTGateFockNegControlNode argument!");
+
+    ASTGateQOpNode* GQN = new ASTGateQOpNode(GFNCN);
+    assert(GQN && "Could not create a valid ASTGateQOpNode!");
+
+    ASTGateOpBuilder::Instance().Append(GQN);
   }
   | GateOpList GateInvExpr {
     ASTGateInverseNode* GIN = $2;
@@ -3702,10 +3750,6 @@ GateEOp
     $$ = ASTProductionFactory::Instance().ProductionRule_3500(GET_TOKEN(2),
                                                               $1, $2, $3);
   }
-  | Identifier '<' GateTemplateArgList '>' ArgsList AnyList {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3500(GET_TOKEN(5),
-                                                              $1, $3, $5, $6);
-  }
   | TOK_U ArgsList AnyList {
     $$ = ASTProductionFactory::Instance().ProductionRule_3502(GET_TOKEN(2),
                                                               $2, $3);
@@ -3728,18 +3772,6 @@ GateEOp
   | TOK_DISP ArgsList AnyList {
     $$ = ASTProductionFactory::Instance().ProductionRule_10020(GET_TOKEN(2),
                                                                $2, $3);
-  }
-  ;
-
-/* Compile-time ints only — avoid ExprList so `>` cannot shift as comparison. */
-GateTemplateArgList
-  : Integer {
-    $$ = ASTExpressionBuilder::Instance().NewList();
-    $$->Append($1);
-  }
-  | GateTemplateArgList ',' Integer {
-    $1->Append($3);
-    $$ = $1;
   }
   ;
 
@@ -7072,6 +7104,93 @@ CtrlNAt
   }
   ;
 
+// Dedicated Fock level grammar — do not reuse BinaryOpExpr/Expr (those merge
+// with assignment / comparison and refuse `N-1` inside brackets).
+FockLevelPrimary
+  : Integer {
+    $$ = $1;
+  }
+  | Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_8001(GET_TOKEN(0), $1);
+  }
+  | '(' FockLevelExpr ')' {
+    $$ = $2;
+  }
+  | '-' FockLevelPrimary {
+    $$ = ASTBuilder::Instance().CreateASTUnaryOpNode(
+        "ast-fock-level", $2, ASTOpTypeNegative);
+  }
+  ;
+
+FockLevelTerm
+  : FockLevelPrimary {
+    $$ = $1;
+  }
+  | FockLevelTerm TOK_MUL_OP FockLevelPrimary {
+    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
+        "ast-fock-level", $1, $3, ASTOpTypeMul);
+  }
+  | FockLevelTerm TOK_DIV_OP FockLevelPrimary {
+    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
+        "ast-fock-level", $1, $3, ASTOpTypeDiv);
+  }
+  ;
+
+FockLevelExpr
+  : FockLevelTerm {
+    $$ = $1;
+  }
+  | FockLevelExpr TOK_ADD_OP FockLevelTerm {
+    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
+        "ast-fock-level", $1, $3, ASTOpTypeAdd);
+  }
+  | FockLevelExpr '-' FockLevelTerm {
+    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
+        "ast-fock-level", $1, $3, ASTOpTypeSub);
+  }
+  // Flex longest-match glues "-" onto a following numeral (`N-1` → id, int -1).
+  // Treat that as addition of the already-signed literal (i.e. subtraction).
+  | FockLevelExpr Integer {
+    if (!$2 || !$2->IsSigned() || $2->GetSignedValue() >= 0) {
+      std::stringstream M;
+      M << "Expected a binary operator in Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($2), M.str(), DiagLevel::Error);
+      YYERROR;
+    }
+    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
+        "ast-fock-level", $1, $2, ASTOpTypeAdd);
+  }
+  ;
+
+// Fock-level control: `ctrl[FockLevelExpr] @ …`
+GateFockCtrlExpr
+  : TOK_CTRL '[' FockLevelExpr ']' TOK_ASSOCIATION_OP GateEOp {
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(5));
+    $$ = ASTProductionFactory::Instance().ProductionRule_3855(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $6, $3);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
+  }
+  ;
+
+GateFockGPhaseExpr
+  : TOK_CTRL '[' FockLevelExpr ']' TOK_ASSOCIATION_OP GPhaseExpr IdentifierList {
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(6));
+    ASTGateGPhaseExpressionNode* GGEN =
+        ASTProductionFactory::Instance().ProductionRule_3854(
+            ASTGateContextBuilder::Instance().GetControlModifierToken(), $6, $7);
+    $$ = ASTProductionFactory::Instance().ProductionRule_3855(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), GGEN, $3);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
+  }
+  ;
+
+GateFockGPhaseStmt
+  : GateFockGPhaseExpr ';' {
+    $$ = new ASTGateQOpNode($1);
+  }
+  ;
+
 GateCtrlStmt
   : GateCtrlExpr ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3850(GET_TOKEN(1),
@@ -7149,6 +7268,15 @@ NegCtrlNAt
   : TOK_NEGCTRL '(' Integer ')' TOK_ASSOCIATION_OP {
     $$ = $3;
     ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(4));
+  }
+  ;
+
+GateFockNegCtrlExpr
+  : TOK_NEGCTRL '[' FockLevelExpr ']' TOK_ASSOCIATION_OP GateEOp {
+    ASTGateContextBuilder::Instance().EnterControlModifier(GET_TOKEN(5));
+    $$ = ASTProductionFactory::Instance().ProductionRule_3856(
+        ASTGateContextBuilder::Instance().GetControlModifierToken(), $6, $3);
+    ASTGateContextBuilder::Instance().ExitControlModifier();
   }
   ;
 

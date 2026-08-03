@@ -151,9 +151,9 @@ u.bumper = 4;
 The addition of qumode gates may necessitate the parameters and operands to be
 typed. gate declarations. For example, may be something like the following:
 ```qasm
-gate snap<uint N>(array[phases, N] thetas) qumode qm {
+gate snap[uint N](array[phases, N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl<i> @ gphase(thetas[i]) qm; // controls the i-th Fock level
+        ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 

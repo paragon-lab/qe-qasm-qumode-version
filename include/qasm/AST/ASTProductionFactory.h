@@ -48,6 +48,7 @@
 #include <qasm/AST/ASTFunctionCallExpr.h>
 #include <qasm/AST/ASTFunctions.h>
 #include <qasm/AST/ASTGPhase.h>
+#include <qasm/AST/ASTGateFockControl.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTIdentifier.h>
@@ -1471,6 +1472,41 @@ public:
   ProductionRule_3854(const ASTToken *TK,
                       const ASTGateGPhaseExpressionNode *GEN) const;
 
+  // Fock-level ctrl[level] @ target
+  template <typename __Type, typename __LevelType>
+  ASTGateFockControlNode *ProductionRule_3855(const ASTToken *TK,
+                                              const __Type *TP,
+                                              const __LevelType *Level) const;
+  template <typename __LevelType>
+  ASTGateFockControlNode *ProductionRule_3855(const ASTToken *TK,
+                                              const ASTGateQOpNode *GQN,
+                                              const __LevelType *Level) const;
+  /// Dispatch FockLevelExpr (int / id-expr / binary / unary) to typed ctors.
+  template <typename __Type>
+  ASTGateFockControlNode *
+  ProductionRule_3855(const ASTToken *TK, const __Type *TP,
+                      const ASTExpressionNode *Level) const;
+  ASTGateFockControlNode *
+  ProductionRule_3855(const ASTToken *TK, const ASTGateQOpNode *GQN,
+                      const ASTExpressionNode *Level) const;
+
+  // Fock-level negctrl[level] @ target
+  template <typename __Type, typename __LevelType>
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const __Type *TP,
+                      const __LevelType *Level) const;
+  template <typename __LevelType>
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const ASTGateQOpNode *GQN,
+                      const __LevelType *Level) const;
+  template <typename __Type>
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const __Type *TP,
+                      const ASTExpressionNode *Level) const;
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const ASTGateQOpNode *GQN,
+                      const ASTExpressionNode *Level) const;
+
   // Defcal Grammar
   ASTDeclarationNode *ProductionRule_5000(const ASTDefcalGrammarNode *DG) const;
 
@@ -1543,7 +1579,7 @@ public:
                                                ASTIdentifierList *QIL,
                                                ASTGateQOpList *GOL) const;
 
-  /// Register a `uint N` gate template parameter while parsing `gate foo<…>`.
+  /// Register a `uint N` gate template parameter while parsing `gate foo[…]`.
   void ProductionRule_10031(const ASTToken *TK,
                             const ASTIdentifierNode *Id) const;
 };

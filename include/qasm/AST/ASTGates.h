@@ -84,7 +84,7 @@ protected:
   std::vector<unsigned> FormalParamArraySizes;
   /// Declared quantum formal kinds (Qubit/Qumode) in order.
   std::vector<ASTType> FormalQuantumTypes;
-  /// Gate template parameters (`uint N`, …) from `gate foo<…>(…)`.
+  /// Gate template parameters (`uint N`, …) from `gate foo[…](…)`.
   std::vector<std::pair<ASTType, std::string>> TemplateParams;
   /// Parallel to FormalParamTypes: template index when array size is symbolic,
   /// else ~0U.

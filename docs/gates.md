@@ -25,9 +25,9 @@ any file to use this gate.
 
 Gate definition (WIP):
 ```
-gate snap<uint N>(array[float[64], N] thetas) qumode qm {
+gate snap[uint N](array[float[64], N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl<i> @ gphase(thetas[i]) qm; // controls the i-th Fock level
+        ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 ```
@@ -115,9 +115,10 @@ gate baz(array[complex[float[64]], 3] alphas, angle beta) qubit qb, qumode qm {
 ```
 
 The above syntaxes are already implemented in the parser. However, SNAP gates
-cannot yet be fully defined because the gate *body* still needs `for` loops and
-`ctrl<i>` Fock-level controls (below). The **template / array-length** piece is
-implemented.
+cannot yet be fully defined because the gate *body* still needs `for` loops
+(below). Fock-level `ctrl[i]` / `ctrl[N]` (single identifier or integer) is
+implemented; see the next sections. The **template / array-length** piece is
+also implemented.
 
 ## Template parameters (array length `N`)
 
@@ -125,7 +126,7 @@ Fully-typed gates may declare unsigned integer template parameters used as
 array lengths:
 
 ```qasm
-gate foo<uint N>(array[float[64], N] thetas) qubit q {
+gate foo[uint N](array[float[64], N] thetas) qubit q {
 }
 ```
 
@@ -134,7 +135,7 @@ array literal’s arity or a **sized** named array’s declared length:
 
 ```qasm
 foo([pi/2, 0, 0.3]) q;   // infer N = 3
-foo<3>([pi/2, 0, 0.3]) q; // check length == 3
+foo[3]([pi/2, 0, 0.3]) q; // check length == 3
 ```
 
 Inference is a call-site semantic check (not a lexer rule): each template
@@ -142,22 +143,54 @@ param must be uniquely determined by an array size at the call. An
 uninitialized named array (declared but not assigned) is rejected with a
 “variable used before assigned” diagnostic — not a cannot-infer error.
 v1 supports only `uint` templates used as array sizes.
-(Named-array initialization is still unimplemented; see
-[#11](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/11).)
+Note (design decision): In the proposed syntax, we used to use angle brackets
+for template parameters. This was problematic because `>` is also a comparison
+operator. As a result, putting expressions inside angle brackets would be
+problematic to parse. Also, square brackets are already used for types in the
+OQ3 standard, not unlike what we use templates for: `int[32]` is a 32-bit
+integer, and `array[int[32], 5]` is a 5-element array of 32-bit integers.
 
-## WIP: SNAP gate body (`for` / `ctrl<i>`)
+## Fock-level `ctrl[…]` / `negctrl[…]`
 
-SNAP still needs loops in gate bodies and Fock-level control:
+Distinct from qubit n-control `ctrl(n) @ …` (parentheses). Square brackets
+select a **Fock level**:
+
+```qasm
+ctrl[3] @ gphase(pi/2) qm;
+ctrl[N] @ gphase(pi/2) qm;   // N = gate template param or other int id
+ctrl[N-1] @ gphase(pi/2) qm;
+ctrl[(2*N)] @ gphase(pi/2) qm;  // parentheses ok for richer exprs
+negctrl[i] @ disp(alpha) qm;
+```
+
+Existing forms are unchanged: `ctrl @`, `ctrl(2) @`, `negctrl @`, `negctrl(2) @`.
+
+The level may be an integer literal, identifier, or a `+`/`-`/`*`/`/` expression
+(including parentheses). A dedicated Fock-level grammar accepts forms like
+`N-1` even when the scanner glues `-1` into one integer token. Background:
+[issue #12](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/12).
+
+**Limitation:** Multi-control syntaxes `ctrl[level](n_ctrls)` are not supported.
+This would be a reasonable syntax given what we have implemented so far,
+but there is little evidence that it would be useful in practice.
+
+Template parameters (`uint N`) are bound as gate-local ints so `ctrl[N]` /
+`ctrl[N-1]` in a gate body resolve.
+
+## WIP: SNAP gate body (`for`)
+
+SNAP still needs loops in gate bodies; Fock `ctrl[i]` / `ctrl[N-1]` is available
+for the loop body once `for` lands:
 
 ```
-gate snap<uint N>(array[float[64], N] thetas) qumode qm {
+gate snap[uint N](array[float[64], N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl<i> @ gphase(thetas[i]) qm; // controls the i-th Fock level
+        ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 ```
 
-Until those land, `snap` remains an opaque declaration in `cvgates.inc`.
+Until `for` lands, `snap` remains an opaque declaration in `cvgates.inc`.
 
 ## Compatibility with OpenQASM 3.0 gate definitions
 

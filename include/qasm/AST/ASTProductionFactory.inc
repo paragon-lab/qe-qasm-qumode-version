@@ -954,4 +954,192 @@ ASTProductionFactory::ProductionRule_1350(const ASTToken* TK,
   return SN;
 }
 
+template<typename __Type, typename __LevelType>
+ASTGateFockControlNode*
+ASTProductionFactory::ProductionRule_3855(const ASTToken* TK,
+                                          const __Type* TP,
+                                          const __LevelType* Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(TP && "Invalid template parameter argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  ASTGateFockControlNode* GFCN = new ASTGateFockControlNode(TP, Level);
+  assert(GFCN && "Could not create a valid ASTGateFockControlNode!");
+
+  if (!GFCN) {
+    std::stringstream M;
+    M << "Could not create a valid ASTGateFockControlNode.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TP), M.str(), DiagLevel::ICE);
+    return ASTGateFockControlNode::ExpressionError(M.str());
+  }
+
+  GFCN->SetLocation(TK->GetLocation());
+  GFCN->Mangle();
+  PopWrappedGateEOp(TP);
+  return GFCN;
+}
+
+template<typename __LevelType>
+ASTGateFockControlNode*
+ASTProductionFactory::ProductionRule_3855(const ASTToken* TK,
+                                          const ASTGateQOpNode* GQN,
+                                          const __LevelType* Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GQN && "Invalid ASTGateQOpNode argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  const ASTGateNode* GN = GQN->GetGateNode();
+  ASTGateFockControlNode* GFCN =
+      GN ? new ASTGateFockControlNode(GN, Level)
+         : new ASTGateFockControlNode(GQN, Level);
+  assert(GFCN && "Could not create a valid ASTGateFockControlNode!");
+
+  if (!GFCN) {
+    std::stringstream M;
+    M << "Could not create a valid ASTGateFockControlNode.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+    return ASTGateFockControlNode::ExpressionError(M.str());
+  }
+
+  GFCN->SetLocation(TK->GetLocation());
+  GFCN->Mangle();
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
+  return GFCN;
+}
+
+template<typename __Type, typename __LevelType>
+ASTGateFockNegControlNode*
+ASTProductionFactory::ProductionRule_3856(const ASTToken* TK,
+                                          const __Type* TP,
+                                          const __LevelType* Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(TP && "Invalid template parameter argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  ASTGateFockNegControlNode* GFNCN = new ASTGateFockNegControlNode(TP, Level);
+  assert(GFNCN && "Could not create a valid ASTGateFockNegControlNode!");
+
+  if (!GFNCN) {
+    std::stringstream M;
+    M << "Could not create a valid ASTGateFockNegControlNode.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TP), M.str(), DiagLevel::ICE);
+    return ASTGateFockNegControlNode::ExpressionError(M.str());
+  }
+
+  GFNCN->SetLocation(TK->GetLocation());
+  GFNCN->Mangle();
+  PopWrappedGateEOp(TP);
+  return GFNCN;
+}
+
+template<typename __LevelType>
+ASTGateFockNegControlNode*
+ASTProductionFactory::ProductionRule_3856(const ASTToken* TK,
+                                          const ASTGateQOpNode* GQN,
+                                          const __LevelType* Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(GQN && "Invalid ASTGateQOpNode argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  const ASTGateNode* GN = GQN->GetGateNode();
+  ASTGateFockNegControlNode* GFNCN =
+      GN ? new ASTGateFockNegControlNode(GN, Level)
+         : new ASTGateFockNegControlNode(GQN, Level);
+  assert(GFNCN && "Could not create a valid ASTGateFockNegControlNode!");
+
+  if (!GFNCN) {
+    std::stringstream M;
+    M << "Could not create a valid ASTGateFockNegControlNode.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+    return ASTGateFockNegControlNode::ExpressionError(M.str());
+  }
+
+  GFNCN->SetLocation(TK->GetLocation());
+  GFNCN->Mangle();
+  ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
+  return GFNCN;
+}
+
+template <typename __Type>
+ASTGateFockControlNode*
+ASTProductionFactory::ProductionRule_3855(const ASTToken* TK, const __Type* TP,
+                                          const ASTExpressionNode* Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(TP && "Invalid template parameter argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  switch (Level->GetASTType()) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+    return ProductionRule_3855(TK, TP, dynamic_cast<const ASTIntNode*>(Level));
+  case ASTTypeBinaryOp:
+    return ProductionRule_3855(TK, TP,
+                               dynamic_cast<const ASTBinaryOpNode*>(Level));
+  case ASTTypeUnaryOp:
+    return ProductionRule_3855(TK, TP,
+                               dynamic_cast<const ASTUnaryOpNode*>(Level));
+  case ASTTypeIdentifier: {
+    const ASTIdentifierNode* Id = Level->GetIdentifier();
+    if (!Id) {
+      std::stringstream M;
+      M << "Invalid identifier Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+      return ASTGateFockControlNode::ExpressionError(M.str());
+    }
+    return ProductionRule_3855(TK, TP, Id);
+  }
+  default: {
+    std::stringstream M;
+    M << "Unsupported Fock level expression type.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateFockControlNode::ExpressionError(M.str());
+  }
+  }
+}
+
+template <typename __Type>
+ASTGateFockNegControlNode*
+ASTProductionFactory::ProductionRule_3856(const ASTToken* TK, const __Type* TP,
+                                          const ASTExpressionNode* Level) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(TP && "Invalid template parameter argument!");
+  assert(Level && "Invalid Fock level expression!");
+
+  switch (Level->GetASTType()) {
+  case ASTTypeInt:
+  case ASTTypeUInt:
+    return ProductionRule_3856(TK, TP, dynamic_cast<const ASTIntNode*>(Level));
+  case ASTTypeBinaryOp:
+    return ProductionRule_3856(TK, TP,
+                               dynamic_cast<const ASTBinaryOpNode*>(Level));
+  case ASTTypeUnaryOp:
+    return ProductionRule_3856(TK, TP,
+                               dynamic_cast<const ASTUnaryOpNode*>(Level));
+  case ASTTypeIdentifier: {
+    const ASTIdentifierNode* Id = Level->GetIdentifier();
+    if (!Id) {
+      std::stringstream M;
+      M << "Invalid identifier Fock level expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::ICE);
+      return ASTGateFockNegControlNode::ExpressionError(M.str());
+    }
+    return ProductionRule_3856(TK, TP, Id);
+  }
+  default: {
+    std::stringstream M;
+    M << "Unsupported Fock level expression type.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateFockNegControlNode::ExpressionError(M.str());
+  }
+  }
+}
+
 } // namespace QASM
