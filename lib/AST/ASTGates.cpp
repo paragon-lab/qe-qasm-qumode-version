@@ -25,6 +25,7 @@
 #include <qasm/AST/ASTGateNodeBuilder.h>
 #include <qasm/AST/ASTGateOpList.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTImplicitConversionExpr.h>
@@ -47,6 +48,8 @@ ASTGateContextBuilder ASTGateContextBuilder::GCB;
 bool ASTGateContextBuilder::GCS = false;
 unsigned ASTGateContextBuilder::CMDepth = 0U;
 const ASTToken *ASTGateContextBuilder::CMTok = nullptr;
+
+ASTGateTemplateParamBuilder ASTGateTemplateParamBuilder::TPB;
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
@@ -726,7 +729,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
       OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
       ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall),
       FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
-      FormalQuantumTypes() {
+      FormalQuantumTypes(), TemplateParams(),
+      FormalParamArraySizeTemplateIndices() {
   if (CallFormalParamTypes)
     FormalParamTypes = *CallFormalParamTypes;
 
@@ -1795,7 +1799,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
       OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
       ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall),
       FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
-      FormalQuantumTypes() {
+      FormalQuantumTypes(), TemplateParams(),
+      FormalParamArraySizeTemplateIndices() {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode *> NQV;
@@ -2289,9 +2294,30 @@ void ASTGateNode::print() const {
       if (I < FormalParamArraySizes.size() && FormalParamArraySizes[I] != 0U)
         std::cout << "<ArraySize>" << std::dec << FormalParamArraySizes[I]
                   << "</ArraySize>" << std::endl;
+      if (I < FormalParamArraySizeTemplateIndices.size() &&
+          FormalParamArraySizeTemplateIndices[I] !=
+              static_cast<unsigned>(~0U) &&
+          FormalParamArraySizeTemplateIndices[I] < TemplateParams.size())
+        std::cout
+            << "<ArraySizeTemplate>"
+            << TemplateParams[FormalParamArraySizeTemplateIndices[I]].second
+            << "</ArraySizeTemplate>" << std::endl;
       std::cout << "</FormalParamType>" << std::endl;
     }
     std::cout << "</FormalParamTypes>" << std::endl;
+  }
+
+  if (!TemplateParams.empty()) {
+    std::cout << "<TemplateParams>" << std::endl;
+    for (std::size_t I = 0; I < TemplateParams.size(); ++I) {
+      std::cout << "<TemplateParam>" << std::endl;
+      std::cout << "<Type>" << PrintTypeEnum(TemplateParams[I].first)
+                << "</Type>" << std::endl;
+      std::cout << "<Name>" << TemplateParams[I].second << "</Name>"
+                << std::endl;
+      std::cout << "</TemplateParam>" << std::endl;
+    }
+    std::cout << "</TemplateParams>" << std::endl;
   }
 
   if (!FormalQuantumTypes.empty()) {
@@ -3194,6 +3220,8 @@ ASTGateNode *ASTGateNode::CloneCall(const ASTIdentifierNode *Id,
   RG->FullyTyped = FullyTyped;
   RG->FormalParamArraySizes = FormalParamArraySizes;
   RG->FormalQuantumTypes = FormalQuantumTypes;
+  RG->TemplateParams = TemplateParams;
+  RG->FormalParamArraySizeTemplateIndices = FormalParamArraySizeTemplateIndices;
   RG->Mangle();
   return RG;
 }

@@ -50,11 +50,13 @@ protected:
   unsigned SZ;
   unsigned EXT;
   const ASTInitializerList *INL;
+  /// When set, SZ is a placeholder and the true length is gate template `Name`.
+  std::string SizeTemplateName;
 
 protected:
   ASTArrayNode(const ASTIdentifierNode *Id, const std::string &ERM, ASTType Ty)
       : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
-        MM(), AType(Ty), SZ(0U), INL(nullptr) {}
+        MM(), AType(Ty), SZ(0U), INL(nullptr), SizeTemplateName() {}
 
 public:
   static const unsigned ArrayBits = 64U;
@@ -63,12 +65,12 @@ public:
   ASTArrayNode(const ASTIdentifierNode *Id, ASTType ATy, unsigned Size,
                const ASTInitializerList *IL = nullptr)
       : ASTExpressionNode(Id, ASTTypeArray), MM(), AType(ATy), SZ(Size),
-        EXT(1U), INL(IL) {}
+        EXT(1U), INL(IL), SizeTemplateName() {}
 
   ASTArrayNode(const ASTIdentifierNode *Id, ASTType ATy, unsigned Size,
                unsigned Extents, const ASTInitializerList *IL = nullptr)
       : ASTExpressionNode(Id, ASTTypeArray), MM(), AType(ATy), SZ(Size),
-        EXT(Extents), INL(IL) {}
+        EXT(Extents), INL(IL), SizeTemplateName() {}
 
   /// Validate the array access, emitting a diagnostic if invalid.
   void ValidateIndex(unsigned Index, QASM::ASTLocation location) const {
@@ -102,6 +104,16 @@ public:
   virtual unsigned Size() const { return SZ; }
 
   virtual unsigned Extents() const { return EXT; }
+
+  virtual void SetSizeTemplateName(const std::string &Name) {
+    SizeTemplateName = Name;
+  }
+
+  virtual bool HasSizeTemplate() const { return !SizeTemplateName.empty(); }
+
+  virtual const std::string &GetSizeTemplateName() const {
+    return SizeTemplateName;
+  }
 
   virtual std::any &Memory() = 0;
 

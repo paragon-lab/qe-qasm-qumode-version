@@ -1317,6 +1317,12 @@ public:
                                       const ASTArgumentNodeList *ANL,
                                       const ASTAnyTypeList *ATL) const;
 
+  ASTGateQOpNode *ProductionRule_3500(const ASTToken *TK,
+                                      const ASTIdentifierNode *Id,
+                                      const ASTExpressionList *TemplateArgs,
+                                      const ASTArgumentNodeList *ANL,
+                                      const ASTAnyTypeList *ATL) const;
+
   ASTGateQOpNode *ProductionRule_3502(const ASTToken *TK,
                                       const ASTArgumentNodeList *ANL,
                                       const ASTAnyTypeList *ATL) const;
@@ -1536,6 +1542,10 @@ public:
                                                ASTDeclarationList *DL,
                                                ASTIdentifierList *QIL,
                                                ASTGateQOpList *GOL) const;
+
+  /// Register a `uint N` gate template parameter while parsing `gate foo<…>`.
+  void ProductionRule_10031(const ASTToken *TK,
+                            const ASTIdentifierNode *Id) const;
 };
 
 } // namespace QASM

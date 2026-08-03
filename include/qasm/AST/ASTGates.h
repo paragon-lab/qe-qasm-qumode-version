@@ -84,6 +84,11 @@ protected:
   std::vector<unsigned> FormalParamArraySizes;
   /// Declared quantum formal kinds (Qubit/Qumode) in order.
   std::vector<ASTType> FormalQuantumTypes;
+  /// Gate template parameters (`uint N`, …) from `gate foo<…>(…)`.
+  std::vector<std::pair<ASTType, std::string>> TemplateParams;
+  /// Parallel to FormalParamTypes: template index when array size is symbolic,
+  /// else ~0U.
+  std::vector<unsigned> FormalParamArraySizeTemplateIndices;
 
 private:
   ASTGateNode() = delete;
@@ -164,7 +169,8 @@ public:
         OperandParams(), OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
         ControlType(ASTTypeUndefined), Opaque(false), GateCall(false),
         FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
-        FormalQuantumTypes() {}
+        FormalQuantumTypes(), TemplateParams(),
+        FormalParamArraySizeTemplateIndices() {}
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
@@ -372,6 +378,26 @@ public:
 
   virtual const std::vector<ASTType> &GetFormalQuantumTypes() const {
     return FormalQuantumTypes;
+  }
+
+  virtual void
+  SetTemplateParams(const std::vector<std::pair<ASTType, std::string>> &TPs) {
+    TemplateParams = TPs;
+  }
+
+  virtual const std::vector<std::pair<ASTType, std::string>> &
+  GetTemplateParams() const {
+    return TemplateParams;
+  }
+
+  virtual void
+  SetFormalParamArraySizeTemplateIndices(const std::vector<unsigned> &Idxs) {
+    FormalParamArraySizeTemplateIndices = Idxs;
+  }
+
+  virtual const std::vector<unsigned> &
+  GetFormalParamArraySizeTemplateIndices() const {
+    return FormalParamArraySizeTemplateIndices;
   }
 
   virtual bool HasControl() const {

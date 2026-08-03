@@ -14,9 +14,9 @@ description: >-
 
 - **All-untyped** classical + bare quantum formals = legacy OpenQASM 3 (`ProductionRule_1430` / `1431`). No call-site type checks.
 - **Any typed classical formals** with **typed quantum operands** = fully typed (`ProductionRule_10030`). No partial typing.
-- Templates / SNAP array formals deferred. Opaque `snap(thetas)` stays untyped until then.
+- **Templates (v1):** `gate foo<uint N>(array[T, N] …)` — unsigned int templates used as array lengths. Call-site `foo([…])` infers `N` from literal arity or a sized named array’s declared length; `foo<N>([…])` checks. Uninitialized named arrays → “used before assigned.” Opaque `snap(thetas)` stays until `for` / `ctrl<i>` bodies land.
 - `ctrl` is a reserved token (`TOK_CTRL`); do not use `ctrl` as an operand name.
-- **Out of CV-core scope:** `for`/`while` in `GateOpList`; int/bool/duration/bit array formals.
+- **Out of CV-core scope:** `for`/`while` in `GateOpList`; int/bool/duration/bit array formals; non-`uint` / non-size template params.
 
 ## Grammar / production
 
@@ -24,6 +24,7 @@ description: >-
 |-------|----------|
 | Typed quantum list | `GateTypedQuantumOperandList` in `lib/Parser/QasmParser.y` |
 | Decl production | `ProductionRule_10030` in `ASTProductionFactory.cpp` |
+| Template register | `ProductionRule_10031` + `ASTGateTemplateParamBuilder` |
 | Shared AST build | Delegates to `ProductionRule_1430` after validating formals |
 | Call entry | `ProductionRule_3500` → `CreateQOpNodeCall` → `CreateGateCall` |
 | Compatibility | `ASTGateType` in `include/qasm/AST/ASTGateType.h` |
@@ -33,7 +34,8 @@ Decl-time checks in `10030`:
   float/complex/arrays; bare Identifier formals are also angles and allowed
   on this path when quantum operands are typed)
 - Quantum: polymorphic type must be `ASTTypeQubit` or `ASTTypeQumode`
-- Stores `FormalParamTypes`, `FormalParamArraySizes`, `FormalQuantumTypes`
+- Stores `FormalParamTypes`, `FormalParamArraySizes`,
+  `FormalParamArraySizeTemplateIndices`, `TemplateParams`, `FormalQuantumTypes`
 
 ## GateType lattice (call-site)
 
@@ -89,6 +91,7 @@ Gate param lists provisionally type identifiers as `ASTTypeAngle`. `ProductionRu
 - Positive: `tests/src/qumode/angle-array-param.qasm` (`array[angle, N]` body index + multi-gate ASTM reuse)
 - Positive: `tests/src/qumode/multi-angle-array-param.qasm` (two angle arrays, different `N`)
 - Positive: `tests/src/qumode/angle-scalar-param.qasm` (`angle` scalar + float array formals)
+- Positive: `tests/src/qumode/gate-template-array-param.qasm` (`uint N` template + infer/`<3>`)
 - Negative (expect-fail `test $? -ne 0`):
   - `ecd-param-reject.qasm` — angle array for complex formal
   - `ecd-operand-reject.qasm` — qumode where qubit expected
@@ -97,5 +100,9 @@ Gate param lists provisionally type identifiers as `ASTTypeAngle`. `ProductionRu
   - `array-elem-complex-reject.qasm` — complex element in float array formal
   - `array-size-mismatch-reject.qasm` — literal length ≠ formal `N` (param 0)
   - `array-size-mismatch-param1-reject.qasm` — size mismatch on second array formal
+  - `gate-template-size-mismatch-reject.qasm` — `foo<2>([a,b,c])`
+  - `gate-template-infer-fail-reject.qasm` — uninitialized named array (`used before assigned`)
+  - `gate-template-conflict-reject.qasm` — conflicting inferred `N` from two arrays
+  - `gate-template-unused-reject.qasm` — `N` not used as an array size (cannot infer)
 - Include: `tests/include/cvgates.inc`
 - Manual: `gate-decl.qasm` (`rz3` + `disp3`)

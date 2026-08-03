@@ -108,6 +108,7 @@
 #include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTGateOperandParamBuilder.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
 #include <qasm/AST/ASTAngleNodeBuilder.h>
 #include <qasm/AST/ASTGateNodeBuilder.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
@@ -773,7 +774,7 @@ int readinput() {
 %type <KernelStatementList>         KernelStmtList KernelStmtListImpl
 %type <DefcalStatementList>         DefcalStmtList DefcalStmtListImpl
 %type <GateOpList>                  GateOpList
-%type <ExpressionList>              ExprList ExprListImpl
+%type <ExpressionList>              ExprList ExprListImpl GateTemplateArgList
 %type <IntegerList>                 IntegerList IntegerListImpl
 %type <QubitConcatList>             QubitConcatList QubitConcatListImpl
 %type <AnyList>                     AnyList AnyListImpl
@@ -2117,8 +2118,13 @@ GateDecl
      Lookahead after ')' is TOK_QUBIT / TOK_QUMODE (vs bare Identifier for
      the OQ3 untyped-operand production above). */
   | TOK_GATE Identifier '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
+    ASTGateTemplateParamBuilder::Instance().Clear();
     $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(8),
                                                                $2, $4, $6, $8);
+  }
+  | TOK_GATE Identifier GateTemplateOpen GateTemplateParamList '>' '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(10),
+                                                               $2, $7, $9, $11);
   }
   | TOK_GATE TOK_CX GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1432(GET_TOKEN(5), $3,
@@ -2132,6 +2138,23 @@ GateDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_1434(GET_TOKEN(8), $2,
                                           GET_TOKEN(7)->GetLocation(),
                                           $4, $6, $8);
+  }
+  ;
+
+GateTemplateOpen
+  : '<' {
+    ASTGateTemplateParamBuilder::Instance().Clear();
+  }
+  ;
+
+GateTemplateParamList
+  : GateTemplateParam
+  | GateTemplateParamList ',' GateTemplateParam
+  ;
+
+GateTemplateParam
+  : TOK_UINT Identifier {
+    ASTProductionFactory::Instance().ProductionRule_10031(GET_TOKEN(1), $2);
   }
   ;
 
@@ -3679,6 +3702,10 @@ GateEOp
     $$ = ASTProductionFactory::Instance().ProductionRule_3500(GET_TOKEN(2),
                                                               $1, $2, $3);
   }
+  | Identifier '<' GateTemplateArgList '>' ArgsList AnyList {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3500(GET_TOKEN(5),
+                                                              $1, $3, $5, $6);
+  }
   | TOK_U ArgsList AnyList {
     $$ = ASTProductionFactory::Instance().ProductionRule_3502(GET_TOKEN(2),
                                                               $2, $3);
@@ -3701,6 +3728,18 @@ GateEOp
   | TOK_DISP ArgsList AnyList {
     $$ = ASTProductionFactory::Instance().ProductionRule_10020(GET_TOKEN(2),
                                                                $2, $3);
+  }
+  ;
+
+/* Compile-time ints only — avoid ExprList so `>` cannot shift as comparison. */
+GateTemplateArgList
+  : Integer {
+    $$ = ASTExpressionBuilder::Instance().NewList();
+    $$->Append($1);
+  }
+  | GateTemplateArgList ',' Integer {
+    $1->Append($3);
+    $$ = $1;
   }
   ;
 
@@ -6211,6 +6250,11 @@ ArrayExpr
                                                              $7, ASTTypeFloatArray);
   }
   | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                             $8, $5,
+                                                             ASTTypeMPDecimalArray);
+  }
+  | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
                                                              $8, $5,
                                                              ASTTypeMPDecimalArray);

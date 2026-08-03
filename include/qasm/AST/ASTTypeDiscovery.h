@@ -166,9 +166,12 @@ public:
 
   /// Call-site type checks for fully-typed gate declarations.
   /// Returns false and emits diagnostics on mismatch.
-  bool ValidateTypedGateCall(const ASTToken *TK, const ASTGateNode *Decl,
-                             const ASTArgumentNodeList &ANL,
-                             const ASTAnyTypeList &ATL) const;
+  /// \p TemplateArgs optional explicit `gatecall<…>(…)` template arguments.
+  bool
+  ValidateTypedGateCall(const ASTToken *TK, const ASTGateNode *Decl,
+                        const ASTArgumentNodeList &ANL,
+                        const ASTAnyTypeList &ATL,
+                        const ASTExpressionList *TemplateArgs = nullptr) const;
 };
 
 } // namespace QASM

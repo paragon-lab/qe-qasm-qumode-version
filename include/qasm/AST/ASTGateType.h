@@ -58,6 +58,13 @@ public:
 
   static ASTGateType ClassifyArg(const ASTArgumentNode *Arg);
 
+  /// Named array argument with a declared type but no initializer list.
+  static bool ArgIsUninitializedArray(const ASTArgumentNode *Arg);
+
+  /// Identifier for a named call argument, or nullptr.
+  static const class ASTIdentifierNode *
+  ArgIdentifier(const ASTArgumentNode *Arg);
+
   /// True when call arg A may bind to formal F.
   /// Real↔angle array family; real→complex scalar and real-array→complex-array
   /// promotion; reject complex→real (scalar or array).

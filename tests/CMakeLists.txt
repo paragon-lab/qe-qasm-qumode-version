@@ -749,3 +749,18 @@ add_test(NAME qumode-t00018
 
 add_test(NAME qumode-t00019
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/array-size-mismatch-param1-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/array-size-mismatch-param1-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00020
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00021
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-size-mismatch-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-size-mismatch-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00022
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-infer-fail-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-infer-fail-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00023
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-conflict-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-conflict-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00024
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-unused-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-unused-reject.qasm.out 2>&1; test $? -ne 0")

@@ -40,6 +40,7 @@
 #include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGateOperandParamBuilder.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
 #include <qasm/AST/ASTGateType.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTIfConditionalsGraphController.h>
@@ -7773,6 +7774,40 @@ static bool AllowArrayInCurrentContext(const ASTToken *TK,
   return false;
 }
 
+/// Resolve array length from Integer or Identifier. Gate template params
+/// (`uint N`) use a placeholder size of 1 and return the template name.
+static unsigned ResolveArrayLengthBits(
+    const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
+    std::string *SizeTemplateName) {
+  if (SizeTemplateName)
+    SizeTemplateName->clear();
+  if (II.index() == 1) {
+    if (const ASTIdentifierNode *IId = std::get<1>(II)) {
+      if (ASTGateTemplateParamBuilder::Instance().IsTemplateParam(
+              IId->GetName())) {
+        if (SizeTemplateName)
+          *SizeTemplateName = IId->GetName();
+        return 1U;
+      }
+    }
+  }
+  switch (II.index()) {
+  case 0:
+    if (const ASTIntNode *IIN = std::get<0>(II))
+      return ASTUtils::Instance().GetUnsignedValue(IIN);
+    return 0U;
+  case 1:
+    if (const ASTIdentifierNode *IId = std::get<1>(II)) {
+      ASTScopeController::Instance().CheckIdentifier(IId);
+      return ASTUtils::Instance().GetUnsignedValue(IId);
+    }
+    return 0U;
+  default:
+    break;
+  }
+  return static_cast<unsigned>(~0x0);
+}
+
 ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     const ASTToken *TK, const ASTIdentifierNode *Id,
     const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
@@ -7795,7 +7830,8 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  unsigned Bits = ASTProductionFactory::Instance().GetVariantBits(II);
+  std::string SizeTemplate;
+  unsigned Bits = ResolveArrayLengthBits(II, &SizeTemplate);
   if (ASTIdentifierNode::InvalidBits(Bits)) {
     std::stringstream M;
     M << "Invalid number of bits for array expression.";
@@ -7825,6 +7861,8 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
   // Do not pass 1: that forces 1-bit angle/mpdecimal elements.
   ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, 0U, Unsigned);
   AN->SetLocation(TK->GetLocation());
+  if (!SizeTemplate.empty())
+    AN->SetSizeTemplateName(SizeTemplate);
   AN->Mangle();
   return AN;
 }
@@ -8130,7 +8168,8 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  unsigned Bits = ASTProductionFactory::Instance().GetVariantBits(II);
+  std::string SizeTemplate;
+  unsigned Bits = ResolveArrayLengthBits(II, &SizeTemplate);
   if (ASTIdentifierNode::InvalidBits(Bits)) {
     std::stringstream M;
     M << "Invalid number of bits for array expression.";
@@ -8167,6 +8206,8 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_822(
 
   ASTArrayNode *AN = ConstructASTArray(Id, TK, Ty, Bits, TyBits, Unsigned);
   AN->SetLocation(TK->GetLocation());
+  if (!SizeTemplate.empty())
+    AN->SetSizeTemplateName(SizeTemplate);
   AN->Mangle();
   return AN;
 }
@@ -29760,11 +29801,11 @@ static ASTGateQOpNode *CreateDefcalGroupCall(const ASTToken *TK,
   return RD;
 }
 
-static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
-                                      const ASTSymbolTableEntry *STE,
-                                      const ASTIdentifierNode *Id,
-                                      const ASTArgumentNodeList &ANL,
-                                      const ASTAnyTypeList &ATL) {
+static ASTGateQOpNode *
+CreateGateCall(const ASTToken *TK, const ASTSymbolTableEntry *STE,
+               const ASTIdentifierNode *Id, const ASTArgumentNodeList &ANL,
+               const ASTAnyTypeList &ATL,
+               const ASTExpressionList *TemplateArgs = nullptr) {
   // ASTGateNode *GN = STE->GetValue()->GetValue<ASTGateNode *>();
   ASTGateNode *GN = nullptr;
 
@@ -29791,8 +29832,8 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
     return nullptr;
   }
 
-  if (GN->IsFullyTyped() &&
-      !ASTTypeDiscovery::Instance().ValidateTypedGateCall(TK, GN, ANL, ATL)) {
+  if (GN->IsFullyTyped() && !ASTTypeDiscovery::Instance().ValidateTypedGateCall(
+                                TK, GN, ANL, ATL, TemplateArgs)) {
     return ASTGateQOpNode::StatementError(Id, "Typed gate call argument "
                                               "type mismatch.");
   }
@@ -29810,10 +29851,10 @@ static ASTGateQOpNode *CreateGateCall(const ASTToken *TK,
   return RG;
 }
 
-static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
-                                         const ASTIdentifierNode *Id,
-                                         const ASTArgumentNodeList &ANL,
-                                         const ASTAnyTypeList &ATL) {
+static ASTGateQOpNode *
+CreateQOpNodeCall(const ASTToken *TK, const ASTIdentifierNode *Id,
+                  const ASTArgumentNodeList &ANL, const ASTAnyTypeList &ATL,
+                  const ASTExpressionList *TemplateArgs = nullptr) {
   const ASTSymbolTableEntry *STE =
       ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
   if (!STE) {
@@ -29843,7 +29884,7 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
     break;
   case ASTTypeGate:
   case ASTTypeUnitary:
-    RQO = CreateGateCall(TK, STE, Id, ANL, ATL);
+    RQO = CreateGateCall(TK, STE, Id, ANL, ATL, TemplateArgs);
     break;
   case ASTTypeCXGate:
     RQO = CreateCXGateCall(TK, Id, ANL, ATL);
@@ -29899,6 +29940,13 @@ static ASTGateQOpNode *CreateQOpNodeCall(const ASTToken *TK,
 ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
     const ASTToken *TK, const ASTIdentifierNode *Id,
     const ASTArgumentNodeList *ANL, const ASTAnyTypeList *ATL) const {
+  return ProductionRule_3500(TK, Id, nullptr, ANL, ATL);
+}
+
+ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
+    const ASTToken *TK, const ASTIdentifierNode *Id,
+    const ASTExpressionList *TemplateArgs, const ASTArgumentNodeList *ANL,
+    const ASTAnyTypeList *ATL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(ANL && "Invalid ASTArgumentNodeList argument!");
@@ -29936,7 +29984,7 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
   } else if (Id->GetName() == "h") {
     RQO = CreateHadamardGateCall(TK, Id, *ANL, *ATL);
   } else {
-    RQO = CreateQOpNodeCall(TK, Id, *ANL, *ATL);
+    RQO = CreateQOpNodeCall(TK, Id, *ANL, *ATL, TemplateArgs);
     CTy = Id->GetSymbolType();
   }
 
@@ -30573,6 +30621,8 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
   FormalParamTypes.reserve(DL->Size());
   std::vector<unsigned> FormalParamArraySizes;
   FormalParamArraySizes.reserve(DL->Size());
+  std::vector<unsigned> FormalParamArraySizeTemplateIndices;
+  FormalParamArraySizeTemplateIndices.reserve(DL->Size());
   for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
        ++DI) {
     const ASTDeclarationNode *DN = *DI;
@@ -30586,14 +30636,23 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
     FormalParamTypes.push_back(PTy);
 
     unsigned ArrSZ = 0U;
+    unsigned ArrTemplateIdx = static_cast<unsigned>(~0U);
     if (PTy == ASTTypeAngleArray || PTy == ASTTypeFloatArray ||
         PTy == ASTTypeMPDecimalArray || PTy == ASTTypeMPComplexArray) {
       if (const ASTExpressionNode *EX = DN->GetExpression()) {
-        if (const ASTArrayNode *ARN = dynamic_cast<const ASTArrayNode *>(EX))
-          ArrSZ = ARN->Size();
+        if (const ASTArrayNode *ARN = dynamic_cast<const ASTArrayNode *>(EX)) {
+          if (ARN->HasSizeTemplate()) {
+            ArrTemplateIdx = ASTGateTemplateParamBuilder::Instance().IndexOf(
+                ARN->GetSizeTemplateName());
+            ArrSZ = 0U;
+          } else {
+            ArrSZ = ARN->Size();
+          }
+        }
       }
     }
     FormalParamArraySizes.push_back(ArrSZ);
+    FormalParamArraySizeTemplateIndices.push_back(ArrTemplateIdx);
   }
 
   std::vector<ASTType> FormalQuantumTypes;
@@ -30604,18 +30663,40 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
 
   // Same AST construction path as the untyped-operand GateDecl form.
   ASTGateDeclarationNode *GDN = ProductionRule_1430(TK, GId, DL, QIL, GOL);
-  if (!GDN || GDN->IsError())
+  if (!GDN || GDN->IsError()) {
+    ASTGateTemplateParamBuilder::Instance().Clear();
     return GDN;
+  }
 
   ASTGateNode *GN = const_cast<ASTGateNode *>(GDN->GetGateNode());
   assert(GN && "Fully-typed gate declaration has no ASTGateNode!");
   GN->SetFormalParamTypes(FormalParamTypes);
   GN->SetFormalParamArraySizes(FormalParamArraySizes);
+  GN->SetFormalParamArraySizeTemplateIndices(
+      FormalParamArraySizeTemplateIndices);
+  GN->SetTemplateParams(ASTGateTemplateParamBuilder::Instance().GetParams());
   GN->SetFormalQuantumTypes(FormalQuantumTypes);
   GN->SetFullyTyped(true);
   // Construction mangled before Formal* was attached; refresh the name.
   GN->Mangle();
+  ASTGateTemplateParamBuilder::Instance().Clear();
   return GDN;
+}
+
+void ASTProductionFactory::ProductionRule_10031(
+    const ASTToken *TK, const ASTIdentifierNode *Id) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+
+  if (ASTGateTemplateParamBuilder::Instance().IsTemplateParam(Id->GetName())) {
+    std::stringstream M;
+    M << "Duplicate gate template parameter '" << Id->GetName() << "'.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    return;
+  }
+
+  ASTGateTemplateParamBuilder::Instance().Add(ASTTypeInt, Id->GetName());
 }
 
 ASTExpressionNode *

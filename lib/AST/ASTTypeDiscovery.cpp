@@ -26,6 +26,7 @@
 #include <qasm/AST/ASTDefcalContextBuilder.h>
 #include <qasm/AST/ASTFunctionContextBuilder.h>
 #include <qasm/AST/ASTGateContextBuilder.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
 #include <qasm/AST/ASTGateType.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
@@ -596,6 +597,11 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
   } else {
     Id = ASTBuilder::Instance().FindASTIdentifierNode(S);
   }
+
+  // Gate template params (`uint N`) may appear as array sizes; reuse the
+  // existing symbol instead of attempting a typed re-declaration.
+  if (Id && ASTGateTemplateParamBuilder::Instance().IsTemplateParam(S))
+    return Id;
 
   const ASTToken *LTK = ASTTokenFactory::GetLastToken();
   const ASTToken *PTK = ASTTokenFactory::GetPreviousToken();
@@ -3060,10 +3066,9 @@ void ASTTypeDiscovery::ValidateDefcalQubitArgs(
   }
 }
 
-bool ASTTypeDiscovery::ValidateTypedGateCall(const ASTToken *TK,
-                                             const ASTGateNode *Decl,
-                                             const ASTArgumentNodeList &ANL,
-                                             const ASTAnyTypeList &ATL) const {
+bool ASTTypeDiscovery::ValidateTypedGateCall(
+    const ASTToken *TK, const ASTGateNode *Decl, const ASTArgumentNodeList &ANL,
+    const ASTAnyTypeList &ATL, const ASTExpressionList *TemplateArgs) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Decl && "Invalid ASTGateNode argument!");
 
@@ -3072,6 +3077,10 @@ bool ASTTypeDiscovery::ValidateTypedGateCall(const ASTToken *TK,
 
   const std::vector<ASTType> &FPT = Decl->GetFormalParamTypes();
   const std::vector<unsigned> &FPSZ = Decl->GetFormalParamArraySizes();
+  const std::vector<unsigned> &FPSTI =
+      Decl->GetFormalParamArraySizeTemplateIndices();
+  const std::vector<std::pair<ASTType, std::string>> &TPs =
+      Decl->GetTemplateParams();
   const std::vector<ASTType> &FQT = Decl->GetFormalQuantumTypes();
 
   if (ANL.Size() != FPT.size()) {
@@ -3092,13 +3101,135 @@ bool ASTTypeDiscovery::ValidateTypedGateCall(const ASTToken *TK,
     return false;
   }
 
+  // Bind gate template parameters (explicit `<…>` or infer from array size).
+  std::vector<std::optional<unsigned>> Bound(TPs.size());
+  const bool HasExplicit =
+      TemplateArgs && !TemplateArgs->Empty() && !TPs.empty();
+  if (HasExplicit) {
+    if (TemplateArgs->Size() != TPs.size()) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' expects " << TPs.size()
+        << " template argument(s), but " << TemplateArgs->Size()
+        << " were provided.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+    unsigned TI = 0;
+    for (ASTExpressionList::const_iterator EI = TemplateArgs->begin();
+         EI != TemplateArgs->end(); ++EI, ++TI) {
+      const ASTExpressionNode *EN =
+          dynamic_cast<const ASTExpressionNode *>(*EI);
+      unsigned V = 0U;
+      bool Ok = false;
+      if (const ASTIntNode *IN = dynamic_cast<const ASTIntNode *>(EN)) {
+        V = IN->IsSigned() ? static_cast<unsigned>(IN->GetSignedValue())
+                           : IN->GetUnsignedValue();
+        Ok = true;
+      } else if (EN) {
+        if (const ASTIdentifierNode *IId = EN->GetIdentifier()) {
+          unsigned UV = ASTUtils::Instance().GetUnsignedValue(IId);
+          if (!ASTIdentifierNode::InvalidBits(UV)) {
+            V = UV;
+            Ok = true;
+          }
+        }
+      }
+      if (!Ok) {
+        std::stringstream M;
+        M << "Gate template argument for '" << TPs[TI].second
+          << "' must be a compile-time unsigned integer.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      Bound[TI] = V;
+    }
+  } else if (!TPs.empty()) {
+    for (unsigned I = 0; I < FPT.size(); ++I) {
+      if (I >= FPSTI.size() || FPSTI[I] == static_cast<unsigned>(~0U))
+        continue;
+      unsigned TI = FPSTI[I];
+      if (TI >= Bound.size())
+        continue;
+      if (ASTGateType::ArgIsUninitializedArray(ANL[I])) {
+        const ASTIdentifierNode *AId = ASTGateType::ArgIdentifier(ANL[I]);
+        std::stringstream M;
+        M << "Variable '" << (AId ? AId->GetName() : "<array>")
+          << "' used before assigned.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      ASTGateType A = ASTGateType::ClassifyArg(ANL[I]);
+      if (!A.HasArraySize()) {
+        std::stringstream M;
+        M << "Cannot infer template parameter '" << TPs[TI].second
+          << "' for gate '" << Decl->GetName()
+          << "'; pass an array literal, a sized array variable, or an "
+             "explicit template argument.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      unsigned SZ = A.GetArraySize();
+      if (Bound[TI] && *Bound[TI] != SZ) {
+        std::stringstream M;
+        M << "Conflicting inferred values for template parameter '"
+          << TPs[TI].second << "' on gate '" << Decl->GetName() << "' ("
+          << *Bound[TI] << " vs " << SZ << ").";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      Bound[TI] = SZ;
+    }
+    for (std::size_t TI = 0; TI < TPs.size(); ++TI) {
+      if (!Bound[TI]) {
+        std::stringstream M;
+        M << "Cannot infer template parameter '" << TPs[TI].second
+          << "' for gate '" << Decl->GetName()
+          << "'; provide an explicit template argument.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+    }
+  } else if (TemplateArgs && !TemplateArgs->Empty()) {
+    std::stringstream M;
+    M << "Gate '" << Decl->GetName() << "' does not take template arguments.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return false;
+  }
+
   for (unsigned I = 0; I < FPT.size(); ++I) {
     const ASTArgumentNode *Arg = ANL[I];
     assert(Arg && "Invalid classical gate call argument!");
 
+    if (ASTGateType::ArgIsUninitializedArray(Arg)) {
+      const ASTIdentifierNode *AId = ASTGateType::ArgIdentifier(Arg);
+      std::stringstream M;
+      M << "Variable '" << (AId ? AId->GetName() : "<array>")
+        << "' used before assigned.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+
     std::optional<unsigned> FormalSZ;
     if (I < FPSZ.size() && FPSZ[I] > 0U)
       FormalSZ = FPSZ[I];
+    else if (I < FPSTI.size() && FPSTI[I] != static_cast<unsigned>(~0U) &&
+             FPSTI[I] < Bound.size() && Bound[FPSTI[I]])
+      FormalSZ = *Bound[FPSTI[I]];
 
     ASTGateType F = ASTGateType::ClassifyFormal(FPT[I], FormalSZ);
     ASTGateType A = ASTGateType::ClassifyArg(Arg);
@@ -3137,7 +3268,6 @@ bool ASTTypeDiscovery::ValidateTypedGateCall(const ASTToken *TK,
       return false;
     }
 
-    // Real/angle/mpdecimal array formals reject complex elements.
     if (F.IsRealArrayFamily() && ASTGateType::ArgHasComplexElements(Arg)) {
       std::stringstream M;
       M << "Gate '" << Decl->GetName() << "' parameter " << I

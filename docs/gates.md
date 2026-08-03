@@ -115,14 +115,40 @@ gate baz(array[complex[float[64]], 3] alphas, angle beta) qubit qb, qumode qm {
 ```
 
 The above syntaxes are already implemented in the parser. However, SNAP gates
-cannot yet be parsed because its definition requires further syntax extensions,
-as we discuss below.
+cannot yet be fully defined because the gate *body* still needs `for` loops and
+`ctrl<i>` Fock-level controls (below). The **template / array-length** piece is
+implemented.
 
-## WIP: SNAP gates; Variable-length arrays with compile-time known length
+## Template parameters (array length `N`)
 
-Here, we describe the syntax needed for gates with variable-length arrays with
-compile-time known length.
-For example, consider the following definition of the SNAP gate:
+Fully-typed gates may declare unsigned integer template parameters used as
+array lengths:
+
+```qasm
+gate foo<uint N>(array[float[64], N] thetas) qubit q {
+}
+```
+
+Call sites may bind `N` explicitly or omit it when it can be inferred from an
+array literal’s arity or a **sized** named array’s declared length:
+
+```qasm
+foo([pi/2, 0, 0.3]) q;   // infer N = 3
+foo<3>([pi/2, 0, 0.3]) q; // check length == 3
+```
+
+Inference is a call-site semantic check (not a lexer rule): each template
+param must be uniquely determined by an array size at the call. An
+uninitialized named array (declared but not assigned) is rejected with a
+“variable used before assigned” diagnostic — not a cannot-infer error.
+v1 supports only `uint` templates used as array sizes.
+(Named-array initialization is still unimplemented; see
+[#11](https://github.com/paragon-lab/qe-qasm-qumode-version/issues/11).)
+
+## WIP: SNAP gate body (`for` / `ctrl<i>`)
+
+SNAP still needs loops in gate bodies and Fock-level control:
+
 ```
 gate snap<uint N>(array[float[64], N] thetas) qumode qm {
     for i in [0:N] {
@@ -131,21 +157,7 @@ gate snap<uint N>(array[float[64], N] thetas) qumode qm {
 }
 ```
 
-To enable this syntax, we still need to support the template parameter syntax,
-the `for` loop in gate bodies, and the `ctrl<i>` syntax that controls the i-th
-Fock level.
-The length of the array `thetas` must be compile-time
-known. The user would be able to leave out the template parameters:
-```
-snap([pi/2, 0, 0.3]) qm[0];
-```
-and let the parser/compiler infer the length of the array (in this case, 3).
-Alternatively, if the user specifies the template parameters,
-```
-snap<3>([pi/2, 0, 0.3]) qm[0];
-```
-the compiler would be able to check whether the length of the array is 3 and
-throw an error if it is not.
+Until those land, `snap` remains an opaque declaration in `cvgates.inc`.
 
 ## Compatibility with OpenQASM 3.0 gate definitions
 

@@ -149,6 +149,81 @@ std::optional<unsigned> LiteralArraySize(const ASTArgumentNode *Arg) {
   return std::nullopt;
 }
 
+const ASTIdentifierNode *CallArgIdentifier(const ASTArgumentNode *Arg) {
+  if (!Arg || !Arg->IsExpression())
+    return nullptr;
+  const ASTExpressionNode *EN = nullptr;
+  try {
+    EN = std::any_cast<const ASTExpressionNode *>(Arg->GetValue());
+  } catch (...) {
+  }
+  if (!EN) {
+    try {
+      EN = std::any_cast<ASTExpressionNode *>(Arg->GetValue());
+    } catch (...) {
+      return nullptr;
+    }
+  }
+  if (!EN)
+    return nullptr;
+  return EN->DynCast<const ASTIdentifierNode>();
+}
+
+const ASTSymbolTableEntry *LookupArgSymbol(const ASTIdentifierNode *Id) {
+  if (!Id)
+    return nullptr;
+  const ASTSymbolTableEntry *STE =
+      ASTSymbolTable::Instance().FindLocal(Id->GetName());
+  if (!STE)
+    STE = ASTSymbolTable::Instance().FindGlobal(Id->GetName());
+  if (!STE)
+    STE = ASTSymbolTable::Instance().FindAngle(Id->GetName());
+  if (!STE)
+    STE = Id->GetSymbolTableEntry();
+  return STE;
+}
+
+const ASTArrayNode *ArrayNodeFromSTE(const ASTSymbolTableEntry *STE) {
+  if (!STE || !STE->HasValue())
+    return nullptr;
+  switch (STE->GetValueType()) {
+  case ASTTypeAngleArray:
+  case ASTTypeFloatArray:
+  case ASTTypeMPDecimalArray:
+  case ASTTypeMPComplexArray:
+  case ASTTypeIntArray:
+  case ASTTypeBoolArray:
+  case ASTTypeCBitArray:
+  case ASTTypeQubitArray:
+  case ASTTypeDurationArray:
+    return STE->GetValue()->GetValue<ASTArrayNode *>();
+  default:
+    return nullptr;
+  }
+}
+
+/// Size of a call arg that is an array literal *or* a named array variable.
+std::optional<unsigned> CallArgArraySize(const ASTArgumentNode *Arg) {
+  if (std::optional<unsigned> Lit = LiteralArraySize(Arg))
+    return Lit;
+  const ASTIdentifierNode *Id = CallArgIdentifier(Arg);
+  if (!Id)
+    return std::nullopt;
+  const ASTArrayNode *ARN = ArrayNodeFromSTE(LookupArgSymbol(Id));
+  if (!ARN || ARN->Size() == 0U)
+    return std::nullopt;
+  return ARN->Size();
+}
+
+/// Named array with a declared type but no initializer list.
+bool CallArgUninitializedArray(const ASTArgumentNode *Arg) {
+  const ASTIdentifierNode *Id = CallArgIdentifier(Arg);
+  if (!Id)
+    return false;
+  const ASTArrayNode *ARN = ArrayNodeFromSTE(LookupArgSymbol(Id));
+  return ARN && !ARN->HasInitializerList();
+}
+
 } // namespace
 
 bool ASTGateType::IsRealArrayFamily() const {
@@ -197,11 +272,20 @@ ASTGateType ASTGateType::ClassifyFormal(ASTType Ty,
 ASTGateType ASTGateType::ClassifyArg(const ASTArgumentNode *Arg) {
   assert(Arg && "Invalid ASTArgumentNode!");
   ASTType Ty = ResolveCallClassicalArgType(Arg);
-  std::optional<unsigned> SZ = LiteralArraySize(Arg);
+  std::optional<unsigned> SZ = CallArgArraySize(Arg);
   if (Ty == ASTTypeAngleArray || Ty == ASTTypeFloatArray ||
       Ty == ASTTypeMPDecimalArray || Ty == ASTTypeMPComplexArray)
     return ASTGateType(Ty, SZ);
   return ASTGateType(Ty, std::nullopt);
+}
+
+bool ASTGateType::ArgIsUninitializedArray(const ASTArgumentNode *Arg) {
+  return CallArgUninitializedArray(Arg);
+}
+
+const ASTIdentifierNode *
+ASTGateType::ArgIdentifier(const ASTArgumentNode *Arg) {
+  return CallArgIdentifier(Arg);
 }
 
 bool ASTGateType::Compatible(const ASTGateType &F, const ASTGateType &A) {
