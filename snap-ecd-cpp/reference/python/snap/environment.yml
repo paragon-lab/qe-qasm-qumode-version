@@ -1,0 +1,13 @@
+name: snap_decomp
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - jupyter
+  - ipykernel
+  - pip
+  - pip:
+    - qutip   # optional: used in overlap_state_fidelity via try/except

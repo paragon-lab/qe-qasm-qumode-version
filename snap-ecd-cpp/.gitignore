@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# C++ build
+build*/
+example_output/
+haar_output/
+*.o
+*.obj
+*.so
+*.dylib
+*.a
+*.exe
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

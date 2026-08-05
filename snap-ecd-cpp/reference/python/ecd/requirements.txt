@@ -1,0 +1,10 @@
+numpy>=2,<3
+scipy>=1.7
+dynamiqs>=0.3.4
+qutip>=4.7
+pytest>=7.0
+matplotlib>=3.5
+# JAX acceleration (optional — falls back to numpy if not installed)
+# On CUDA: pip install "jax[cuda12]" instead of plain jax/jaxlib
+jax>=0.4.26
+jaxlib>=0.4.26
