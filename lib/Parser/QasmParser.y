@@ -1814,6 +1814,11 @@ Decl
   $$ = ASTProductionFactory::Instance() .ProductionRule_10003(GET_TOKEN(2), $2);
 }
 
+  | TOK_UNITARY Identifier '=' '{' InitializerList '}' ';' {
+    $$ = ASTProductionFactory::Instance()
+          .ProductionRule_10004(GET_TOKEN(7), $2, $5);
+  }
+
   | TOK_LET Identifier '=' TOK_IDENTIFIER '[' TOK_INTEGER_CONSTANT ','
                                               IntegerList ']' ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1150($2, $4, $6, $8);

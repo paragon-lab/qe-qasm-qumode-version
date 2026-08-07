@@ -9114,6 +9114,27 @@ ASTUnitaryNode *ASTBuilder::CreateASTUnitaryNode(const ASTIdentifierNode *Id) {
   return UN;
 }
 
+ASTUnitaryNode *ASTBuilder::CreateASTUnitaryNode(const ASTIdentifierNode *Id, const ASTInitializerList *IL) {
+  assert(Id && "Invalid ASTIdentifierNode Unitary argument!");
+  assert(IL && "Invalid ASTInitializerList Unitary argument!");
+
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
+  assert(STE && "Could not retrieve a valid Unitary SymbolTable Entry!");
+
+  ASTUnitaryNode *UN = new ASTUnitaryNode(Id, IL);
+  assert(UN && "Could not create a valid ASTUnitaryNode!");
+
+  STE->ResetValue();
+  STE->SetValue(new ASTValue<>(UN, ASTTypeUnitary), ASTTypeUnitary);
+  assert(STE->HasValue() && "Unitary SymbolTable Entry has no Value!");
+
+  const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(STE);
+
+  UN->Mangle();
+  return UN;
+}
+
+
 ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id) {
   assert(Id && "Invalid ASTIdentifierNode Stretch argument!");
 
