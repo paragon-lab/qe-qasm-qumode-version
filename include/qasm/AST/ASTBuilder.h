@@ -385,9 +385,14 @@ public:
 
   ASTQumodeContainerNode *
   CreateASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned NumBits);
-
+  // unitary u;
   ASTUnitaryNode *
   CreateASTUnitaryNode(const ASTIdentifierNode *Id);
+
+  //unitary u = {{1,0},{0,1}};
+  ASTUnitaryNode *
+  CreateASTUnitaryNode(const ASTIdentifierNode *Id,
+                     const ASTInitializerList *IL);
 
   ASTQubitNode *CreateASTQubitNode(const ASTIdentifierNode *Id, unsigned Index);
 

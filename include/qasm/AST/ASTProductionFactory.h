@@ -1574,6 +1574,10 @@ public:
   ASTDeclarationNode *ProductionRule_10003(const ASTToken *TK,
                                            const ASTIdentifierNode *DId) const;
 
+  ASTDeclarationNode *ProductionRule_10004(const ASTToken *TK,
+                                            const ASTIdentifierNode *DId,
+                                            const ASTInitializerList *IL) const;
+
   // Gate array literal parameter: [e0, ..., ek] as angle or complex array.
   ASTExpressionNode *ProductionRule_10010(const ASTExpressionList *EL) const;
 
