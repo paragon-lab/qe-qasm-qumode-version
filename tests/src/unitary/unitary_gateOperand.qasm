@@ -18,5 +18,14 @@ OPENQASM 3.0;
 
 
 qumode q;
+qubit qb1;
+qubit qb2;
 
+snap([pi/2, 0]) q;
+disp(0.5) q;
 u q;
+
+x qb1;
+z qb1;
+cx qb1, qb2;
+u qb1;
