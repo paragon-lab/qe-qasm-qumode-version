@@ -1,0 +1,46 @@
+include_directories(${OPENQASM_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set(OPENQASM_PULSE_IR_SOURCES
+  PulseInstruction.cpp
+  PulseProgram.cpp
+)
+
+set(PHYSICAL_LIB_NAME "qasmPulseIR")
+
+if(BUILD_SHARED_LIBS)
+  add_library(${OPENQASM_TARGET_PULSE_IR_SHARED}
+    SHARED
+    ${OPENQASM_PULSE_IR_SOURCES}
+  )
+
+  set_target_properties(${OPENQASM_TARGET_PULSE_IR_SHARED} PROPERTIES
+    OUTPUT_NAME ${PHYSICAL_LIB_NAME}
+    POSITION_INDEPENDENT_CODE ON
+  )
+
+  target_compile_features(
+    ${OPENQASM_TARGET_PULSE_IR_SHARED}
+    PUBLIC
+    ${REQUIRED_FEATURES}
+  )
+endif()
+
+if(BUILD_STATIC_LIBS)
+  add_library(${OPENQASM_TARGET_PULSE_IR_STATIC}
+    STATIC
+    ${OPENQASM_PULSE_IR_SOURCES}
+  )
+
+  set_target_properties(${OPENQASM_TARGET_PULSE_IR_STATIC} PROPERTIES
+    OUTPUT_NAME ${PHYSICAL_LIB_NAME}
+    POSITION_INDEPENDENT_CODE ON
+  )
+
+  target_compile_features(
+    ${OPENQASM_TARGET_PULSE_IR_STATIC}
+    PUBLIC
+    ${REQUIRED_FEATURES}
+  )
+endif()

@@ -19,6 +19,7 @@
 #include <qasm/AST/AST.h>
 #include <qasm/AST/ASTObjectTracker.h>
 #include <qasm/Frontend/QasmParser.h>
+#include <qasm/Lowering/ASTToPulse.h>
 
 #include <iostream>
 
@@ -46,6 +47,15 @@ int main(int argc, char *argv[]) {
   Parser.ParseCommandLineArguments(argc, argv);
   QASM::ASTRoot *Root = Parser.ParseAST();
   Root->print();
+  
+  QASM::ASTToPulse Lowering;
+
+  QASM::PulseProgram PulseIR =
+      Lowering.Lower(
+          QASM::ASTStatementBuilder::Instance().List());
+
+  std::cout << "\n=== Pulse IR ===" << std::endl;
+  PulseIR.print();
 
   // If the ASTObjectTracker is not enabled, this is a no-op.
   QASM::ASTObjectTracker::Instance().Release();
