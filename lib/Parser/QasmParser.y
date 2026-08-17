@@ -38,6 +38,7 @@
   namespace QASM {
     class ASTDriver;
     class ASTScanner;
+    class ASTUnitaryAttributeNode;
   }
 
 #ifndef YY_NULLPTR
@@ -148,6 +149,7 @@
 #include <qasm/AST/ASTScopeController.h>
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTOpenQASMVersionTracker.h>
+#include <qasm/AST/ASTUnitaryAttribute.h>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulsePlay.h>
@@ -588,6 +590,7 @@ int readinput() {
     QASM::ASTPowNode* PowNode;
     QASM::ASTDefcalGrammarNode* DefcalGrammarNode;
 
+    QASM::ASTUnitaryAttributeNode *UnitaryAttributeNode;
     QASM::ASTUnaryOpNode* UnaryOpNode;
     QASM::ASTBinaryOpNode* BinaryOpNode;
 
@@ -606,6 +609,7 @@ int readinput() {
 %token <String> TOK_CREG TOK_QREG TOK_CNOT TOK_HADAMARD
 %token <String> TOK_CCX TOK_CX TOK_QUBIT TOK_BOUND_QUBIT TOK_UNBOUND_QUBIT
 %token <String> TOK_QUMODE TOK_UNITARY TOK_DISP //adding a data type Unitary KH
+%token <Token> TOK_BUMPER TOK_BUMPER_MAX
 %token <String> TOK_QUBITS TOK_U TOK_ANGLE TOK_FIXED
 %token <String> TOK_DIRTY TOK_OPAQUE TOK_RESET
 %token <String> TOK_IBMQASM
@@ -817,7 +821,7 @@ int readinput() {
 %type <FunctionCallStmtNode>        FunctionCallStmtExpr FunctionCallStmt
 %type <DefcalGrammarNode>           DefcalGrammarDecl
 
-
+%type <UnitaryAttributeNode> UnitaryAttributeAssign
 %type <UnaryOpNode>                 UnaryOp
 %type <BinaryOpNode>                BinaryOpSelfAssign BinaryOpAssign
                                     BinaryOpPrePost BinaryOp BinaryOpExpr
@@ -1480,6 +1484,9 @@ Statement
     $$ = $1;
   }
   | Newline {
+  }
+  | UnitaryAttributeAssign ';' {
+    $$ = $1;
   }
   ;
 
@@ -2280,6 +2287,33 @@ BinaryOpAssign
   | UnaryOp '=' BinaryOpPrePost {
     $$ = ASTProductionFactory::Instance().ProductionRule_7002(GET_TOKEN(2));
   }
+  ;
+
+UnitaryAttributeAssign
+  : Identifier '.' TOK_BUMPER '=' Expr {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1465(
+          GET_TOKEN(4),
+          $1,
+          ASTUnitaryAttributeBumper,
+          $5,
+          ASTOpTypeAssign);
+    }
+  | Identifier '.' TOK_BUMPER TOK_ADD_ASSIGN Expr {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1465(
+          GET_TOKEN(4),
+          $1,
+          ASTUnitaryAttributeBumper,
+          $5,
+          ASTOpTypeAddAssign);
+    }
+  | Identifier '.' TOK_BUMPER_MAX '=' Expr {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1465(
+          GET_TOKEN(4),
+          $1,
+          ASTUnitaryAttributeBumperMax,
+          $5,
+          ASTOpTypeAssign);
+    }
   ;
 
 BinaryOpSelfAssign
@@ -4952,16 +4986,18 @@ IndexedUnboundQubit
   ;
 
 ComplexCReal
-  : TOK_IDENTIFIER '.' TOK_CREAL {
-    $$ = ASTProductionFactory::Instance().ProductionRule_816(GET_TOKEN(2),
-                                                             GET_TOKEN(0));
+  : Identifier '.' TOK_CREAL {
+    $$ = ASTProductionFactory::Instance().ProductionRule_816(
+        $1,
+        GET_TOKEN(2));
   }
   ;
 
 ComplexCImag
-  : TOK_IDENTIFIER '.' TOK_CIMAG {
-    $$ = ASTProductionFactory::Instance().ProductionRule_816(GET_TOKEN(2),
-                                                             GET_TOKEN(0));
+  : Identifier '.' TOK_CIMAG {
+    $$ = ASTProductionFactory::Instance().ProductionRule_816(
+        $1,
+        GET_TOKEN(2));
   }
   ;
 
