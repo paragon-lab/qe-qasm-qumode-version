@@ -2297,7 +2297,7 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
       ASTTypeSystemBuilder::Instance().IsImplicitAngle(Id)) {
     ASTIdentifierNode *IDN = nullptr;
 
-    if (Type != ASTTypeAngle && Type != ASTTypeGateQubitParam)
+    if (Type != ASTTypeAngle && Type != ASTTypeGateOperandParam)
       Type = ASTTypeAngle;
 
     // ASTTypeSystemBuilder will create the reserved pi, tau and euler
@@ -2674,6 +2674,22 @@ ASTIdentifierNode *ASTBuilder::CreateLocalScopeASTIdentifierNode(
     return nullptr;
   }
 
+  // Do not clobber an existing typed classical gate formal (e.g. complex
+  // alpha) by re-inserting the same name as ASTTypeGateOperandParam.
+  if (const ASTSymbolTableEntry *Any =
+          ASTSymbolTable::Instance().FindLocal(Id)) {
+    ASTType ETy = Any->GetIdentifier()->GetSymbolType();
+    if (Type == ASTTypeGateOperandParam &&
+        (ETy == ASTTypeMPComplex || ETy == ASTTypeFloat ||
+         ETy == ASTTypeDouble || ETy == ASTTypeMPDecimal || ETy == ASTTypeInt ||
+         ETy == ASTTypeUInt || ETy == ASTTypeMPInteger ||
+         ETy == ASTTypeMPUInteger || ETy == ASTTypeBool ||
+         ETy == ASTTypeBitset || ETy == ASTTypeDuration ||
+         ETy == ASTTypeAngle)) {
+      return const_cast<ASTIdentifierNode *>(Any->GetIdentifier());
+    }
+  }
+
   const ASTSymbolTableEntry *LSTE =
       ASTSymbolTable::Instance().FindLocalSymbol(Id, Bits, Type);
   if (LSTE) {
@@ -2756,7 +2772,7 @@ ASTIdentifierNode *ASTBuilder::FindASTIdentifierNode(const std::string &Id) {
     if (STE)
       return const_cast<ASTIdentifierNode *>(STE->GetIdentifier());
 
-    STE = ASTSymbolTable::Instance().Lookup(Id, 1U, ASTTypeGateQubitParam);
+    STE = ASTSymbolTable::Instance().Lookup(Id, 1U, ASTTypeGateOperandParam);
     if (STE)
       return const_cast<ASTIdentifierNode *>(STE->GetIdentifier());
 
@@ -2770,6 +2786,11 @@ ASTIdentifierNode *ASTBuilder::FindASTIdentifierNode(const std::string &Id) {
             Id, ASTAngleNode::AngleBits, ASTTypeAngle)) {
       return const_cast<ASTIdentifierNode *>(STE->GetIdentifier());
     }
+    // Fully-typed gate formals (e.g. complex[float[64]] alpha) live in LSTM
+    // under their declared type, not ASTTypeAngle.
+    if (const ASTSymbolTableEntry *LSTE =
+            ASTSymbolTable::Instance().FindLocal(Id))
+      return const_cast<ASTIdentifierNode *>(LSTE->GetIdentifier());
   }
 
   if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id))
@@ -2796,7 +2817,7 @@ ASTIdentifierNode *ASTBuilder::FindASTIdentifierNode(const std::string &Id) {
     return STE ? const_cast<ASTIdentifierNode *>(STE->GetIdentifier())
                : nullptr;
   } break;
-  case ASTTypeGateQubitParam: {
+  case ASTTypeGateOperandParam: {
     if (ASTIdentifierTypeController::Instance().InQubitList()) {
       STE = ASTSymbolTable::Instance().Lookup(Id, 1U, CTy);
       return STE ? const_cast<ASTIdentifierNode *>(STE->GetIdentifier())
@@ -4746,7 +4767,7 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
   const std::string &IDS = Id->GetName();
   ASTType ITy = Id->GetSymbolTableEntry()->GetValueType();
 
-  if (Id->GetSymbolType() == ASTTypeGateQubitParam)
+  if (Id->GetSymbolType() == ASTTypeGateOperandParam)
     Id->SetBits(1U);
 
   ASTSymbolTableEntry *STE =
@@ -4799,7 +4820,7 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
     break;
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     break;
   case ASTTypeQubitArray:
     if (Id->IsIndexed() || Id->IsReference()) {
@@ -5045,7 +5066,7 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
 
   std::stringstream QS;
   std::stringstream QSS;
-  ASTQubitNode *QBN;
+  ASTQumodeNode *QBN;
 
   for (unsigned I = 0; I < NumBits; ++I) {
     QS.clear();
@@ -5071,7 +5092,7 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
                     "SymbolTable Entry!");
 
     if (QQSTE->HasValue()) {
-      QBN = QQSTE->GetValue()->GetValue<ASTQubitNode *>();
+      QBN = QQSTE->GetValue()->GetValue<ASTQumodeNode *>();
       assert(QBN && "Invalid SymbolTable Entry ASTQumodeNode Value!");
 
       QBN->Mangle();
@@ -5079,10 +5100,6 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
     } else {
       QBN = ASTBuilder::CreateASTQumodeNode(QId, I);
       assert(QBN && "Could not create a valid ASTQumodeNode!");
-
-      QQSTE->ResetValue();
-      QQSTE->SetValue(new ASTValue<>(QBN, ASTTypeQumode), ASTTypeQumode);
-      assert(QQSTE->HasValue() && "ASTQumode SymbolTable Entry has no Value!");
 
       QBN->Mangle();
       QCN->AddQubit(QBN);
@@ -5676,8 +5693,8 @@ ASTQubitNode *ASTBuilder::CreateASTQubitNode(const ASTIdentifierNode *Id,
   return QN;
 }
 
-ASTQubitNode *ASTBuilder::CreateASTQumodeNode(const ASTIdentifierNode *Id,
-                                              unsigned Index) {
+ASTQumodeNode *ASTBuilder::CreateASTQumodeNode(const ASTIdentifierNode *Id,
+                                               unsigned Index) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   ASTSymbolTableEntry *STE = nullptr;
@@ -9097,6 +9114,27 @@ ASTUnitaryNode *ASTBuilder::CreateASTUnitaryNode(const ASTIdentifierNode *Id) {
   return UN;
 }
 
+ASTUnitaryNode *ASTBuilder::CreateASTUnitaryNode(const ASTIdentifierNode *Id, const ASTInitializerList *IL) {
+  assert(Id && "Invalid ASTIdentifierNode Unitary argument!");
+  assert(IL && "Invalid ASTInitializerList Unitary argument!");
+
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
+  assert(STE && "Could not retrieve a valid Unitary SymbolTable Entry!");
+
+  ASTUnitaryNode *UN = new ASTUnitaryNode(Id, IL);
+  assert(UN && "Could not create a valid ASTUnitaryNode!");
+
+  STE->ResetValue();
+  STE->SetValue(new ASTValue<>(UN, ASTTypeUnitary), ASTTypeUnitary);
+  assert(STE->HasValue() && "Unitary SymbolTable Entry has no Value!");
+
+  const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(STE);
+
+  UN->Mangle();
+  return UN;
+}
+
+
 ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id) {
   assert(Id && "Invalid ASTIdentifierNode Stretch argument!");
 
@@ -10413,6 +10451,15 @@ ASTBuilder::CreateASTMPDecimalArrayNode(const ASTIdentifierNode *Id,
       ASTSymbolTable::Instance().Lookup(Id, Bits, ASTTypeMPDecimalArray);
   if (!STE)
     STE = ASTSymbolTable::Instance().Lookup(Id, 0, ASTTypeMPDecimalArray);
+  if (!STE)
+    STE = const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry());
+  if (!STE) {
+    STE = new ASTSymbolTableEntry(const_cast<ASTIdentifierNode *>(Id),
+                                  ASTTypeMPDecimalArray);
+    assert(STE && "Could not create a SymbolTable Entry!");
+    const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(STE);
+    ASTSymbolTable::Instance().InsertLocal(Id, STE);
+  }
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPDecimalArrayNode(Id, Bits, MPBits);

@@ -78,7 +78,7 @@ public:
   }
 
   bool IsQubitParamType(ASTType Ty) const {
-    return IsQuantumRegisterType(Ty) || Ty == ASTTypeGateQubitParam;
+    return IsQuantumRegisterType(Ty) || Ty == ASTTypeGateOperandParam;
   }
 
   bool IsAngleType(ASTType Ty) const {

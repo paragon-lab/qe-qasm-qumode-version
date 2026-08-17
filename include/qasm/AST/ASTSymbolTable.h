@@ -2393,7 +2393,7 @@ public:
         case ASTTypeQubitContainerAlias:
         case ASTTypeQumode:
         case ASTTypeQumodeContainer:
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           break;
         default:
           return (*CI).second;
@@ -2470,7 +2470,7 @@ public:
       case ASTTypeQubitContainerAlias:
       case ASTTypeQumode:
       case ASTTypeQumodeContainer:
-      case ASTTypeGateQubitParam:
+      case ASTTypeGateOperandParam:
         break;
       default: {
         map_iterator CI = CSTM.find(S);
@@ -2887,7 +2887,7 @@ public:
 
       return nullptr;
     } break;
-    case ASTTypeGateQubitParam: {
+    case ASTTypeGateOperandParam: {
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
 
       if (R.first != STM.end()) {
@@ -3103,7 +3103,7 @@ public:
         case ASTTypeQubitContainerAlias:
         case ASTTypeQumode:
         case ASTTypeQumodeContainer:
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           break;
         default: {
           if (ASTDefcalContextBuilder::Instance().InOpenContext()) {
@@ -3587,8 +3587,8 @@ public:
       if (QI != LSTM.end()) {
         if ((*QI).second &&
             ((*QI).second->GetIdentifier()->GetSymbolType() ==
-                 ASTTypeGateQubitParam ||
-             (*QI).second->GetValueType() == ASTTypeGateQubitParam))
+                 ASTTypeGateOperandParam ||
+             (*QI).second->GetValueType() == ASTTypeGateOperandParam))
           LSTM.erase(Q);
       }
     }
@@ -3596,10 +3596,10 @@ public:
 
   void EraseLocalQubitParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
-    assert(Id->GetSymbolType() == ASTTypeGateQubitParam &&
-           "Identifier Type is not an ASTTypeGateQubitParam!");
+    assert(Id->GetSymbolType() == ASTTypeGateOperandParam &&
+           "Identifier Type is not an ASTTypeGateOperandParam!");
 
-    if (Id->GetSymbolType() == ASTTypeGateQubitParam)
+    if (Id->GetSymbolType() == ASTTypeGateOperandParam)
       EraseLocalQubitParam(Id->GetName());
   }
 
@@ -3634,7 +3634,7 @@ public:
             ((*QI).second->GetValueType() == ASTTypeQubit ||
              (*QI).second->GetValueType() == ASTTypeQubitContainer ||
              (*QI).second->GetValueType() == ASTTypeQubitContainerAlias ||
-             (*QI).second->GetValueType() == ASTTypeGateQubitParam)) {
+             (*QI).second->GetValueType() == ASTTypeGateOperandParam)) {
           LSTM.erase(QI);
         }
       }
@@ -3646,8 +3646,8 @@ public:
     EraseGateLocalQubit(Id->GetName());
   }
 
-  void EraseGateQubitParam(const std::string &Q, unsigned Bits, ASTType Ty) {
-    if (Ty != ASTTypeGateQubitParam)
+  void EraseGateOperandParam(const std::string &Q, unsigned Bits, ASTType Ty) {
+    if (Ty != ASTTypeGateOperandParam)
       return;
 
     map_iterator QI = QSTM.find(Q);
@@ -3683,9 +3683,9 @@ public:
     }
   }
 
-  void EraseGateQubitParam(const ASTIdentifierNode *Id) {
+  void EraseGateOperandParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
-    EraseGateQubitParam(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
+    EraseGateOperandParam(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 
   void LocalScope(const std::string &S, unsigned NumBits, ASTType Ty) {
@@ -3945,7 +3945,7 @@ public:
       }
     } else {
       if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-          Ty == ASTTypeGateQubitParam || Ty == ASTTypeQubitContainerAlias ||
+          Ty == ASTTypeGateOperandParam || Ty == ASTTypeQubitContainerAlias ||
           Ty == ASTTypeQumode || Ty == ASTTypeQumodeContainer) {
         map_iterator QI = QSTM.find(S);
         if (QI != QSTM.end()) {
@@ -3971,7 +3971,7 @@ public:
           } else if ((*I).first == S &&
                      (*I).second->GetIdentifier()->GetBits() == Bits &&
                      (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-                      Ty == ASTTypeGateQubitParam) &&
+                      Ty == ASTTypeGateOperandParam) &&
                      ((*I).second->GetValueType() == Ty ||
                       (*I).second->GetValueType() == ASTTypeUndefined)) {
             IV.push_back(I);
@@ -5208,7 +5208,7 @@ public:
     case ASTTypeCNotGate:
     case ASTTypeDispGate:
     case ASTTypeUGate:
-    case ASTTypeGateQubitParam:
+    case ASTTypeGateOperandParam:
     case ASTTypeKernel:
     case ASTTypeFunction:
     case ASTTypeFunctionDeclaration:
@@ -5734,7 +5734,7 @@ public:
       goto Found;
     }
 
-    if (Ty == ASTTypeGateQubitParam) {
+    if (Ty == ASTTypeGateOperandParam) {
       UI = GSTM.find(Id->GetName());
       if (UI != GLSTM.end()) {
         MIX = XGSTM;
@@ -5874,7 +5874,7 @@ public:
     return true;
   }
 
-  bool TransferGateQubitParam(const ASTIdentifierNode *Id) {
+  bool TransferGateOperandParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GLSTM.find(Id->GetName());
@@ -6085,7 +6085,7 @@ public:
     return true;
   }
 
-  void EraseGateQubitParam(const std::string &Id) {
+  void EraseGateOperandParam(const std::string &Id) {
     assert(!Id.empty() && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GSTM.find(Id);

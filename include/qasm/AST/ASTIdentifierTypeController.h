@@ -216,6 +216,15 @@ public:
       return;
     }
 
+    // for/while must always take effect. Otherwise a leftover PreviousType of
+    // Array / *Array (e.g. after `array[float[64], N] thetas`) rewrites CT
+    // back to that array type and induction vars are typed as arrays.
+    if (Ty == ASTTypeForStatement || Ty == ASTTypeWhileStatement) {
+      PT = CT = Ty;
+      IA = false;
+      return;
+    }
+
     switch (CT) {
     case ASTTypeMPInteger:
     case ASTTypeMPDecimal:
@@ -433,9 +442,9 @@ public:
   void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty0,
                            ASTType Ty1, ASTType Ty2, ASTType Ty3) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierNode *Id) const;
+  void CheckGateOperandParamType(const ASTIdentifierNode *Id) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierList &IL) const;
+  void CheckGateOperandParamType(const ASTIdentifierList &IL) const;
 
   void CheckIsCallable(const ASTIdentifierNode *Id) const;
 
@@ -478,6 +487,7 @@ public:
     case ASTTypeKernelCall:
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias:
+    case ASTTypeQumodeContainer:
     case ASTTypeAngleArray:
     case ASTTypeBoolArray:
     case ASTTypeCBitArray:
@@ -599,6 +609,9 @@ public:
 
   bool IsFunctionArgument(const ASTToken *TK, const ASTIdentifierNode *Id,
                           ASTType Ty, const ASTDeclarationContext *CTX) const;
+
+  /// True for classical formals in a gate parameter list (before '{').
+  bool IsGateParameterArgument(const ASTToken *TK, ASTType Ty) const;
 };
 
 } // namespace QASM

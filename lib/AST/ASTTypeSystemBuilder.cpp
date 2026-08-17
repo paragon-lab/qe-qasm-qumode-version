@@ -54,7 +54,7 @@
 #include <qasm/AST/ASTExpressionNodeBuilder.h>
 #include <qasm/AST/ASTForStatementBuilder.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
-#include <qasm/AST/ASTGateQubitParamBuilder.h>
+#include <qasm/AST/ASTGateOperandParamBuilder.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTInitializerListBuilder.h>
@@ -107,7 +107,7 @@ void ASTTypeSystemBuilder::Init() {
   ASTSwitchUnscopedStatementBuilder::Instance().Init();
   ASTDoWhileStatementBuilder::Instance().Init();
   ASTWhileStatementBuilder::Instance().Init();
-  ASTGateQubitParamBuilder::Instance().Init();
+  ASTGateOperandParamBuilder::Instance().Init();
   ASTParameterBuilder::Instance().Init();
   ASTGateOpBuilder::Instance().Init();
   ASTQubitConcatListBuilder::Instance().Init();
@@ -268,7 +268,7 @@ void ASTTypeSystemBuilder::Init() {
             ASTTypeGPhaseStatement,
             ASTGPhaseStatementNode::GPhaseStmtBits,
         },
-        {ASTTypeGateQubitParam, 1U},
+        {ASTTypeGateOperandParam, 1U},
         {
             ASTTypeIdentifier,
             ASTIdentifierNode::IdentifierBits,
@@ -630,10 +630,10 @@ void ASTTypeSystemBuilder::CreateASTBuiltinUGate() const {
   GPL.Append(Phi);
 
   ASTIdentifierNode *QId = ASTBuilder::Instance().CreateASTIdentifierNode(
-      "q", 1U, ASTTypeGateQubitParam);
+      "q", 1U, ASTTypeGateOperandParam);
   assert(QId && "Could not create a valid Qubit ASTIdentifierNode!");
 
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(QId);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(QId);
   QId->SetGateLocal(true);
   QId->SetLocalScope();
   QIL.Append(QId);
@@ -654,7 +654,7 @@ void ASTTypeSystemBuilder::CreateASTBuiltinUGate() const {
   ASTSymbolTable::Instance().EraseLocalAngle(LambdaId);
   ASTSymbolTable::Instance().EraseLocalAngle(ThetaId);
   ASTSymbolTable::Instance().EraseLocalAngle(PhiId);
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
 }
@@ -682,10 +682,10 @@ void ASTTypeSystemBuilder::CreateASTBuiltinDispGate() const {
   GPL.Append(Alpha);
 
   ASTIdentifierNode *QId = ASTBuilder::Instance().CreateASTIdentifierNode(
-      "qm", 1U, ASTTypeGateQubitParam);
+      "qm", 1U, ASTTypeGateOperandParam);
   assert(QId && "Could not create a valid Qumode ASTIdentifierNode!");
 
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(QId);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(QId);
   QId->SetGateLocal(true);
   QId->SetLocalScope();
   QIL.Append(QId);
@@ -704,7 +704,7 @@ void ASTTypeSystemBuilder::CreateASTBuiltinDispGate() const {
   QIL.DeleteSymbols();
   GPL.DeleteSymbols();
   ASTSymbolTable::Instance().EraseLocalAngle(AlphaId);
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
 }
@@ -719,19 +719,19 @@ void ASTTypeSystemBuilder::CreateASTBuiltinCXGate() const {
   ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeGate);
 
   ASTIdentifierNode *CId = ASTBuilder::Instance().CreateASTIdentifierNode(
-      "c", 1U, ASTTypeGateQubitParam);
+      "c", 1U, ASTTypeGateOperandParam);
   assert(CId && "Could not create a valid Qubit ASTIdentifierNode!");
 
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(CId);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(CId);
   CId->SetGateLocal(true);
   CId->SetLocalScope();
   QIL.Append(CId);
 
   ASTIdentifierNode *TId = ASTBuilder::Instance().CreateASTIdentifierNode(
-      "t", 1U, ASTTypeGateQubitParam);
+      "t", 1U, ASTTypeGateOperandParam);
   assert(TId && "Could not create a valid Qubit ASTIdentifierNode!");
 
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(TId);
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(TId);
   TId->SetGateLocal(true);
   TId->SetLocalScope();
   QIL.Append(TId);
@@ -749,7 +749,7 @@ void ASTTypeSystemBuilder::CreateASTBuiltinCXGate() const {
   ASTGateQubitTracker::Instance().Erase();
   QIL.DeleteSymbols();
   GPL.DeleteSymbols();
-  ASTGateQubitParamBuilder::Instance().ReleaseQubits();
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
 }

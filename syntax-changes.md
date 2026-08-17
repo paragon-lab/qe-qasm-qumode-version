@@ -25,6 +25,11 @@ qubit qb;
 qubit[5] qbs;
 qumode qm;
 qumode[7] qms;
+
+// Element selection mirrors qubits:
+disp(0.3 + 0.5 im) qms[0];
+snap([pi/2, 0, 0.3]) qms[1];
+ecd(0.5) qb[0], qms[0];
 ```
 
 To support this, we added `qumode` as a token:
@@ -112,7 +117,7 @@ Complex literals use OpenQASM's `im` suffix. Gate calls store complex args in
   `ctrl`/`negctrl`, e.g. `ctrl @ disp(alpha) qb, qm`
   (bare `disp(alpha) qb, qm` is rejected)
 
-SNAP and ECD remain opaque stubs in `cvgates.inc` until they become builtins
+SNAP remains an opaque stub in `cvgates.inc` until it becomes a builtin
 or gain typed gate-declaration syntax.
 
 
@@ -146,9 +151,9 @@ u.bumper = 4;
 The addition of qumode gates may necessitate the parameters and operands to be
 typed. gate declarations. For example, may be something like the following:
 ```qasm
-gate snap<uint N>(array[phases, N] thetas) qumode qm {
+gate snap[uint N](array[phases, N] thetas) qumode qm {
     for i in [0:N] {
-        ctrl(i) @ gphase(thetas[i]) qm;
+        ctrl[i] @ gphase(thetas[i]) qm; // controls the i-th Fock level
     }
 }
 

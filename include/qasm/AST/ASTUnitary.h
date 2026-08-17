@@ -14,21 +14,29 @@
 namespace QASM {
 
 // class ASTUnitaryNode : public ASTExpressionNode {
+class ASTInitializerList; // forward declaration
 class ASTUnitaryNode : public ASTGateNode {
 private:
   ASTUnitaryNode() = delete;
+  const ASTInitializerList *INL; // initializer list for unitary matrix
 
 public:
+  // unitary u;
   explicit ASTUnitaryNode(const ASTIdentifierNode *Id)
       // : ASTExpressionNode(Id, ASTTypeUnitary) {}
-        : ASTGateNode(Id) {}
+        : ASTGateNode(Id), INL(nullptr) {}
 
-        //added this block of code
+  // unitary u = {{1, 0}, {0, 1}};
+  ASTUnitaryNode(const ASTIdentifierNode *Id,
+                 const ASTInitializerList *IL)
+      : ASTGateNode(Id), INL(IL) {}
+
+  // Existing gate-call constructor
   ASTUnitaryNode(const ASTIdentifierNode *Id,
                  const ASTArgumentNodeList &AL,
                  const ASTAnyTypeList &QL,
                  bool IsGateCall = false)
-      : ASTGateNode(Id, AL, QL, IsGateCall) {}
+      : ASTGateNode(Id, AL, QL, IsGateCall), INL(nullptr) {}
 
 
   virtual ~ASTUnitaryNode() = default;
@@ -39,6 +47,14 @@ public:
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
+  }
+
+    virtual bool HasInitializerList() const {
+    return INL != nullptr;
+  }
+
+  virtual const ASTInitializerList *GetInitializerList() const {
+    return INL;
   }
   //added this block of code
   virtual ASTUnitaryNode *
