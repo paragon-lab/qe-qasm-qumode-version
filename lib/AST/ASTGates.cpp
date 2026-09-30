@@ -2076,8 +2076,17 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
         ASTSymbolTableEntry *QSTE = QId->GetSymbolTableEntry();
         assert(QSTE && "Gate Qubit Argument has no SymbolTable Entry!");
-        assert(QSTE->HasValue() &&
-               "Gate Qubit Argument SymbolTable Entry has no Value!");
+        if (!QSTE || !QSTE->HasValue()) {
+          std::stringstream M;
+          if (IdR->IsIndexed() || IdR->IsIndexedIdentifier())
+            M << "QubitContainer indexed element access is out-of-bounds.";
+          else
+            M << "Gate Qubit Argument SymbolTable Entry has no Value!";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(IdR), M.str(),
+              DiagLevel::Error);
+          break;
+        }
 
         OperandParams.push_back(QSTE);
         if (IdR->IsInductionVariable())

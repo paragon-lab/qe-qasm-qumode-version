@@ -3327,13 +3327,16 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
       case ASTTypeAngle:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
+      case ASTTypeQumodeContainer:
         if (Bits == 0 &&
             !ASTIdentifierNode::InvalidBits(STE->GetIdentifier()->GetBits())) {
           Bits = STE->GetIdentifier()->GetBits();
           Type = STE->GetValueType();
         } else if (STE->GetIdentifier()->GetBits() ==
                        static_cast<unsigned>(~0x0) ||
-                   STE->GetIdentifier()->GetBits() != Bits) {
+                   STE->GetIdentifier()->GetBits() != Bits ||
+                   (STE->HasValue() &&
+                    Bits == STE->GetIdentifier()->GetBits())) {
           if (STE->GetIdentifier()->GetBits() == static_cast<unsigned>(~0x0))
             STE->GetIdentifier()->SetBits(Bits);
           else if (Bits < STE->GetIdentifier()->GetBits()) {
@@ -3368,7 +3371,8 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
         break;
       case ASTTypeBitset:
         if (STE->GetIdentifier()->GetBits() == static_cast<unsigned>(~0x0) ||
-            STE->GetIdentifier()->GetBits() != Bits) {
+            STE->GetIdentifier()->GetBits() != Bits ||
+            (STE->HasValue() && Bits == STE->GetIdentifier()->GetBits())) {
           if (STE->GetIdentifier()->GetBits() == static_cast<unsigned>(~0x0))
             STE->GetIdentifier()->SetBits(1);
           else if (Bits < STE->GetIdentifier()->GetBits()) {

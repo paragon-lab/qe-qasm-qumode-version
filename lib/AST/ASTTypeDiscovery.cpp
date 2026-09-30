@@ -2253,6 +2253,26 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
   return Id;
 }
 
+/// Return an IdentifierError if a concrete (non-symbolic) index is out of
+/// range for a quantum/classical register. Returns nullptr when the access
+/// should proceed (in-bounds, symbolic/induction index, or not checkable).
+static ASTIdentifierRefNode *
+ValidateRegisterIndex(unsigned IX, unsigned Size,
+                      const ASTArraySubscriptNode *ASN, const char *What) {
+  if (!ASN || ASN->IsInductionVariable() || ASN->IsIndexIdentifier())
+    return nullptr;
+  if (ASTIdentifierNode::InvalidBits(IX))
+    return nullptr;
+  if (IX < Size)
+    return nullptr;
+
+  std::stringstream M;
+  M << What << " indexed element access is out-of-bounds.";
+  QasmDiagnosticEmitter::Instance().EmitDiagnostic(ASN->GetLocation(), M.str(),
+                                                   DiagLevel::Error);
+  return ASTIdentifierRefNode::IdentifierError(M.str());
+}
+
 template <typename __AT, typename __ET>
 ASTIdentifierRefNode *ResolveASTIdentifierRef(
     const ASTToken *TK, const std::string &S, const std::string &US,
@@ -2281,6 +2301,8 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
     E = A->GetElement(0);
   } else {
     A->ValidateIndex(IX, ASN->GetLocation());
+    if (IX >= A->Size())
+      return ASTIdentifierRefNode::IdentifierError("Array index out of range.");
     E = A->GetElement(IX);
   }
   assert(E && "Could not obtain a valid array element!");
@@ -2642,6 +2664,10 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     ASTCBitNode *CBN = STE->GetValue()->GetValue<ASTCBitNode *>();
     assert(CBN && "Could not obtain a valid ASTCBitNode!");
 
+    if (ASTIdentifierRefNode *OOB =
+            ValidateRegisterIndex(IX, CBN->Size(), ASN, "Bitset"))
+      return OOB;
+
     ASTSymbolTableEntry *XSTE =
         ASTSymbolTable::Instance().Lookup(IS, 1U, CBN->GetASTType());
     if (XSTE)
@@ -2717,12 +2743,19 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     if (QCC) {
       QCN = STE->GetValue()->GetValue<ASTQubitContainerNode *>();
       assert(QCN && "Could not obtain a valid ASTQubitContainerNode!");
+      if (ASTIdentifierRefNode *OOB =
+              ValidateRegisterIndex(IX, QCN->Size(), ASN, "QubitContainer"))
+        return OOB;
       std::string QIS = "%";
       QIS += ASTStringUtils::Instance().IndexedIdentifierToQCElement(IS);
       XSTE = ASTSymbolTable::Instance().Lookup(QIS, 1U, ASTTypeQubit);
     } else {
       QN = STE->GetValue()->GetValue<ASTQubitNode *>();
       assert(QN && "Could not obtain a valid ASTQubitNode!");
+      // Scalar qubit is a 1-element register; only index 0 is valid.
+      if (ASTIdentifierRefNode *OOB =
+              ValidateRegisterIndex(IX, 1U, ASN, "Qubit"))
+        return OOB;
       XSTE = ASTSymbolTable::Instance().Lookup(IS, 1U, QN->GetASTType());
     }
 
@@ -2802,6 +2835,14 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
   case ASTTypeQubitContainer: {
     ASTSymbolTableEntry *BaseSTE =
         ASTSymbolTable::Instance().Lookup(US, ASTTypeQubitContainer);
+    if (BaseSTE && BaseSTE->HasValue()) {
+      if (ASTQubitContainerNode *QCN =
+              BaseSTE->GetValue()->GetValue<ASTQubitContainerNode *>()) {
+        if (ASTIdentifierRefNode *OOB =
+                ValidateRegisterIndex(IX, QCN->Size(), ASN, "QubitContainer"))
+          return OOB;
+      }
+    }
     ASTSymbolTableEntry *STE = BaseSTE;
     if (!STE) {
       STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
@@ -2942,6 +2983,14 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
   case ASTTypeQumodeContainer: {
     ASTSymbolTableEntry *STE =
         ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer);
+    if (STE && STE->HasValue()) {
+      if (ASTQumodeContainerNode *QCN =
+              STE->GetValue()->GetValue<ASTQumodeContainerNode *>()) {
+        if (ASTIdentifierRefNode *OOB =
+                ValidateRegisterIndex(IX, QCN->Size(), ASN, "QumodeContainer"))
+          return OOB;
+      }
+    }
     if (!STE) {
       STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
       if (STE && STE->GetIdentifier()->IsReference()) {
@@ -3073,6 +3122,10 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     ASTQubitContainerAliasNode *QCN =
         STE->GetValue()->GetValue<ASTQubitContainerAliasNode *>();
     assert(QCN && "Could not obtain a valid ASTQubitContainerAliasNode!");
+
+    if (ASTIdentifierRefNode *OOB =
+            ValidateRegisterIndex(IX, QCN->Size(), ASN, "QubitContainerAlias"))
+      return OOB;
 
     ASTSymbolTableEntry *XSTE =
         ASTSymbolTable::Instance().Lookup(IS, 1U, QCN->GetASTType());

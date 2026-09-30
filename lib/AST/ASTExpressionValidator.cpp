@@ -970,6 +970,22 @@ bool ASTExpressionValidator::CanBeAssignedTo(
 
           return E && !E->IsConst();
         } break;
+        case ASTTypeQumodeContainer: {
+          ASTQumodeContainerNode *E =
+              STE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+          assert(E && "Could not obtain a valid ASTQumodeContainerNode!");
+
+          if (E && IX >= E->Size()) {
+            std::stringstream M;
+            M << "QumodeContainer indexed element access is out-of-bounds.";
+            QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+                DIAGLineCounter::Instance().GetLocation(IdR), M.str(),
+                DiagLevel::Error);
+            return false;
+          }
+
+          return E && !E->IsConst();
+        } break;
         case ASTTypeQubitContainerAlias: {
           ASTQubitContainerAliasNode *E =
               STE->GetValue()->GetValue<ASTQubitContainerAliasNode *>();
