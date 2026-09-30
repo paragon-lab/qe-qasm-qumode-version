@@ -1207,6 +1207,15 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
           ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
         }
         break;
+      case ASTTypeQubit:
+      case ASTTypeQubitContainer:
+      case ASTTypeQumode:
+      case ASTTypeQumodeContainer:
+      case ASTTypeBitset:
+        // qubit[N] / qumode[N] / bit[N]: '[' promotes the keyword type to
+        // a container type, then the designator must not replace it, or the
+        // declared name is created as int.
+        break;
       default:
         ASTIdentifierTypeController::Instance().SetCurrentType(
             Id->GetSymbolType());

@@ -112,6 +112,10 @@ private:
     case IVMonotonic:
       if (IVL.Size() == 3)
         STP = IVL[1];
+      else if (LRE && LRE->GetIntegerList().Size() >= 2)
+        // [start:step:end] with a non-literal end keeps start and step on
+        // the range expression; the end is the binary op.
+        STP = LRE->GetIntegerList()[1];
       else
         STP = 1;
       break;
