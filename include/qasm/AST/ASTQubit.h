@@ -292,7 +292,8 @@ public:
   }
 
   virtual ASTQubitNode *GetQubit(unsigned Index) const {
-    assert(Index < QAL.size() && "Index is out-of-range!");
+    if (Index >= QAL.size())
+      return nullptr;
     return QAL[Index];
   }
 
@@ -484,7 +485,8 @@ public:
   }
 
   virtual ASTQubitNode *GetQubit(unsigned Index) const {
-    assert(Index < List.size() && "Index is out-of-range!");
+    if (Index >= List.size())
+      return nullptr;
     return List[Index];
   }
 

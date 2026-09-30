@@ -776,3 +776,6 @@ add_test(NAME qumode-t00027
 
 add_test(NAME qumode-t00028
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-for-fock.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-for-fock.qasm.out 2>&1")
+
+add_test(NAME qumode-t00029
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/index-oob-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out 2>&1; rc=\$?; test \$rc -eq 1 && grep -q 'QumodeContainer indexed element access is out-of-bounds' ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out && ! grep -q Assertion ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out")

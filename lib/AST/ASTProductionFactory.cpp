@@ -22467,14 +22467,37 @@ ASTProductionFactory::ProductionRule_1461(const ASTToken *TK,
           ? ASTSymbolTable::Instance().Lookup(TIdR, Bits, TIdR->GetSymbolType())
           : ASTSymbolTable::Instance().Lookup(TId, TId->GetBits(),
                                               TId->GetSymbolType());
-  assert(TSTE && "Measure Target Identifier has no SymbolTableEntry!");
+  if (!TSTE) {
+    std::stringstream M;
+    if (TIdR) {
+      M << "QubitContainer indexed element access is out-of-bounds.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TIdR), M.str(),
+          DiagLevel::Error);
+    } else {
+      M << "Measure Target Identifier has no SymbolTableEntry.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TId), M.str(),
+          DiagLevel::Error);
+    }
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
 
   ASTSymbolTableEntry *RSTE =
       RIdR
           ? ASTSymbolTable::Instance().Lookup(RIdR, Bits, RIdR->GetSymbolType())
           : ASTSymbolTable::Instance().Lookup(RId, RId->GetBits(),
                                               RId->GetSymbolType());
-  assert(RSTE && "Measure Result Identifier has no SymbolTableEntry!");
+  if (!RSTE) {
+    std::stringstream M;
+    M << "Measure Result Identifier has no SymbolTableEntry.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(RId), M.str(),
+        DiagLevel::Error);
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
 
   ASTCBitNode *CBN = nullptr;
   ASTAngleNode *ANG = nullptr;
@@ -29478,15 +29501,12 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
             }
 
             ASTQubitNode *QN = QCN->GetQubit(AIdR->GetIndex());
-            assert(QN && "Invalid ASTQubitNode obtained from the "
-                         "ASTQubitContainerNode!");
             if (!QN) {
               std::stringstream M;
-              M << "Invalid ASTQubitNode obtained from the "
-                   "ASTQubitContainerNode.";
+              M << "QubitContainer indexed element access is out-of-bounds.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
                   DIAGLineCounter::Instance().GetLocation(AIdR), M.str(),
-                  DiagLevel::ICE);
+                  DiagLevel::Error);
               return ASTGateQOpNode::StatementError(AIdR->GetIdentifier(),
                                                     M.str());
             }
@@ -29527,15 +29547,12 @@ ASTGateQOpNode *ValidateQubitArgs(const ASTAnyTypeList &ATL) {
             }
 
             ASTQubitNode *QN = QCN->GetQubit(AIdR->GetIndex());
-            assert(QN && "Invalid ASTQubitNode obtained from the "
-                         "ASTQumodeContainerNode!");
             if (!QN) {
               std::stringstream M;
-              M << "Invalid ASTQubitNode obtained from the "
-                   "ASTQumodeContainerNode.";
+              M << "QumodeContainer indexed element access is out-of-bounds.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
                   DIAGLineCounter::Instance().GetLocation(AIdR), M.str(),
-                  DiagLevel::ICE);
+                  DiagLevel::Error);
               return ASTGateQOpNode::StatementError(AIdR->GetIdentifier(),
                                                     M.str());
             }
