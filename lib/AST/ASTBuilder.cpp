@@ -76,7 +76,6 @@ ASTBuilder::CreateASTOpenQASMStatementNode(const std::string &OQS,
 
   ASTOpenQASMExpressionNode *OQE =
       new ASTOpenQASMExpressionNode(Id, std::stod(OQV));
-  assert(OQE && "Could not create a valid ASTOpenQASMExpressionNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(OQE, ASTTypeOpenQASMExpression),
@@ -176,7 +175,6 @@ ASTOperatorNode *ASTBuilder::CreateASTOperatorNode(const ASTIdentifierNode *TId,
   assert(TId && "Invalid ASTIdentifierNode argument!");
 
   ASTOperatorNode *OPX = new ASTOperatorNode(TId, OTy);
-  assert(OPX && "Could not create a valid ASTOperatorNode!");
 
   OPX->Mangle();
   return OPX;
@@ -191,7 +189,6 @@ ASTOperatorNode *ASTBuilder::CreateASTOperatorNode(const ASTExpressionNode *TEx,
     OPX = new ASTOperatorNode(TEx->GetIdentifier(), OTy);
   else
     OPX = new ASTOperatorNode(TEx, OTy);
-  assert(OPX && "Could not create a valid ASTOperatorNode!");
 
   OPX->Mangle();
   return OPX;
@@ -201,7 +198,6 @@ ASTOperandNode *ASTBuilder::CreateASTOperandNode(const ASTIdentifierNode *TId) {
   assert(TId && "Invalid ASTIdentifierNode argument!");
 
   ASTOperandNode *OPX = new ASTOperandNode(TId);
-  assert(OPX && "Could not create a valid ASTOperandNode!");
 
   OPX->Mangle();
   return OPX;
@@ -215,7 +211,6 @@ ASTOperandNode *ASTBuilder::CreateASTOperandNode(const ASTExpressionNode *TEx) {
     OPX = new ASTOperandNode(TEx->GetIdentifier());
   else
     OPX = new ASTOperandNode(TEx);
-  assert(OPX && "Could not create a valid ASTOperandNode!");
 
   OPX->Mangle();
   return OPX;
@@ -252,7 +247,6 @@ ASTBinaryOpNode *ASTBuilder::CreateASTBinaryOpNode(
   assert(IDN && "Failed to create an ASTBinaryOpNode ASTIdentifierNode!");
 
   ASTBinaryOpNode *BOp = new ASTBinaryOpNode(IDN, L, R, OT);
-  assert(BOp && "Invalid ASTBinaryOpNode argument!");
 
   if (Parens)
     BOp->AddParens();
@@ -283,10 +277,8 @@ ASTBinaryOpNode *ASTBuilder::CreateASTBinaryOpNode(
   assert(IDN && "Failed to create an ASTBinaryOpNode ASTIdentifierNode!");
 
   ASTExpressionNode *LEN = new ASTExpressionNode(L, ASTTypeIdentifier);
-  assert(LEN && "Could not create a Left Identifier ASTExpressionNode!");
 
   ASTBinaryOpNode *BOp = new ASTBinaryOpNode(IDN, LEN, R, OT);
-  assert(BOp && "Invalid ASTBinaryOpNode argument!");
 
   if (Parens)
     BOp->AddParens();
@@ -318,10 +310,8 @@ ASTBinaryOpNode *ASTBuilder::CreateASTBinaryOpNode(
   assert(IDN && "Failed to create an ASTBinaryOpNode ASTIdentifierNode!");
 
   ASTExpressionNode *REN = new ASTExpressionNode(R, ASTTypeIdentifier);
-  assert(REN && "Could not create a Right Identifier ASTExpressionNode!");
 
   ASTBinaryOpNode *BOp = new ASTBinaryOpNode(IDN, L, REN, OT);
-  assert(BOp && "Invalid ASTBinaryOpNode argument!");
 
   if (Parens)
     BOp->AddParens();
@@ -356,17 +346,14 @@ ASTBinaryOpNode *ASTBuilder::CreateASTBinaryOpNode(
     LEN = const_cast<ASTExpressionNode *>(L->GetExpression());
   else
     LEN = new ASTExpressionNode(L, ASTTypeIdentifier);
-  assert(LEN && "Could not create a Left Identifier ASTExpressionNode!");
 
   ASTExpressionNode *REN = nullptr;
   if (R->HasExpression())
     REN = const_cast<ASTExpressionNode *>(R->GetExpression());
   else
     REN = new ASTExpressionNode(R, ASTTypeIdentifier);
-  assert(REN && "Could not create a Right Identifier ASTExpressionNode!");
 
   ASTBinaryOpNode *BOp = new ASTBinaryOpNode(IDN, LEN, REN, OT);
-  assert(BOp && "Invalid ASTBinaryOpNode argument!");
 
   if (Parens)
     BOp->AddParens();
@@ -449,7 +436,6 @@ ASTUnaryOpNode *ASTBuilder::CreateASTUnaryOpNode(const std::string &Identifier,
   assert(IDN && "Failed to create an ASTBinaryOpNode ASTIdentifierNode!");
 
   ASTUnaryOpNode *UOp = new ASTUnaryOpNode(IDN, R, OT, IsLValue);
-  assert(UOp && "Failed to create an ASTUnaryOpNode!");
 
   if (HasParens)
     UOp->AddParens();
@@ -474,7 +460,6 @@ ASTUnaryOpNode *ASTBuilder::CreateASTUnaryOpNode(const std::string &Identifier,
   assert(Id && "Invalid ASTIdentifierNode Argument!");
 
   ASTExpressionNode *REN = new ASTExpressionNode(Id, ASTTypeIdentifier);
-  assert(REN && "Could not create a Right Identifier ASTExpressionNode!");
 
   return CreateASTUnaryOpNode(Identifier, REN, OT, HasParens, IsLValue);
 }
@@ -509,7 +494,6 @@ ASTBuilder::CreateASTMPIntegerNode(const ASTIdentifierNode *Id, unsigned Bits,
 
   ASTMPIntegerNode *MPI = new ASTMPIntegerNode(
       Id, Unsigned ? ASTSignbit::Unsigned : ASTSignbit::Signed, Bits);
-  assert(MPI && "Could not create an ASTMPIntegerNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
@@ -552,7 +536,6 @@ ASTBuilder::CreateASTMPIntegerNode(const ASTIdentifierNode *Id, unsigned Bits,
 
   ASTMPIntegerNode *MPI = new ASTMPIntegerNode(
       Id, Unsigned ? ASTSignbit::Unsigned : ASTSignbit::Signed, Bits, String);
-  assert(MPI && "Could not create an ASTMPIntegerNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
@@ -625,8 +608,6 @@ ASTBuilder::CreateASTMPIntegerNode(const ASTIdentifierNode *Id, unsigned Bits,
         Id, Unsigned ? ASTSignbit::Unsigned : ASTSignbit::Signed, Bits, Expr);
   }
 
-  assert(MPI && "Could not create an ASTMPIntegerNode!");
-
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
   assert(STE->HasValue() &&
@@ -668,7 +649,6 @@ ASTBuilder::CreateASTMPIntegerNode(const ASTIdentifierNode *Id, unsigned Bits,
 
   ASTMPIntegerNode *MPI =
       new ASTMPIntegerNode(Id, I, static_cast<unsigned>(Bits));
-  assert(MPI && "Could not create an ASTMPIntegerNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
@@ -820,7 +800,6 @@ ASTBuilder::CreateASTMPIntegerNode(const ASTIdentifierNode *Id, unsigned Bits,
   }
 
   ASTMPIntegerNode *MPI = new ASTMPIntegerNode(Id, Bits, MPZ, Unsigned);
-  assert(MPI && "Could not create a valid ASTMPIntegerNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
@@ -861,7 +840,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits) {
   }
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(Id, Bits);
-  assert(MPD && "Could not create an ASTMPDecimalNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPD, ASTTypeMPDecimal), ASTTypeMPDecimal);
@@ -904,7 +882,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(Id, Bits, static_cast<unsigned>(Mantissa));
-  assert(MPD && "Could not create an ASTMPDecimalNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPD, ASTTypeMPDecimal), ASTTypeMPDecimal);
@@ -971,7 +948,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
     IR.append(static_cast<size_t>(Mantissa), '0');
     MPD = new ASTMPDecimalNode(Id, Bits, static_cast<unsigned>(Mantissa),
                                IR.c_str());
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeFloat: {
     const ASTFloatNode *EF = dynamic_cast<const ASTFloatNode *>(Expr);
@@ -981,7 +957,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
     unsigned FBits = ASTFloatNode::FloatBits;
     Bits = static_cast<unsigned>(std::max(Bits, FBits));
     MPD = new ASTMPDecimalNode(Id, Bits, static_cast<double>(EF->GetValue()));
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeDouble: {
     const ASTDoubleNode *ED = dynamic_cast<const ASTDoubleNode *>(Expr);
@@ -991,7 +966,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
     unsigned DBits = ASTDoubleNode::DoubleBits;
     Bits = static_cast<unsigned>(std::max(Bits, DBits));
     MPD = new ASTMPDecimalNode(Id, Bits, ED->GetValue());
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeMPInteger: {
     const ASTMPIntegerNode *MPI = dynamic_cast<const ASTMPIntegerNode *>(Expr);
@@ -1002,13 +976,11 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
       assert(MPE && "Could not obtain a valid MPInteger ASTExpressionNode!");
 
       MPD = new ASTMPDecimalNode(Id, Bits, MPE);
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     } else {
       std::string IR = MPI->GetValue();
       IR += ".";
       IR.append(static_cast<size_t>(Mantissa), '0');
       MPD = new ASTMPDecimalNode(Id, Bits, IR.c_str());
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeMPDecimal: {
@@ -1020,11 +992,9 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
       assert(MPE && "Could not obtain a valid MPDecimal ASTExpressionNode!");
 
       MPD = new ASTMPDecimalNode(Id, Bits, MPE);
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     } else {
       std::string IR = CMPD->GetValue();
       MPD = new ASTMPDecimalNode(Id, Bits, IR.c_str());
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeIdentifier: {
@@ -1051,7 +1021,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
       if (ASTTypeCastController::Instance().CanCast(IDN, ASTTypeMPDecimal)) {
         ASTCastExpressionNode *CX =
             new ASTCastExpressionNode(IDN, ASTTypeMPDecimal, Bits);
-        assert(CX && "Could not create a valid ASTCastExpressionNode!");
         if (CX->IsBadCast()) {
           std::stringstream M;
           M << "Impossible cast from " << PrintTypeEnum(IDN->GetSymbolType())
@@ -1062,7 +1031,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
           MPD = nullptr;
         } else {
           MPD = new ASTMPDecimalNode(Id, Bits, Bits, CX);
-          assert(MPD && "Could not create a valid ASTMPDecimalNode!");
         }
       } else {
         std::stringstream M;
@@ -1080,14 +1048,12 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
     assert(BOP && "Could not dynamic_cast to an ASTBinaryOpNode!");
 
     MPD = new ASTMPDecimalNode(Id, Bits, BOP);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeUnaryOp: {
     const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(Expr);
     assert(UOP && "Could not dynamic_cast to an ASTUnaryOpNode!");
 
     MPD = new ASTMPDecimalNode(Id, Bits, UOP);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeCast: {
     const ASTCastExpressionNode *CX =
@@ -1095,26 +1061,22 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
     assert(CX && "Could not dynamic_cast to an ASTCastExpressionNode!");
 
     MPD = new ASTMPDecimalNode(Id, Bits, CX);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeImplicitConversion: {
     const ASTImplicitConversionNode *ICX =
         dynamic_cast<const ASTImplicitConversionNode *>(Expr);
     assert(ICX && "Could not dynamic_cast to an ASTImplicitConversionNode!");
     MPD = new ASTMPDecimalNode(Id, Bits, ICX);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypePopcountExpr: {
     const ASTPopcountNode *PN = dynamic_cast<const ASTPopcountNode *>(Expr);
     assert(PN && "Could not dynamic_cast to an ASTPopcountNode!");
     MPD = new ASTMPDecimalNode(Id, Bits, PN);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   case ASTTypeRotateExpr: {
     const ASTRotateNode *RN = dynamic_cast<const ASTRotateNode *>(Expr);
     assert(RN && "Could not dynamic_cast to an ASTRotateNode!");
     MPD = new ASTMPDecimalNode(Id, Bits, RN);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   } break;
   default:
     std::stringstream M;
@@ -1169,7 +1131,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
   }
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(Id, Bits);
-  assert(MPD && "Could not create an ASTMPDecimalNode!");
 
   MPD->SetValue(String);
   STE->ResetValue();
@@ -1213,7 +1174,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
   }
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(Id, Bits, MPFR);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -1257,7 +1217,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
   }
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(Id, Bits, DV);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPD, ASTTypeMPDecimal), ASTTypeMPDecimal);
@@ -1300,7 +1259,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
   }
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(Id, Bits, LDV);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPD, ASTTypeMPDecimal), ASTTypeMPDecimal);
@@ -1342,7 +1300,6 @@ ASTBuilder::CreateASTMPDecimalNode(const ASTIdentifierNode *Id, unsigned Bits,
   }
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(Id, Bits, FV);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPD, ASTTypeMPDecimal), ASTTypeMPDecimal);
@@ -1492,7 +1449,6 @@ ASTBuilder::CreateASTMPComplexNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   Id->SetBits(NumBits);
   STE->ResetValue();
@@ -1520,7 +1476,6 @@ ASTMPComplexNode *ASTBuilder::CreateASTMPComplexNode(
 
   Id->SetBits(Bits);
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, *MPCC, Bits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1546,7 +1501,6 @@ ASTBuilder::CreateASTMPComplexNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, CE, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1571,7 +1525,6 @@ ASTMPComplexNode *ASTBuilder::CreateASTMPComplexNode(
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, R, I, OT, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1596,7 +1549,6 @@ ASTMPComplexNode *ASTBuilder::CreateASTMPComplexNode(
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, R, I, OT, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1621,7 +1573,6 @@ ASTMPComplexNode *ASTBuilder::CreateASTMPComplexNode(
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, R, I, OT, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1646,7 +1597,6 @@ ASTMPComplexNode *ASTBuilder::CreateASTMPComplexNode(
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, R, I, OT, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1669,7 +1619,6 @@ ASTBuilder::CreateASTMPComplexNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, REP, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1693,7 +1642,6 @@ ASTBuilder::CreateASTMPComplexNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(Id, FC, NumBits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MPC, ASTTypeMPComplex), ASTTypeMPComplex);
@@ -1723,7 +1671,6 @@ ASTBuilder::CreateASTComplexExpressionNode(const ASTIdentifierNode *Id,
     const_cast<ASTBinaryOpNode *>(BOp)->Mangle();
 
   ASTComplexExpressionNode *ACE = new ASTComplexExpressionNode(Id, BOp);
-  assert(ACE && "Could not create a valid ASTComplexExpressionNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(ACE, ASTTypeComplexExpression),
@@ -1753,7 +1700,6 @@ ASTBuilder::CreateASTComplexExpressionNode(const ASTIdentifierNode *Id,
     const_cast<ASTUnaryOpNode *>(UOp)->Mangle();
 
   ASTComplexExpressionNode *ACE = new ASTComplexExpressionNode(Id, UOp);
-  assert(ACE && "Could not create a valid ASTComplexExpressionNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(ACE, ASTTypeComplexExpression),
@@ -1778,7 +1724,6 @@ ASTBoolNode *ASTBuilder::CreateASTBoolNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTBoolNode *BN = new ASTBoolNode(Id, Value);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BN, ASTTypeBool), ASTTypeBool);
@@ -1798,7 +1743,6 @@ ASTBoolNode *ASTBuilder::CreateASTBoolNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTBoolNode *BN = new ASTBoolNode(Id, BOP);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BN, ASTTypeBool), ASTTypeBool);
@@ -1818,7 +1762,6 @@ ASTBoolNode *ASTBuilder::CreateASTBoolNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTBoolNode *BN = new ASTBoolNode(Id, UOP);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BN, ASTTypeBool), ASTTypeBool);
@@ -1838,7 +1781,6 @@ ASTBoolNode *ASTBuilder::CreateASTBoolNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTBoolNode *BN = new ASTBoolNode(Id, EN);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BN, ASTTypeBool), ASTTypeBool);
@@ -1869,7 +1811,6 @@ ASTIntNode *ASTBuilder::CreateASTIntNode(const ASTIdentifierNode *Id,
   }
 
   ASTIntNode *IR = new ASTIntNode(Id, Value, CVR);
-  assert(IR && "Could not create a valid ASTIntNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTIntNode::IntBits, Id->GetSymbolType());
@@ -1896,7 +1837,6 @@ ASTIntNode *ASTBuilder::CreateASTIntNode(const ASTIdentifierNode *Id,
   }
 
   ASTIntNode *IR = new ASTIntNode(Id, Value, CVR);
-  assert(IR && "Could not create a valid ASTIntNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTIntNode::IntBits, Id->GetSymbolType());
@@ -2137,7 +2077,6 @@ ASTFloatNode *ASTBuilder::CreateASTFloatNode(const ASTIdentifierNode *Id,
       Id, ASTFloatNode::FloatBits, ASTTypeFloat);
   if (!STE) {
     STE = new ASTSymbolTableEntry(Id, ASTTypeFloat);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
       std::stringstream M;
@@ -2151,7 +2090,6 @@ ASTFloatNode *ASTBuilder::CreateASTFloatNode(const ASTIdentifierNode *Id,
   }
 
   ASTFloatNode *FN = new ASTFloatNode(Id, Value, CVR);
-  assert(FN && "Could not create a valid ASTFloatNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(FN, ASTTypeFloat), ASTTypeFloat);
@@ -2173,7 +2111,6 @@ ASTFloatNode *ASTBuilder::CreateASTFloatNode(const ASTIdentifierNode *Id,
       Id, ASTFloatNode::FloatBits, ASTTypeFloat);
   if (!STE) {
     STE = new ASTSymbolTableEntry(Id, ASTTypeFloat);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
       std::stringstream M;
@@ -2187,7 +2124,6 @@ ASTFloatNode *ASTBuilder::CreateASTFloatNode(const ASTIdentifierNode *Id,
   }
 
   ASTFloatNode *FN = new ASTFloatNode(Id, E, CVR);
-  assert(FN && "Could not create a valid ASTFloatNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(FN, ASTTypeFloat), ASTTypeFloat);
@@ -2214,7 +2150,6 @@ ASTDoubleNode *ASTBuilder::CreateASTDoubleNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTDoubleNode *DN = new ASTDoubleNode(Value, CVR);
-  assert(DN && "Could not create a valid ASTDoubleNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDouble), ASTTypeDouble);
@@ -2237,7 +2172,6 @@ ASTDoubleNode *ASTBuilder::CreateASTDoubleNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid ASTSymbolTable Entry!");
 
   ASTDoubleNode *DN = new ASTDoubleNode(Id, E, CVR);
-  assert(DN && "Could not create a valid ASTDoubleNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDouble), ASTTypeDouble);
@@ -2260,10 +2194,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(const std::string &Id) {
   if (ASTAngleContextControl::Instance().InOpenContext() &&
       ASTTypeSystemBuilder::Instance().IsImplicitAngle(Id)) {
     IDN = new ASTIdentifierNode(Id, ASTAngleNode::AngleBits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, ASTTypeAngle);
-    assert(STE && "Could not create a valid SymbolTable Entry!");
 
     if (!ASTSymbolTable::Instance().Insert(IDN, STE))
       return nullptr;
@@ -2271,10 +2203,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(const std::string &Id) {
     return IDN;
   } else {
     IDN = new ASTIdentifierNode(Id, unsigned(0U));
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, ASTTypeUndefined);
-    assert(STE && "Could not create a valid SymbolTable Entry!");
 
     if (!ASTSymbolTable::Instance().InsertUndefined(IDN, STE))
       return nullptr;
@@ -2307,7 +2237,6 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
 
     IDN = new ASTIdentifierNode(Id, Type,
                                 Bits == 0 ? ASTAngleNode::AngleBits : Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     if (DC)
       IDN->SetDeclarationContext(DC);
@@ -2317,7 +2246,6 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
 
     ASTSymbolTableEntry *STE =
         new ASTSymbolTableEntry(IDN, IDN->GetSymbolType());
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     if (DC)
       STE->SetContext(DC);
@@ -2358,25 +2286,21 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
 
     if (TypeSystemBuilder) {
       IDN = new ASTIdentifierNode(Id, Type, Bits);
-      assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
       IDN->SetDeclarationContext(DC);
       IDN->SetGlobalScope();
 
       STE = new ASTSymbolTableEntry(IDN, Type);
-      assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
       STE->SetContext(DC);
       STE->SetGlobalScope();
     } else {
       IDN = new ASTIdentifierNode(Id, Type,
                                   Bits == 0 ? ASTAngleNode::AngleBits : Bits);
-      assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
       IDN->SetDeclarationContext(
           ASTDeclarationContextTracker::Instance().GetGlobalContext());
       STE = new ASTSymbolTableEntry(IDN, ASTTypeAngle);
-      assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
       STE->SetContext(
           ASTDeclarationContextTracker::Instance().GetGlobalContext());
@@ -2406,12 +2330,10 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
            "Function bits are immutable!");
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     IDN->SetDeclarationContext(
         ASTDeclarationContextTracker::Instance().GetGlobalContext());
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     STE->SetContext(
         ASTDeclarationContextTracker::Instance().GetGlobalContext());
@@ -2428,13 +2350,11 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
     assert(Bits == ASTGateNode::GateBits && "Gate bits are immutable!");
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     IDN->SetDeclarationContext(
         ASTDeclarationContextTracker::Instance().GetGlobalContext());
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     STE->SetContext(
         ASTDeclarationContextTracker::Instance().GetGlobalContext());
@@ -2451,10 +2371,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
     assert(Bits == ASTDefcalNode::DefcalBits && "Defcal bits are immutable!");
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     IDN->SetDefcalGroupName(Id);
     IDN->SetSymbolTableEntry(STE);
@@ -2467,10 +2385,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
     if (!MSTE) {
       ASTIdentifierNode *MId = new ASTIdentifierNode(Id, ASTTypeDefcalGroup,
                                                      ASTDefcalNode::DefcalBits);
-      assert(MId && "Could not create a valid ASTIdentifierNode!");
 
       MSTE = new ASTMapSymbolTableEntry(MId, ASTTypeDefcalGroup);
-      assert(MSTE && "Could not create a valid ASTMapSymbolTable Entry!");
 
       MId->SetSymbolTableEntry(STE);
       MId->SetGlobalScope();
@@ -2488,10 +2404,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
     assert(Bits == ASTDefcalNode::DefcalBits && "Defcal bits are immutable!");
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     ASTMapSymbolTableEntry *STE = new ASTMapSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     IDN->SetSymbolTableEntry(STE);
     IDN->SetGlobalScope();
@@ -2506,10 +2420,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
            "Function Definition bits are immutable!");
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     IDN->SetGlobalScope();
     STE->SetGlobalScope();
@@ -2524,10 +2436,8 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
            "Function Declaration bits are immutable!");
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     if (!ASTSymbolTable::Instance().InsertFunction(IDN, STE))
       return nullptr;
@@ -2544,7 +2454,6 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
         ASTDeclarationContextTracker::Instance().GetCurrentContext();
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     if (DC) {
       IDN->SetDeclarationContext(DC);
@@ -2561,7 +2470,6 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
     }
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     if (DC) {
       STE->SetContext(DC);
@@ -2595,7 +2503,6 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
         ASTDeclarationContextTracker::Instance().GetCurrentContext();
 
     ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-    assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
     if (DC) {
       IDN->SetDeclarationContext(DC);
@@ -2612,7 +2519,6 @@ ASTIdentifierNode *ASTBuilder::CreateASTIdentifierNode(
     }
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
     if (DC) {
       STE->SetContext(DC);
@@ -2703,10 +2609,8 @@ ASTIdentifierNode *ASTBuilder::CreateLocalScopeASTIdentifierNode(
   }
 
   ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Type, Bits);
-  assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
   ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(IDN, Type);
-  assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
   IDN->SetDeclarationContext(DCX);
   IDN->SetLocation(TK->GetLocation());
@@ -2743,7 +2647,6 @@ ASTBuilder::CreateASTPragmaIdentifierNode(const std::string &Id) {
 
   ASTIdentifierNode *PId =
       new ASTIdentifierNode(Id, ASTTypePragma, ASTPragmaNode::PragmaBits);
-  assert(PId && "Could not create a valid pragma ASTIdentifierNode!");
 
   PId->SetLocalScope();
   return PId;
@@ -3085,7 +2988,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
     } else {
       ASTIdentifierNode *IDN =
           new ASTIdentifierNode(Id, ASTAngleNode::AngleBits);
-      assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
       if (!ASTSymbolTable::Instance().Insert(IDN, ASTAngleNode::AngleBits,
                                              ASTTypeAngle)) {
@@ -3099,7 +3001,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
       }
 
       STE = new ASTSymbolTableEntry(IDN, ASTTypeAngle);
-      assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STE->SetLocalScope();
       IDN->SetLocalScope();
@@ -3123,7 +3024,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
     if (!STE) {
       ASTIdentifierNode *IDN =
           new ASTIdentifierNode(Id, ASTAngleNode::AngleBits);
-      assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
       if (!ASTSymbolTable::Instance().Insert(IDN, ASTAngleNode::AngleBits,
                                              ASTTypeAngle)) {
@@ -3137,7 +3037,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
       }
 
       STE = new ASTSymbolTableEntry(IDN, ASTTypeAngle);
-      assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STE->SetDoNotDelete();
       STE->SetGlobalScope();
@@ -3161,7 +3060,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
     if (!STE) {
       ASTIdentifierNode *IDN =
           new ASTIdentifierNode(Id, ASTFunctionDefinitionNode::FunctionBits);
-      assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
       if (!ASTSymbolTable::Instance().Insert(
               IDN, ASTFunctionDefinitionNode::FunctionBits, ASTTypeFunction)) {
@@ -3175,7 +3073,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
       }
 
       STE = new ASTSymbolTableEntry(IDN, ASTTypeFunction);
-      assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STE->SetDoNotDelete();
       STE->SetGlobalScope();
@@ -3218,7 +3115,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id) {
   }
 
   ASTIdentifierNode *IDN = new ASTIdentifierNode(Id);
-  assert(IDN && "Failed to construct an ASTIdentifierNode!");
 
   if (!ASTSymbolTable::Instance().Insert(Id, IDN))
     return nullptr;
@@ -3247,10 +3143,8 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
     } else {
       ASTIdentifierNode *IDN =
           new ASTIdentifierNode(Id, ASTAngleNode::AngleBits);
-      assert(IDN && "Could not create a valid ASTIdentifierNode!");
 
       STE = new ASTSymbolTableEntry(IDN, Type);
-      assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       if (!ASTSymbolTable::Instance().Insert(IDN, STE))
         return nullptr;
@@ -3309,8 +3203,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
           ASTIdentifierRefNode *IdR =
               new ASTIdentifierRefNode(S.str(), STE->GetIdentifier(), Bits);
 
-          assert(IdR && "Could not create a valid RValue ASTIdentifierNode!");
-
           if (!ASTSymbolTable::Instance().Insert(IdR, STE)) {
             std::stringstream M;
             M << "Could not insert a SymbolTableEntry for the QReg "
@@ -3345,7 +3237,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
 
             ASTIdentifierRefNode *IdR =
                 new ASTIdentifierRefNode(S.str(), STE->GetIdentifier(), 1);
-            assert(IdR && "Could not create a valid RValue ASTIdentifierNode!");
 
             if (!ASTSymbolTable::Instance().Insert(IdR, STE)) {
               std::stringstream M;
@@ -3381,7 +3272,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
 
             ASTIdentifierRefNode *IdR =
                 new ASTIdentifierRefNode(S.str(), STE->GetIdentifier(), Bits);
-            assert(IdR && "Could not create a valid RValue ASTIdentifierNode!");
 
             if (!ASTSymbolTable::Instance().Insert(IdR, STE)) {
               std::stringstream M;
@@ -3434,7 +3324,6 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
   }
 
   ASTIdentifierNode *IDN = new ASTIdentifierNode(Id, Bits);
-  assert(IDN && "Failed to construct an ASTIdentifierNode!");
 
   if (IDN->IsIndexed()) {
     ASTIdentifierNode *UId =
@@ -3721,7 +3610,6 @@ ASTBuilder::CreateASTBarrierNode(const ASTIdentifierNode *Id,
   assert(STE && "ASTBarrier has no SymbolTable Entry!");
 
   ASTBarrierNode *BN = new ASTBarrierNode(Id, List);
-  assert(BN && "Could not create a valid ASTBarrierNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BN, ASTTypeBarrier), ASTTypeBarrier);
@@ -3745,7 +3633,6 @@ ASTResetNode *ASTBuilder::CreateASTResetNode(const ASTIdentifierNode *Id,
   assert(STE && "ASTReset has no SymbolTable Entry!");
 
   ASTResetNode *RN = new ASTResetNode(Id, Target);
-  assert(RN && "Could not create a valid ASTResetNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeReset), ASTTypeReset);
@@ -3767,7 +3654,6 @@ ASTMeasureNode *ASTBuilder::CreateASTMeasureNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Measure SymbolTable Entry!");
 
   ASTMeasureNode *MN = new ASTMeasureNode(Id, Target, Result, RI);
-  assert(MN && "Could not create a valid ASTMeasureNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MN, ASTTypeMeasure), ASTTypeMeasure);
@@ -3789,7 +3675,6 @@ ASTMeasureNode *ASTBuilder::CreateASTMeasureNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Measure SymbolTable Entry!");
 
   ASTMeasureNode *MN = new ASTMeasureNode(Id, Target, Result, RI);
-  assert(MN && "Could not create a valid ASTMeasureNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MN, ASTTypeMeasure), ASTTypeMeasure);
@@ -3811,7 +3696,6 @@ ASTMeasureNode *ASTBuilder::CreateASTMeasureNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Measure SymbolTable Entry!");
 
   ASTMeasureNode *MN = new ASTMeasureNode(Id, Target, Result, RI);
-  assert(MN && "Could not create a valid ASTMeasureNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MN, ASTTypeMeasure), ASTTypeMeasure);
@@ -3845,10 +3729,8 @@ void ASTBuilder::MaterializeASTAngleNode(ASTAngleNode *AN) {
     if (!XSTE) {
       ASTIdentifierRefNode *IdR =
           new ASTIdentifierRefNode(AS.str(), AId, ASTIntNode::IntBits);
-      assert(IdR && "Could not create a valid ASTIdentifierNode!");
 
       XSTE = new ASTSymbolTableEntry(IdR, ASTTypeAngle);
-      assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
       XSTE->ResetValue();
       XSTE->SetValue(new ASTValue<>(AN, ASTTypeAngle), ASTTypeAngle, true);
@@ -3923,7 +3805,6 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
         AN = new ASTAngleNode(Id, ASTDoubleNode::Pi(), ATy, NumBits);
       else
         AN = new ASTAngleNode(Id, ASTMPDecimalNode::Pi(NumBits), ATy, NumBits);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     } else if (Id->GetName() == "tau" || Id->GetName() == "τ") {
       assert(ATy == ASTAngleTypeTau && "Invalid ASTAngleType!");
 
@@ -3934,7 +3815,6 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
         AN = new ASTAngleNode(Id, ASTDoubleNode::Tau(), ATy, NumBits);
       else
         AN = new ASTAngleNode(Id, ASTMPDecimalNode::Tau(NumBits), ATy, NumBits);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     } else if (Id->GetName() == "euler_number" ||
                Id->GetName() == "euler_gamma" || Id->GetName() == "euler" ||
                Id->GetName() == "ℇ") {
@@ -3948,10 +3828,8 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
       else
         AN = new ASTAngleNode(Id, ASTMPDecimalNode::Euler(NumBits), ATy,
                               NumBits);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     } else {
       AN = new ASTAngleNode(Id, ATy, NumBits);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     }
 
     STE->ResetValue();
@@ -4074,21 +3952,17 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
       assert(ATy == ASTAngleTypePi && "Invalid ASTAngleType!");
 
       AN = new ASTAngleNode(Id, NumBits, MPV, ATy);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     } else if (Id->GetName() == "tau" || Id->GetName() == "τ") {
       assert(ATy == ASTAngleTypeTau && "Invalid ASTAngleType!");
 
       AN = new ASTAngleNode(Id, NumBits, MPV, ATy);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     } else if (Id->GetName() == "euler_number" || Id->GetName() == "euler" ||
                Id->GetName() == "ℇ") {
       assert(ATy == ASTAngleTypeEuler && "Invalid ASTAngleType!");
 
       AN = new ASTAngleNode(Id, NumBits, MPV, ATy);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     } else {
       AN = new ASTAngleNode(Id, NumBits, MPV, ATy);
-      assert(AN && "Could not create a valid ASTAngleNode!");
     }
 
     AN->SetBits(NumBits);
@@ -4148,7 +4022,6 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
 
   STE->ResetValue();
   AN = new ASTAngleNode(Id, NumBits, MPV, ATy);
-  assert(AN && "Could not create a valid ASTAngleNode!");
 
   AN->SetBits(NumBits);
   STE->SetValue(new ASTValue<>(AN, ASTTypeAngle), ASTTypeAngle);
@@ -4203,7 +4076,6 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
   if (!STE) {
     STE = new ASTSymbolTableEntry(const_cast<ASTIdentifierNode *>(Id),
                                   ASTTypeAngle);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
@@ -4221,7 +4093,6 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNode(const ASTIdentifierNode *Id,
 
   ATy = ASTAngleNode::DetermineAngleType(Id->GetName());
   ASTAngleNode *AN = new ASTAngleNode(Id, W, X, Y, Z, ATy, NumBits);
-  assert(AN && "Could not create a valid ASTAngleNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(AN, ASTTypeAngle), ASTTypeAngle);
@@ -4256,42 +4127,34 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNodeFromExpression(
   case ASTTypeInt:
     AN =
         new ASTAngleNode(Id, dynamic_cast<const ASTIntNode *>(E), ATy, NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeFloat:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTFloatNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeDouble:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTDoubleNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeLongDouble:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTLongDoubleNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeMPInteger:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTMPIntegerNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeMPDecimal:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTMPDecimalNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeBinaryOp:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTBinaryOpNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeUnaryOp:
     AN = new ASTAngleNode(Id, dynamic_cast<const ASTUnaryOpNode *>(E), ATy,
                           NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   case ASTTypeAngleArray: {
     ASTIdentifierNode *AId = CreateASTIdentifierRValueReference(Id);
@@ -4328,28 +4191,23 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNodeFromExpression(
           assert(AAN && "Could not retrieve a valid ASTAngleNode from "
                         "the SymbolTable Entry!");
           AN = new ASTAngleNode(Id, ATy, NumBits);
-          assert(AN && "Could not create a valid ASTAngleNode!");
           AN->SetValue(AAN->GetMPValue());
         }
       } else {
         AN = new ASTAngleNode(Id, ATy, NumBits);
-        assert(AN && "Could not create a valid ASTAngleNode!");
         AN->SetExpression(EId);
       }
     }
   } break;
   default:
     AN = new ASTAngleNode(Id, E, ATy, NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     break;
   }
 
   ASTSymbolTableEntry *STE =
       ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), ASTTypeAngle);
-  if (!STE) {
+  if (!STE)
     STE = new ASTSymbolTableEntry(Id, ASTTypeAngle);
-    assert(STE && "Could not create a valid SymbolTable Entry!");
-  }
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(AN, ASTTypeAngle), ASTTypeAngle);
@@ -4601,7 +4459,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
   if (!(STE = ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
                                                 ASTTypeBitset))) {
     STE = new ASTSymbolTableEntry(Id, ASTTypeBitset);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
@@ -4615,7 +4472,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
   }
 
   ASTCBitNode *CBN = new ASTCBitNode(Id, Size, Bitmask);
-  assert(CBN && "Unable to create an ASTCBitNode!");
 
   CBN->SetAllTo(Bitmask);
   STE->ResetValue();
@@ -4638,7 +4494,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
   if (!(STE = ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
                                                 ASTTypeBitset))) {
     STE = new ASTSymbolTableEntry(Id, ASTTypeBitset);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
@@ -4653,7 +4508,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
 
   std::string BM = ASTStringUtils::Instance().Sanitize(Bitmask);
   ASTCBitNode *CBN = new ASTCBitNode(Id, Size, BM);
-  assert(CBN && "Unable to create an ASTCBitNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
@@ -4676,7 +4530,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
   if (!(STE = ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
                                                 ASTTypeBitset))) {
     STE = new ASTSymbolTableEntry(Id, ASTTypeBitset);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
@@ -4690,7 +4543,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
   }
 
   ASTCBitNode *CBN = new ASTCBitNode(Id, Size, C);
-  assert(CBN && "Unable to create an ASTCBitNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
@@ -4713,7 +4565,6 @@ ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id, std::size_t Size,
   if (!(STE = ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
                                                 ASTTypeBitset))) {
     STE = new ASTSymbolTableEntry(Id, ASTTypeBitset);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     if (!ASTSymbolTable::Instance().Insert(const_cast<ASTIdentifierNode *>(Id),
                                            STE)) {
@@ -4727,7 +4578,6 @@ ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id, std::size_t Size,
   }
 
   ASTCBitNode *CBN = new ASTCBitNode(Id, Size, IC);
-  assert(CBN && "Unable to create an ASTCBitNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
@@ -4747,7 +4597,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
 
   ASTCastExpressionNode *CX =
       new ASTCastExpressionNode(BOP, ASTTypeBitset, Size);
-  assert(CX && "Could not create a valid ASTCastExpressionNode!");
   return CreateASTCBitNode(Id, Size, CX);
 }
 
@@ -4759,7 +4608,6 @@ ASTCBitNode *ASTBuilder::CreateASTCBitNode(const ASTIdentifierNode *Id,
 
   ASTCastExpressionNode *CX =
       new ASTCastExpressionNode(UOP, ASTTypeBitset, Size);
-  assert(CX && "Could not create a valid ASTCastExpressionNode!");
   return CreateASTCBitNode(Id, Size, CX);
 }
 
@@ -4875,11 +4723,9 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
     }
   } else {
     QSTE = new ASTSymbolTableEntry(Id, ASTTypeQubitContainer);
-    assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
   }
 
   ASTQubitContainerNode *QCN = new ASTQubitContainerNode(Id, NumBits);
-  assert(QCN && "Unable to create an ASTQubitContainerNode!");
 
   QSTE->ResetValue();
   QSTE->SetValue(new ASTValue<>(QCN, ASTTypeQubitContainer),
@@ -4943,10 +4789,8 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
     QSS << '[' << I << ']';
 
     ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(QSS.str(), QId, 1U);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(IdR, ASTTypeQubit);
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     XSTE->ResetValue();
     XSTE->SetValue(new ASTValue<>(QBN, ASTTypeQubit), ASTTypeQubit);
@@ -5054,11 +4898,9 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
     }
   } else {
     QSTE = new ASTSymbolTableEntry(Id, ASTTypeQumodeContainer);
-    assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
   }
 
   ASTQumodeContainerNode *QCN = new ASTQumodeContainerNode(Id, NumBits);
-  assert(QCN && "Unable to create an ASTQumodeContainerNode!");
 
   QSTE->ResetValue();
   QSTE->SetValue(new ASTValue<>(QCN, ASTTypeQumodeContainer),
@@ -5118,10 +4960,8 @@ ASTBuilder::CreateASTQumodeContainerNode(const ASTIdentifierNode *Id,
     QSS << '[' << I << ']';
 
     ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(QSS.str(), QId, 1U);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(IdR, ASTTypeQumode);
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     XSTE->ResetValue();
     XSTE->SetValue(new ASTValue<>(QBN, ASTTypeQumode), ASTTypeQumode);
@@ -5159,7 +4999,6 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
                                            ASTTypeQubitContainer);
 
   ASTQubitContainerNode *QCN = new ASTQubitContainerNode(Id, QV);
-  assert(QCN && "Could not create a valid ASTQubitContainerNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(QCN, ASTTypeQubitContainer),
@@ -5178,10 +5017,8 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
     QSS.clear();
     QSS << Id->GetName() << '[' << IX++ << ']';
     ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(QSS.str(), Id, 1U);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(IdR, ASTTypeQubit);
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     (*QI)->Mangle();
     XSTE->ResetValue();
@@ -5220,7 +5057,6 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
                                            ASTTypeQubitContainer);
 
   ASTQubitContainerNode *QCN = new ASTQubitContainerNode(Id, NumBits, QV);
-  assert(QCN && "Could not create a valid ASTQubitContainerNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(QCN, ASTTypeQubitContainer),
@@ -5239,10 +5075,8 @@ ASTBuilder::CreateASTQubitContainerNode(const ASTIdentifierNode *Id,
     QSS.clear();
     QSS << Id->GetName() << '[' << IX++ << ']';
     ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(QSS.str(), Id, 1U);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(IdR, ASTTypeQubit);
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     (*QI)->Mangle();
     XSTE->ResetValue();
@@ -5267,7 +5101,6 @@ ASTBuilder::CreateASTQubitContainerAliasNode(const ASTIdentifierNode *Id,
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   ASTQubitContainerAliasNode *QCAN = new ASTQubitContainerAliasNode(Id, Index);
-  assert(QCAN && "Could not create a valid ASTQubitContainerAliasNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
@@ -5546,7 +5379,6 @@ ASTQRegNode *ASTBuilder::CreateASTQRegNode(const ASTIdentifierNode *Id,
   }
 
   ASTQRegNode *QRN = new ASTQRegNode(Id, NumQubits);
-  assert(QRN && "Unable to create an ASTQRegNode!");
 
   std::stringstream QS;
   for (unsigned I = 0; I < NumQubits; ++I) {
@@ -5608,7 +5440,6 @@ ASTCRegNode *ASTBuilder::CreateASTCRegNode(const ASTIdentifierNode *Id,
   }
 
   ASTCRegNode *CR = new ASTCRegNode(Id, NumBits);
-  assert(CR && "Could not create a valid ASTCRegNode!");
 
   Id->SetBits(NumBits);
   STE->ResetValue();
@@ -5646,7 +5477,6 @@ ASTCRegNode *ASTBuilder::CreateASTCRegNode(const ASTIdentifierNode *Id,
   }
 
   ASTCRegNode *CR = new ASTCRegNode(Id, BV);
-  assert(CR && "Could not create a valid ASTCRegNode!");
 
   Id->SetBits(BV.size());
   STE->ResetValue();
@@ -5687,7 +5517,6 @@ ASTQubitNode *ASTBuilder::CreateASTQubitNode(const ASTIdentifierNode *Id,
   ASTSymbolTable::Instance().TransferQubit(Id, 1, ASTTypeQubit);
 
   ASTQubitNode *QN = new ASTQubitNode(Id, Index);
-  assert(QN && "Unable to create an ASTQubitNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(QN, ASTTypeQubit), ASTTypeQubit);
@@ -5727,7 +5556,6 @@ ASTQumodeNode *ASTBuilder::CreateASTQumodeNode(const ASTIdentifierNode *Id,
   ASTSymbolTable::Instance().TransferQubit(Id, 1, ASTTypeQumode);
 
   ASTQumodeNode *QN = new ASTQumodeNode(Id, Index);
-  assert(QN && "Unable to create an ASTQumodeNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(QN, ASTTypeQumode), ASTTypeQumode);
@@ -5753,86 +5581,62 @@ ASTResultNode *ASTBuilder::CreateASTResultNode(const ASTIdentifierNode *Id,
     ASTAngleNode *AN =
         new ASTAngleNode(&ASTIdentifierNode::Angle, ASTAngleTypeGeneric,
                          NumBits == 0 ? ASTAngleNode::AngleBits : NumBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
     RN = new ASTResultNode(Id, AN);
-    assert(RN && "Could not create a alid ASTResultNode!");
   } break;
   case ASTTypeBool: {
     ASTBoolNode *BN = new ASTBoolNode(&ASTIdentifierNode::Bool, false);
-    assert(BN && "Could not create a valid ASTBoolNode!");
     RN = new ASTResultNode(Id, BN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeBitset: {
     ASTCBitNode *CN = new ASTCBitNode(&ASTIdentifierNode::Bitset, NumBits);
-    assert(CN && "Could not create a valid ASTCBitNode!");
     RN = new ASTResultNode(Id, CN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeDouble: {
     ASTDoubleNode *DN = new ASTDoubleNode(&ASTIdentifierNode::Double, 0.0);
-    assert(DN && "Could not create a valid ASTDoubleNode!");
     RN = new ASTResultNode(Id, DN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeFloat: {
     ASTFloatNode *FN = new ASTFloatNode(&ASTIdentifierNode::Float, 0.0f);
-    assert(FN && "Could not create a valid ASTFloatNode!");
     RN = new ASTResultNode(Id, FN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeInt: {
     ASTIntNode *IN =
         new ASTIntNode(&ASTIdentifierNode::Int,
                        SB == ASTSignbit::Signed ? int32_t(0) : uint32_t(0U));
-    assert(IN && "Could not create a valid ASTIntNode!");
     RN = new ASTResultNode(Id, IN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeVoid: {
     ASTVoidNode *VN = new ASTVoidNode(nullptr);
-    assert(VN && "Could not create a valid ASTVoidNode!");
     RN = new ASTResultNode(Id, VN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeMPInteger: {
     ASTMPIntegerNode *MPI = new ASTMPIntegerNode(
         &ASTIdentifierNode::MPInt, SB,
         NumBits == 0 ? ASTMPIntegerNode::DefaultBits : NumBits);
-    assert(MPI && "Could not create a valid ASTMPIntegerNode!");
     RN = new ASTResultNode(Id, MPI);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeMPDecimal: {
     ASTMPDecimalNode *MPD = new ASTMPDecimalNode(
         &ASTIdentifierNode::MPDec,
         NumBits == 0 ? ASTMPDecimalNode::DefaultBits : NumBits);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     RN = new ASTResultNode(Id, MPD);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeMPComplex: {
     ASTMPComplexNode *MPC = new ASTMPComplexNode(
         &ASTIdentifierNode::MPComplex,
         NumBits == 0 ? ASTMPComplexNode::DefaultBits : NumBits);
-    assert(MPC && "Could not create a valid ASTMPComplexNode!");
     RN = new ASTResultNode(Id, MPC);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeComplexList: {
     ASTMPComplexList *MPCL = new ASTMPComplexList();
-    assert(MPCL && "Could not create a valid ASTMPComplexList!");
     RN = new ASTResultNode(Id, MPCL);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeOpenPulseWaveform: {
     ASTMPComplexList MPCL;
     OpenPulse::ASTOpenPulseWaveformNode *WFN =
         new OpenPulse::ASTOpenPulseWaveformNode(&ASTIdentifierNode::Waveform,
                                                 MPCL);
-    assert(WFN && "Could not create a valid OpenPulse ASTWaveformNode!");
     RN = new ASTResultNode(Id, WFN);
-    assert(RN && "Could not create a valid ASTResultNode!");
   } break;
   case ASTTypeOpenPulseFrame: {
     // FIXME: IMPLEMENT.
@@ -5884,7 +5688,6 @@ ASTFunctionDefinitionNode *ASTBuilder::CreateASTFunctionDefinition(
   STE->ResetValue();
   ASTFunctionDefinitionNode *FDN =
       new ASTFunctionDefinitionNode(Id, PDL, SL, RES, IsDefinition);
-  assert(FDN && "Could not create an ASTFunctionDeclarationNode!");
 
   if (ASTTypeSystemBuilder::Instance().IsBuiltinFunction(Id->GetName()))
     const_cast<ASTDeclarationList &>(PDL).CreateBuiltinParameterSymbols(Id);
@@ -5921,7 +5724,6 @@ ASTBuilder::CreateASTFunctionDeclaration(const ASTIdentifierNode *Id,
   assert(FN && "Invalid FunctionDefinitionNode argument!");
 
   ASTFunctionDeclarationNode *DN = new ASTFunctionDeclarationNode(Id, FN);
-  assert(DN && "Could not create a valid ASTFunctionDeclarationNode!");
 
   ASTDeclarationBuilder::Instance().Append(DN);
   ASTFunctionDeclarationMap::Instance().Insert(FN->GetName(), DN);
@@ -5963,7 +5765,6 @@ ASTKernelNode *ASTBuilder::CreateASTKernelNode(const ASTIdentifierNode *Id,
   STE->SetGlobalScope();
 
   ASTKernelNode *KN = new ASTKernelNode(Id, DL, SL, RES);
-  assert(KN && "Could not create a valid ASTKernelNode!");
 
   STE->SetValue(new ASTValue<>(KN, ASTTypeKernel), ASTTypeKernel);
   assert(STE->HasValue() && "Invalid KernelNode Value for the "
@@ -5990,7 +5791,6 @@ ASTBuilder::CreateASTKernelDeclaration(const ASTIdentifierNode *Id,
   assert(KN && "Invalid ASTKernelNode argument!");
 
   ASTKernelDeclarationNode *KDN = new ASTKernelDeclarationNode(Id, KN);
-  assert(KDN && "Could not create a valid ASTKernelDeclarationNode!");
 
   const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
   ASTDeclarationBuilder::Instance().Append(KDN);
@@ -6013,7 +5813,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
 
     ASTIntNode *INT =
         new ASTIntNode(ASTIdentifierNode::Int.Clone(), int32_t(-1), ASTTypeInt);
-    assert(INT && "Failed to create an ASTIntNode!");
 
     INT->Mangle();
     INT->MangleLiteral();
@@ -6030,7 +5829,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
     if (STE) {
       ASTIntNode *INT = new ASTIntNode(ASTIdentifierNode::Int.Clone(),
                                        int32_t(-1), ASTTypeInt);
-      assert(INT && "Failed to create an ASTIntNode!");
 
       INT->Mangle();
       INT->MangleLiteral();
@@ -6067,7 +5865,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   case ASTTypeInt: {
     ASTIntNode *INT =
         new ASTIntNode(ASTIdentifierNode::Int.Clone(), int32_t(-1), ASTTypeInt);
-    assert(INT && "Failed to create an ASTIntNode!");
 
     INT->Mangle();
     INT->MangleLiteral();
@@ -6077,7 +5874,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   case ASTTypeFloat: {
     ASTFloatNode *FLT =
         new ASTFloatNode(ASTIdentifierNode::Float.Clone(), -1.0f);
-    assert(FLT && "Failed to create an ASTFloatNode!");
 
     FLT->Mangle();
     FLT->MangleLiteral();
@@ -6088,7 +5884,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   case ASTTypeDouble: {
     ASTDoubleNode *DBL =
         new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), -1.0);
-    assert(DBL && "Failed to create an ASTDoubleNode!");
 
     DBL->Mangle();
     DBL->MangleLiteral();
@@ -6105,7 +5900,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   case ASTTypeAngle: {
     ASTMPDecimalNode *MPD = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), Id->GetBits(), "-1.0");
-    assert(MPD && "Failed to create an ASTMPDecimalNode!");
 
     MPD->Mangle();
     MPD->MangleLiteral();
@@ -6116,7 +5910,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   case ASTTypeMPInteger: {
     ASTMPIntegerNode *MPI = new ASTMPIntegerNode(
         ASTIdentifierNode::MPInt.Clone(), Signed, Id->GetBits(), "-1.0");
-    assert(MPI && "Failed to create an ASTMPIntegerNode!");
 
     MPI->Mangle();
     MPI->MangleLiteral();
@@ -6127,7 +5920,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   case ASTTypeMPDecimal: {
     ASTMPDecimalNode *MPD = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), Id->GetBits(), "-1.0");
-    assert(MPD && "Failed to create an ASTMPDecimalNode!");
 
     MPD->Mangle();
     MPD->MangleLiteral();
@@ -6138,7 +5930,6 @@ ASTBuilder::CreateASTArithNegateBinaryOpNode(const ASTIdentifierNode *Id,
   default: {
     ASTIntNode *INT =
         new ASTIntNode(ASTIdentifierNode::Int.Clone(), int32_t(-1), ASTTypeInt);
-    assert(INT && "Failed to create an ASTIntNode!");
 
     INT->Mangle();
     INT->MangleLiteral();
@@ -6173,7 +5964,6 @@ ASTBuilder::CreateASTReturnStatementNode(const ASTIdentifierNode *Id,
          "Invalid ASTType for Return SymbolTable Entry!");
 
   ASTReturnStatementNode *RN = new ASTReturnStatementNode(Id, RId);
-  assert(RN && "Could not create a valid ASTReturnStatementNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeReturn), ASTTypeReturn);
@@ -6277,7 +6067,6 @@ ASTBuilder::CreateASTReturnStatementNode(const ASTIdentifierNode *Id,
          "Invalid ASTType for Return SymbolTable Entry!");
 
   ASTReturnStatementNode *RN = new ASTReturnStatementNode(Id, FSN);
-  assert(RN && "Could not create a valid ASTReturnStatementNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeReturn), ASTTypeReturn);
@@ -6297,7 +6086,6 @@ ASTBuilder::CreateASTReturnStatementNode(const ASTIdentifierNode *Id,
          "Invalid ASTType for Return SymbolTable Entry!");
 
   ASTReturnStatementNode *RN = new ASTReturnStatementNode(Id, MN);
-  assert(RN && "Could not create a valid ASTReturnStatementNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeReturn), ASTTypeReturn);
@@ -6392,7 +6180,6 @@ ASTBuilder::CreateASTReturnStatementNode(const ASTIdentifierNode *Id) {
          "Invalid ASTType for Return SymbolTable Entry!");
 
   ASTReturnStatementNode *RN = new ASTReturnStatementNode(Id);
-  assert(RN && "Could not create a valid ASTReturnStatementNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeReturn), ASTTypeReturn);
@@ -6410,7 +6197,6 @@ ASTPopcountNode *ASTBuilder::CreateASTPopcountNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
 
   ASTPopcountNode *PN = new ASTPopcountNode(Id, I);
-  assert(PN && "Could not create a valid ASTPopcountNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(PN, ASTTypePopcountExpr), ASTTypePopcountExpr);
@@ -6432,7 +6218,6 @@ ASTBuilder::CreateASTPopcountNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
 
   ASTPopcountNode *PN = new ASTPopcountNode(Id, MPI);
-  assert(PN && "Could not create a valid ASTPopcountNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(PN, ASTTypePopcountExpr), ASTTypePopcountExpr);
@@ -6453,7 +6238,6 @@ ASTPopcountNode *ASTBuilder::CreateASTPopcountNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
 
   ASTPopcountNode *PN = new ASTPopcountNode(Id, CBI);
-  assert(PN && "Could not create a valid ASTPopcountNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(PN, ASTTypePopcountExpr), ASTTypePopcountExpr);
@@ -6485,7 +6269,6 @@ ASTRotateNode *ASTBuilder::CreateASTRotateNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
 
   ASTRotateNode *RN = new ASTRotateNode(Id, I, S, OpTy);
-  assert(RN && "Could not create a valid ASTRotateNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeRotateExpr), ASTTypeRotateExpr);
@@ -6518,7 +6301,6 @@ ASTRotateNode *ASTBuilder::CreateASTRotateNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
 
   ASTRotateNode *RN = new ASTRotateNode(Id, MPI, S, OpTy);
-  assert(RN && "Could not create a valid ASTRotateNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeRotateExpr), ASTTypeRotateExpr);
@@ -6542,7 +6324,6 @@ ASTRotateNode *ASTBuilder::CreateASTRotateNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
 
   ASTRotateNode *RN = new ASTRotateNode(Id, CBI, S, OpTy);
-  assert(RN && "Could not create a valid ASTRotateNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(RN, ASTTypeRotateExpr), ASTTypeRotateExpr);
@@ -6605,7 +6386,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDefcal);
 
   ASTDefcalNode *DN = new ASTDefcalNode(Id, EL, SL, BQL);
-  assert(DN && "Could not create a valid ASTDefcalNode!");
 
   DN->Mangle();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDefcal), ASTTypeDefcal);
@@ -6690,7 +6470,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDefcal);
 
   ASTDefcalNode *DN = new ASTDefcalNode(Id, GM, EL, SL, BQL);
-  assert(DN && "Could not create a valid ASTDefcalNode!");
 
   DN->Mangle();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDefcal), ASTTypeDefcal);
@@ -6771,7 +6550,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDefcal);
 
   ASTDefcalNode *DN = new ASTDefcalNode(Id, SL, MN);
-  assert(DN && "Could not create a valid ASTDefcalNode!");
 
   DN->Mangle();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDefcal), ASTTypeDefcal);
@@ -6894,7 +6672,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDefcal);
 
   ASTDefcalNode *DN = new ASTDefcalNode(Id, GM, SL, MN);
-  assert(DN && "Could not create a valid ASTDefcalNode!");
 
   DN->Mangle();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDefcal), ASTTypeDefcal);
@@ -7010,7 +6787,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDefcal);
 
   ASTDefcalNode *DN = new ASTDefcalNode(Id, SL, RN);
-  assert(DN && "Could not create a valid ASTDefcalNode!");
 
   DN->Mangle();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDefcal), ASTTypeDefcal);
@@ -7098,7 +6874,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDefcal);
 
   ASTDefcalNode *DN = new ASTDefcalNode(Id, GM, SL, RN);
-  assert(DN && "Could not create a valid ASTDefcalNode!");
 
   DN->Mangle();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDefcal), ASTTypeDefcal);
@@ -7189,7 +6964,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   assert(DGN && "Could not obtain a valid ASTDefcalGroupNode!");
 
   ASTDefcalNode *DCN = new ASTDefcalNode(Id, DN, SL, BQL);
-  assert(DCN && "Could not create a valid ASTDefcalNode!");
 
   DCN->ToDefcalParamSymbolTable("delay",
                                 DN->GetIdentifier()->GetSymbolTableEntry());
@@ -7270,7 +7044,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   assert(DGN && "Could not obtain a valid ASTDefcalGroupNode!");
 
   ASTDefcalNode *DCN = new ASTDefcalNode(Id, GS, DN, SL, BQL);
-  assert(DCN && "Could not create a valid ASTDefcalNode!");
 
   DCN->ToDefcalParamSymbolTable("delay",
                                 DCN->GetIdentifier()->GetSymbolTableEntry());
@@ -7350,7 +7123,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   assert(DGN && "Could not obtain a valid ASTDefcalGroupNode!");
 
   ASTDefcalNode *DCN = new ASTDefcalNode(Id, DN, SL, BQL);
-  assert(DCN && "Could not create a valid ASTDefcalNode!");
 
   DCN->ToDefcalParamSymbolTable("durationof",
                                 DN->GetIdentifier()->GetSymbolTableEntry());
@@ -7431,7 +7203,6 @@ ASTDefcalNode *ASTBuilder::CreateASTDefcalNode(const ASTIdentifierNode *Id,
   assert(DGN && "Could not obtain a valid ASTDefcalGroupNode!");
 
   ASTDefcalNode *DCN = new ASTDefcalNode(Id, GS, DN, SL, BQL);
-  assert(DCN && "Could not create a valid ASTDefcalNode!");
 
   DCN->ToDefcalParamSymbolTable("durationof",
                                 DCN->GetIdentifier()->GetSymbolTableEntry());
@@ -7464,7 +7235,6 @@ ASTBuilder::CreateASTDefcalDeclaration(const ASTIdentifierNode *Id,
   assert(DN && "Invalid ASTDefcalNode argument!");
 
   ASTDefcalDeclarationNode *DDN = new ASTDefcalDeclarationNode(Id, DN);
-  assert(DDN && "Could not create a valid ASTDefcalDeclarationNode!");
 
   const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
   ASTDeclarationBuilder::Instance().Append(DDN);
@@ -7481,10 +7251,8 @@ ASTBuilder::CreateASTDefcalGroupNode(const ASTIdentifierNode *Id) {
 
   if (!MSTE) {
     MSTE = new ASTMapSymbolTableEntry(Id, Id->GetSymbolType());
-    assert(MSTE && "Could not create a valid ASTMapSymbolTableEntry!");
 
     DGN = new ASTDefcalGroupNode(Id);
-    assert(DGN && "Could not create a valid ASTDefcalGroupNode!");
 
     MSTE->ResetValue();
     MSTE->SetValue(new ASTValue<>(DGN, ASTTypeDefcalGroup), ASTTypeDefcalGroup,
@@ -7501,7 +7269,6 @@ ASTBuilder::CreateASTDefcalGroupNode(const ASTIdentifierNode *Id) {
     }
   } else if (MSTE && !MSTE->HasValue()) {
     DGN = new ASTDefcalGroupNode(Id);
-    assert(DGN && "Could not create a valid ASTDefcalGroupNode!");
     assert(DGN->GetASTType() == ASTTypeDefcalGroup &&
            "Invalid ASTType for ASTDefcalGroupNode!");
 
@@ -7551,7 +7318,6 @@ ASTDurationNode *ASTBuilder::CreateASTDurationNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDuration);
 
   ASTDurationNode *DN = new ASTDurationNode(Id, Units);
-  assert(DN && "Could not create a valid ASTDurationNode!");
 
   STE->SetValue(new ASTValue<>(DN, ASTTypeDuration), ASTTypeDuration);
   assert(STE->HasValue() && "Invalid ASTDurationNode Value for the "
@@ -7595,7 +7361,6 @@ ASTBuilder::CreateASTDurationNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDuration);
 
   ASTDurationNode *DN = new ASTDurationNode(Id, DON);
-  assert(DN && "Could not create a valid ASTDurationNode!");
 
   STE->SetValue(new ASTValue<>(DN, ASTTypeDuration), ASTTypeDuration);
   assert(STE->HasValue() && "Invalid ASTDurationNode Value for the "
@@ -7638,7 +7403,6 @@ ASTDurationNode *ASTBuilder::CreateASTDurationNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDuration);
 
   ASTDurationNode *DN = new ASTDurationNode(Id, BOP);
-  assert(DN && "Could not create a valid ASTDurationNode!");
 
   STE->SetValue(new ASTValue<>(DN, ASTTypeDuration), ASTTypeDuration);
   assert(STE->HasValue() && "Invalid ASTDurationNode Value for the "
@@ -7691,7 +7455,6 @@ ASTBuilder::CreateASTDurationNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDuration);
 
   ASTDurationNode *DN = new ASTDurationNode(Id, FC);
-  assert(DN && "Could not create a valid ASTDurationNode!");
 
   STE->SetValue(new ASTValue<>(DN, ASTTypeDuration), ASTTypeDuration);
   assert(STE->HasValue() && "Invalid ASTDurationNode Value for the "
@@ -7734,7 +7497,6 @@ ASTBuilder::CreateASTDurationOfNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDurationOf);
 
   ASTDurationOfNode *DON = new ASTDurationOfNode(Id, TId);
-  assert(DON && "Could not create a valid ASTDurationOfNode!");
 
   STE->SetValue(new ASTValue<>(DON, ASTTypeDurationOf), ASTTypeDurationOf);
   assert(STE->HasValue() && "Invalid ASTDurationOfNode Value for the "
@@ -7780,7 +7542,6 @@ ASTBuilder::CreateASTDurationOfNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDurationOf);
 
   ASTDurationOfNode *DON = new ASTDurationOfNode(Id, TId, *QIL);
-  assert(DON && "Could not create a valid ASTDurationOfNode!");
 
   STE->SetValue(new ASTValue<>(DON, ASTTypeDurationOf), ASTTypeDurationOf);
   assert(STE->HasValue() && "Invalid ASTDurationOfNode Value for the "
@@ -7826,7 +7587,6 @@ ASTDurationOfNode *ASTBuilder::CreateASTDurationOfNode(
   STE->SetValueType(ASTTypeDurationOf);
 
   ASTDurationOfNode *DON = new ASTDurationOfNode(Id, TId, *AIL, *QIL);
-  assert(DON && "Could not create a valid ASTDurationOfNode!");
 
   STE->SetValue(new ASTValue<>(DON, ASTTypeDurationOf), ASTTypeDurationOf);
   assert(STE->HasValue() && "Invalid ASTDurationOfNode Value for the "
@@ -7870,7 +7630,6 @@ ASTBuilder::CreateASTDurationOfNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeDurationOf);
 
   ASTDurationOfNode *DON = new ASTDurationOfNode(Id, QOP);
-  assert(DON && "Could not create a valid ASTDurationOfNode!");
 
   STE->SetValue(new ASTValue<>(DON, ASTTypeDurationOf), ASTTypeDurationOf);
   assert(STE->HasValue() && "Invalid ASTDurationOfNode Value for the "
@@ -7913,7 +7672,6 @@ ASTLengthNode *ASTBuilder::CreateASTLengthNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeLength);
 
   ASTLengthNode *LN = new ASTLengthNode(Id, Units);
-  assert(LN && "Could not create a valid ASTLengthNode!");
 
   STE->SetValue(new ASTValue<>(LN, ASTTypeLength), ASTTypeLength);
   assert(STE->HasValue() && "Invalid ASTLengthNode Value for the "
@@ -7955,7 +7713,6 @@ ASTLengthNode *ASTBuilder::CreateASTLengthNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeLength);
 
   ASTLengthNode *LN = new ASTLengthNode(Id, LON);
-  assert(LN && "Could not create a valid ASTLengthNode!");
 
   STE->SetValue(new ASTValue<>(LN, ASTTypeLength), ASTTypeLength);
   assert(STE->HasValue() && "Invalid ASTLengthNode Value for the "
@@ -7997,7 +7754,6 @@ ASTLengthNode *ASTBuilder::CreateASTLengthNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeLength);
 
   ASTLengthNode *LN = new ASTLengthNode(Id, BOP);
-  assert(LN && "Could not create a valid ASTLengthNode!");
 
   STE->SetValue(new ASTValue<>(LN, ASTTypeLength), ASTTypeLength);
   assert(STE->HasValue() && "Invalid ASTLengthNode Value for the "
@@ -8040,7 +7796,6 @@ ASTBuilder::CreateASTLengthOfNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeLengthOf);
 
   ASTLengthOfNode *LON = new ASTLengthOfNode(Id, TId);
-  assert(LON && "Could not create a valid ASTLengthOfNode!");
 
   STE->SetValue(new ASTValue<>(LON, ASTTypeLengthOf), ASTTypeLengthOf);
   assert(STE->HasValue() && "Invalid ASTLengthOfNode Value for the "
@@ -8083,7 +7838,6 @@ ASTCallExpressionNode *ASTBuilder::CreateASTCallExpressionNode(
   STE->SetValueType(ASTTypeFunctionCall);
 
   ASTCallExpressionNode *CEN = new ASTCallExpressionNode(Id, CId, PL, IL);
-  assert(CEN && "Could not create a valid ASTCallExpressionNode!");
 
   STE->SetValue(new ASTValue<>(CEN, ASTTypeFunctionCall), ASTTypeFunctionCall);
   assert(STE->HasValue() && "Invalid ASTCallExpressionNode Value for"
@@ -8126,7 +7880,6 @@ ASTBuilder::CreateASTControlExpressionNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeControlExpression);
 
   ASTControlExpressionNode *CEN = new ASTControlExpressionNode(Id, CL);
-  assert(CEN && "Could not create a valid ASTControlExpressionNode!");
 
   STE->SetValue(new ASTValue<>(CEN, ASTTypeControlExpression),
                 ASTTypeControlExpression);
@@ -8170,7 +7923,6 @@ ASTBuilder::CreateASTInverseExpressionNode(const ASTIdentifierNode *Id,
   STE->SetValueType(ASTTypeInverseExpression);
 
   ASTInverseExpressionNode *IEN = new ASTInverseExpressionNode(Id, IL);
-  assert(IEN && "Could not create a valid ASTControlExpressionNode!");
 
   STE->SetValue(new ASTValue<>(IEN, ASTTypeInverseExpression),
                 ASTTypeInverseExpression);
@@ -8197,45 +7949,34 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
   switch (GK) {
   case ASTGateKindGeneric:
     STE = new ASTSymbolTableEntry(Id, ASTTypeGate);
-    assert(STE && "Could not create a valid ASTGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindCX:
     STE = new ASTSymbolTableEntry(Id, ASTTypeCXGate);
-    assert(STE && "Could not create a valid ASTCXGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindCCX:
     STE = new ASTSymbolTableEntry(Id, ASTTypeCCXGate);
-    assert(STE && "Could not create a valid ASTCCXGateNode "
-                  "SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindCNOT:
     STE = new ASTSymbolTableEntry(Id, ASTTypeCNotGate);
-    assert(STE && "Could not create a valid ASTCNotGateNode "
-                  "SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindH:
     STE = new ASTSymbolTableEntry(Id, ASTTypeHadamardGate);
-    assert(STE && "Could not create a valid ASTHadamardGateNode "
-                  "SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindU:
     STE = new ASTSymbolTableEntry(Id, ASTTypeUGate);
-    assert(STE && "Could not create a valid ASTUGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindDisp:
     STE = new ASTSymbolTableEntry(Id, ASTTypeDispGate);
-    assert(STE && "Could not create a valid ASTDispGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   default:
     STE = new ASTSymbolTableEntry(Id, ASTTypeGate);
-    assert(STE && "Could not create a valid ASTGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   }
@@ -8243,56 +7984,48 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
   switch (GK) {
   case ASTGateKindGeneric:
     GN = new ASTGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid Generic ASTGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeGate), ASTTypeGate);
     assert(STE->HasValue() && "Generic ASTGateNode has no Value!");
     break;
   case ASTGateKindCX:
     GN = new ASTCXGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid ASTCXGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeCXGate), ASTTypeCXGate);
     assert(STE->HasValue() && "CX Gate ASTGateNode has no Value!");
     break;
   case ASTGateKindCCX:
     GN = new ASTCCXGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid ASTCCXGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeCCXGate), ASTTypeCCXGate);
     assert(STE->HasValue() && "CCX Gate ASTGateNode has no Value!");
     break;
   case ASTGateKindCNOT:
     GN = new ASTCNotGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid ASTCNotGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeCNotGate), ASTTypeCNotGate);
     assert(STE->HasValue() && "CNot Gate ASTGateNode has no Value!");
     break;
   case ASTGateKindH:
     GN = new ASTHadamardGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid ASTHadamardGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeHadamardGate), ASTTypeHadamardGate);
     assert(STE->HasValue() && "HadamardGate ASTGateNode has no Value!");
     break;
   case ASTGateKindU:
     GN = new ASTUGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid ASTUGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeUGate), ASTTypeUGate);
     assert(STE->HasValue() && "UGate ASTGateNode has no Value!");
     break;
   case ASTGateKindDisp:
     GN = new ASTDispGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid ASTDispGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeDispGate), ASTTypeDispGate);
     assert(STE->HasValue() && "DispGate ASTGateNode has no Value!");
     break;
   default:
     GN = new ASTGateNode(Id, PL, IL, false, OL);
-    assert(GN && "Could not create a valid Generic ASTGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeGate), ASTTypeGate);
     assert(STE->HasValue() && "Generic ASTGateNode has no Value!");
@@ -8335,45 +8068,34 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
   switch (GK) {
   case ASTGateKindGeneric:
     STE = new ASTSymbolTableEntry(Id, ASTTypeGate);
-    assert(STE && "Could not create a valid ASTGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindCX:
     STE = new ASTSymbolTableEntry(Id, ASTTypeCXGate);
-    assert(STE && "Could not create a valid ASTCXGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindCCX:
     STE = new ASTSymbolTableEntry(Id, ASTTypeCCXGate);
-    assert(STE && "Could not create a valid ASTCCXGateNode "
-                  "SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindCNOT:
     STE = new ASTSymbolTableEntry(Id, ASTTypeCNotGate);
-    assert(STE && "Could not create a valid ASTCNotGateNode "
-                  "SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindH:
     STE = new ASTSymbolTableEntry(Id, ASTTypeHadamardGate);
-    assert(STE && "Could not create a valid ASTHadamardGateNode "
-                  "SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindU:
     STE = new ASTSymbolTableEntry(Id, ASTTypeUGate);
-    assert(STE && "Could not create a valid ASTUGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   case ASTGateKindDisp:
     STE = new ASTSymbolTableEntry(Id, ASTTypeDispGate);
-    assert(STE && "Could not create a valid ASTDispGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   default:
     STE = new ASTSymbolTableEntry(Id, ASTTypeGate);
-    assert(STE && "Could not create a valid ASTGateNode SymbolTableEntry!");
     STE->SetGlobalScope();
     break;
   }
@@ -8381,56 +8103,48 @@ ASTGateNode *ASTBuilder::CreateASTGateNode(const ASTIdentifierNode *Id,
   switch (GK) {
   case ASTGateKindGeneric:
     GN = new ASTGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid Generic ASTGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeGate), ASTTypeGate);
     assert(STE->HasValue() && "Generic ASTGateNode has no Value!");
     break;
   case ASTGateKindCX:
     GN = new ASTCXGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid ASTCXGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeCXGate), ASTTypeCXGate);
     assert(STE->HasValue() && "CX Gate ASTGateNode has no Value!");
     break;
   case ASTGateKindCCX:
     GN = new ASTCCXGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid ASTCCXGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeCCXGate), ASTTypeCCXGate);
     assert(STE->HasValue() && "CCX Gate ASTGateNode has no Value!");
     break;
   case ASTGateKindCNOT:
     GN = new ASTCNotGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid ASTCNotGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeCNotGate), ASTTypeCNotGate);
     assert(STE->HasValue() && "CNot Gate ASTGateNode has no Value!");
     break;
   case ASTGateKindH:
     GN = new ASTHadamardGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid ASTHadamardGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeHadamardGate), ASTTypeHadamardGate);
     assert(STE->HasValue() && "HadamardGate ASTGateNode has no Value!");
     break;
   case ASTGateKindU:
     GN = new ASTUGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid ASTUGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeUGate), ASTTypeUGate);
     assert(STE->HasValue() && "UGate ASTGateNode has no Value!");
     break;
   case ASTGateKindDisp:
     GN = new ASTDispGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid ASTDispGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeDispGate), ASTTypeDispGate);
     assert(STE->HasValue() && "DispGate ASTGateNode has no Value!");
     break;
   default:
     GN = new ASTGateNode(Id, AL, QL, false, OL);
-    assert(GN && "Could not create a valid Generic ASTGateNode!");
     STE->ResetValue();
     STE->SetValue(new ASTValue<>(GN, ASTTypeGate), ASTTypeGate);
     assert(STE->HasValue() && "Generic ASTGateNode has no Value!");
@@ -8936,7 +8650,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, TId, Time);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -8957,7 +8670,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, BOP);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -8978,7 +8690,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, UOP);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -9002,7 +8713,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, TId, QId, Time);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -9025,7 +8735,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, TId, IL, Time);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -9046,7 +8755,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, IL, Time);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -9068,7 +8776,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DN = new ASTDelayNode(Id, DON, IL);
-  assert(DN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DN, ASTTypeDelay), ASTTypeDelay);
@@ -9089,7 +8796,6 @@ ASTDelayNode *ASTBuilder::CreateASTDelayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Delay SymbolTable Entry!");
 
   ASTDelayNode *DDN = new ASTDelayNode(Id, DN, IL);
-  assert(DDN && "Could not create a valid ASTDelayNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(DDN, ASTTypeDelay), ASTTypeDelay);
@@ -9106,7 +8812,6 @@ ASTUnitaryNode *ASTBuilder::CreateASTUnitaryNode(const ASTIdentifierNode *Id) {
   assert(STE && "Could not retrieve a valid Unitary SymbolTable Entry!");
 
   ASTUnitaryNode *UN = new ASTUnitaryNode(Id);
-  assert(UN && "Could not create a valid ASTUnitaryNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(UN, ASTTypeUnitary), ASTTypeUnitary);
@@ -9126,7 +8831,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id) {
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, 0UL, DT);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9145,7 +8849,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, LU);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9165,7 +8868,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, Duration, LU);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9186,7 +8888,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, I);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9207,7 +8908,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, F);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9228,7 +8928,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, D);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9249,7 +8948,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, MPI);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9270,7 +8968,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, MPD);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9291,7 +8988,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, BOP);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9312,7 +9008,6 @@ ASTStretchNode *ASTBuilder::CreateASTStretchNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Stretch SymbolTable Entry!");
 
   ASTStretchNode *SN = new ASTStretchNode(Id, UOP);
-  assert(SN && "Could not create a valid ASTStretchNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(SN, ASTTypeStretch), ASTTypeStretch);
@@ -9333,7 +9028,6 @@ ASTBuilder::CreateASTBoxExpressionNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid Box SymbolTable Entry!");
 
   ASTBoxExpressionNode *BXN = new ASTBoxExpressionNode(Id, SL);
-  assert(BXN && "Could not create a valid ASTBoxExpressionNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BXN, ASTTypeBox), ASTTypeBox);
@@ -9355,7 +9049,6 @@ ASTBuilder::CreateASTBoxAsExpressionNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid BoxAs SymbolTable Entry!");
 
   ASTBoxAsExpressionNode *BXAN = new ASTBoxAsExpressionNode(Id, SL);
-  assert(BXAN && "Could not create a valid ASTBoxAsExpressionNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BXAN, ASTTypeBoxAs), ASTTypeBoxAs);
@@ -9378,7 +9071,6 @@ ASTBuilder::CreateASTBoxToExpressionNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid BoxTo SymbolTable Entry!");
 
   ASTBoxToExpressionNode *BXTN = new ASTBoxToExpressionNode(Id, Time, SL);
-  assert(BXTN && "Could not create a valid ASTBoxToExpressionNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(BXTN, ASTTypeBoxTo), ASTTypeBoxTo);
@@ -9401,7 +9093,6 @@ ASTBuilder::CreateASTGPhaseExpressionNode(const ASTIdentifierNode *GId,
   assert(STE && "Could not retrieve a valid GPhase SymbolTable Entry!");
 
   ASTGPhaseExpressionNode *GPE = new ASTGPhaseExpressionNode(GId, TId);
-  assert(GPE && "Could not create a valid ASTGPhaseExpressionNode!");
 
   GPE->GetIdentifier()->SetPolymorphicName("gphase");
   STE->ResetValue();
@@ -9426,7 +9117,6 @@ ASTBuilder::CreateASTGPhaseExpressionNode(const ASTIdentifierNode *GId,
   assert(STE && "Could not retrieve a valid GPhase SymbolTable Entry!");
 
   ASTGPhaseExpressionNode *GPE = new ASTGPhaseExpressionNode(GId, BOp);
-  assert(GPE && "Could not create a valid ASTGPhaseExpressionNode!");
 
   GPE->GetIdentifier()->SetPolymorphicName("gphase");
   STE->ResetValue();
@@ -9451,7 +9141,6 @@ ASTBuilder::CreateASTGPhaseExpressionNode(const ASTIdentifierNode *GId,
   assert(STE && "Could not retrieve a valid GPhase SymbolTable Entry!");
 
   ASTGPhaseExpressionNode *GPE = new ASTGPhaseExpressionNode(GId, UOp);
-  assert(GPE && "Could not create a valid ASTGPhaseExpressionNode!");
 
   GPE->GetIdentifier()->SetPolymorphicName("gphase");
   STE->ResetValue();
@@ -9473,7 +9162,6 @@ ASTBuilder::CreateASTGateControlStatement(const ASTIdentifierNode *Id,
   Id->SetPolymorphicName("ctrl");
   Id->SetBits(ASTGateOpNode::GateOpBits);
   ASTGateQOpNode *QOP = new ASTGateQOpNode(Id, GCN);
-  assert(QOP && "Could not create a valid ASTGateQOpNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTGateControlStmtNode::GateControlStmtBits,
@@ -9497,7 +9185,6 @@ ASTGateQOpNode *ASTBuilder::CreateASTGateNegControlStatement(
   Id->SetPolymorphicName("negctrl");
   Id->SetBits(ASTGateOpNode::GateOpBits);
   ASTGateQOpNode *QOP = new ASTGateQOpNode(Id, GNCN);
-  assert(QOP && "Could not create a valid ASTGateQOpNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTGateNegControlStmtNode::GateNegControlStmtBits,
@@ -9521,7 +9208,6 @@ ASTBuilder::CreateASTGateInverseStatement(const ASTIdentifierNode *Id,
 
   Id->SetBits(ASTGateOpNode::GateOpBits);
   ASTGateQOpNode *QOP = new ASTGateQOpNode(Id, GIN);
-  assert(QOP && "Could not create a valid ASTGateQOpNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTGateInverseStmtNode::GateInverseStmtBits,
@@ -9545,7 +9231,6 @@ ASTBuilder::CreateASTGatePowerStatement(const ASTIdentifierNode *Id,
 
   Id->SetBits(ASTGateOpNode::GateOpBits);
   ASTGateQOpNode *QOP = new ASTGateQOpNode(Id, GPN);
-  assert(QOP && "Could not create a valid ASTGateQOpNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTGatePowerStmtNode::GatePowerStmtBits, ASTTypeGatePowerStatement);
@@ -9567,7 +9252,6 @@ ASTGateQOpNode *ASTBuilder::CreateASTGateGPhaseStatement(
 
   Id->SetBits(ASTGateOpNode::GateOpBits);
   ASTGateQOpNode *QOP = new ASTGateQOpNode(Id, GEN);
-  assert(QOP && "Could not create a valid ASTGateQOpNode!");
 
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, ASTGPhaseStatementNode::GPhaseStmtBits, ASTTypeGateGPhaseStatement);
@@ -9688,7 +9372,6 @@ ASTBuilder::CreateASTFunctionCallNode(const std::string &EId,
 
   STE->ResetValue();
   ASTFunctionCallNode *FCN = new ASTFunctionCallNode(Id, FDN, EL);
-  assert(FCN && "Could not create a valid Function ASTFunctionCallNode!");
 
   STE->SetValue(new ASTValue<>(FCN, ASTTypeFunctionCallExpression),
                 ASTTypeFunctionCallExpression);
@@ -9740,7 +9423,6 @@ ASTFunctionCallNode *ASTBuilder::CreateASTFunctionCallNode(
 
   STE->ResetValue();
   ASTFunctionCallNode *FCN = new ASTFunctionCallNode(Id, FDN, EL, IL);
-  assert(FCN && "Could not create a valid Function ASTFunctionCallNode!");
 
   STE->SetValue(new ASTValue<>(FCN, ASTTypeFunctionCallExpression),
                 ASTTypeFunctionCallExpression);
@@ -9801,7 +9483,6 @@ ASTBuilder::CreateASTFunctionCallNode(const std::string &EId,
 
   STE->ResetValue();
   ASTFunctionCallNode *FCN = new ASTFunctionCallNode(Id, KN, EL);
-  assert(FCN && "Could not create a valid Kernel ASTFunctionCallNode!");
 
   STE->SetValue(new ASTValue<>(FCN, ASTTypeKernelCallExpression),
                 ASTTypeKernelCallExpression);
@@ -9855,7 +9536,6 @@ ASTBuilder::CreateASTFunctionCallNode(const std::string &EId,
 
   STE->ResetValue();
   ASTFunctionCallNode *FCN = new ASTFunctionCallNode(Id, DN, EL);
-  assert(FCN && "Could not create a valid Defcal ASTFunctionCallNode!");
 
   STE->SetValue(new ASTValue<>(FCN, ASTTypeDefcalCallExpression),
                 ASTTypeDefcalCallExpression);
@@ -9901,7 +9581,6 @@ ASTArrayNode *ASTBuilder::CreateASTCBitArrayNode(const ASTIdentifierNode *Id,
          "Invalid number of bits for ASTArray!");
 
   ASTArrayNode *ARN = new ASTCBitArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTCBitArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -9925,7 +9604,6 @@ ASTArrayNode *ASTBuilder::CreateASTCBitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTCBitArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTCBitArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -9953,7 +9631,6 @@ ASTArrayNode *ASTBuilder::CreateASTCBitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTCBitArrayNode(Id, Bits, CBits);
-  assert(ARN && "Could not create a valid ASTCBitArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -9976,7 +9653,6 @@ ASTArrayNode *ASTBuilder::CreateASTCBitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTCBitArrayNode(Id, Bits, CBits);
-  assert(ARN && "Could not create a valid ASTCBitArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10002,7 +9678,6 @@ ASTArrayNode *ASTBuilder::CreateASTQubitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTQubitArrayNode(Id, Size);
-  assert(ARN && "Could not create a valid ASTQubitArrayNode!");
 
   Id->SetBits(Size);
   STE->ResetValue();
@@ -10024,7 +9699,6 @@ ASTArrayNode *ASTBuilder::CreateASTQubitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTQubitArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTQubitArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10052,7 +9726,6 @@ ASTArrayNode *ASTBuilder::CreateASTQubitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTQubitArrayNode(Id, Size, QSize);
-  assert(ARN && "Could not create a valid ASTQubitArrayNode!");
 
   Id->SetBits(Size);
   STE->ResetValue();
@@ -10075,7 +9748,6 @@ ASTArrayNode *ASTBuilder::CreateASTQubitArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTQubitArrayNode(Id, Bits, QBits);
-  assert(ARN && "Could not create a valid ASTQubitArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10101,7 +9773,6 @@ ASTArrayNode *ASTBuilder::CreateASTAngleArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTAngleArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTAngleArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10123,7 +9794,6 @@ ASTArrayNode *ASTBuilder::CreateASTAngleArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTAngleArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTAngleArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10153,7 +9823,6 @@ ASTArrayNode *ASTBuilder::CreateASTAngleArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTAngleArrayNode(Id, Bits, ABits);
-  assert(ARN && "Could not create a valid ASTAngleArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10176,7 +9845,6 @@ ASTArrayNode *ASTBuilder::CreateASTAngleArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTAngleArrayNode(Id, Bits, ABits);
-  assert(ARN && "Could not create a valid ASTAngleArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10203,7 +9871,6 @@ ASTArrayNode *ASTBuilder::CreateASTBoolArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTBoolArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTBoolArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10225,7 +9892,6 @@ ASTArrayNode *ASTBuilder::CreateASTBoolArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTBoolArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTBoolArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10253,7 +9919,6 @@ ASTArrayNode *ASTBuilder::CreateASTIntArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTIntArrayNode(Id, Bits, Unsigned);
-  assert(ARN && "Could not create a valid ASTIntArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10275,7 +9940,6 @@ ASTArrayNode *ASTBuilder::CreateASTIntArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTIntArrayNode(Id, Bits, Unsigned);
-  assert(ARN && "Could not create a valid ASTIntArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10308,7 +9972,6 @@ ASTBuilder::CreateASTMPIntegerArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPIntegerArrayNode(Id, Bits, IBits, Unsigned);
-  assert(ARN && "Could not create a valid ASTMPIntegerArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10333,7 +9996,6 @@ ASTBuilder::CreateASTMPIntegerArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPIntegerArrayNode(Id, Bits, MPBits, Unsigned);
-  assert(ARN && "Could not create a valid ASTMPIntegerArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10361,7 +10023,6 @@ ASTArrayNode *ASTBuilder::CreateASTFloatArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTFloatArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTFloatArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10383,7 +10044,6 @@ ASTArrayNode *ASTBuilder::CreateASTFloatArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTFloatArrayNode(Id, Bits);
-  assert(ARN && "Could not create a valid ASTFloatArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10413,7 +10073,6 @@ ASTArrayNode *ASTBuilder::CreateASTMPDecimalArrayNode(
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPDecimalArrayNode(Id, Bits, FBits);
-  assert(ARN && "Could not create a valid ASTMPDecimalArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10439,14 +10098,12 @@ ASTBuilder::CreateASTMPDecimalArrayNode(const ASTIdentifierNode *Id,
   if (!STE) {
     STE = new ASTSymbolTableEntry(const_cast<ASTIdentifierNode *>(Id),
                                   ASTTypeMPDecimalArray);
-    assert(STE && "Could not create a SymbolTable Entry!");
     const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(STE);
     ASTSymbolTable::Instance().InsertLocal(Id, STE);
   }
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPDecimalArrayNode(Id, Bits, MPBits);
-  assert(ARN && "Could not create a valid ASTMPDecimalArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10478,7 +10135,6 @@ ASTArrayNode *ASTBuilder::CreateASTMPComplexArrayNode(
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPComplexArrayNode(Id, Bits, CBits);
-  assert(ARN && "Could not create a valid ASTMPComplexArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10502,7 +10158,6 @@ ASTBuilder::CreateASTMPComplexArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPComplexArrayNode(Id, Bits, MPBits);
-  assert(ARN && "Could not create a valid ASTMPComplexArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10528,7 +10183,6 @@ ASTBuilder::CreateASTMPComplexArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTMPComplexArrayNode(Id, Size, Bits, CE);
-  assert(ARN && "Could not create a valid ASTMPComplexArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10559,7 +10213,6 @@ ASTBuilder::CreateASTDurationArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTDurationArrayNode(Id, Bits, Length);
-  assert(ARN && "Could not create a valid ASTDurationArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10582,7 +10235,6 @@ ASTArrayNode *ASTBuilder::CreateASTDurationArrayNode(
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTDurationArrayNode(Id, Bits, Length);
-  assert(ARN && "Could not create a valid ASTDurationArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10606,7 +10258,6 @@ ASTArrayNode *ASTBuilder::CreateASTDurationArrayNode(
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTDurationArrayNode(Id, Bits, DON);
-  assert(ARN && "Could not create a valid ASTDurationArrayNode!");
 
   Id->SetBits(Bits);
   STE->ResetValue();
@@ -10630,7 +10281,6 @@ ASTBuilder::CreateASTOpenPulseFrameArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTOpenPulseFrameArrayNode(Id, Size);
-  assert(ARN && "Could not create a valid ASTOpenPulseFrameArrayNode!");
 
   Id->SetBits(Size);
   STE->ResetValue();
@@ -10654,7 +10304,6 @@ ASTBuilder::CreateASTOpenPulsePortArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTOpenPulsePortArrayNode(Id, Size);
-  assert(ARN && "Could not create a valid ASTOpenPulseFrameArrayNode!");
 
   Id->SetBits(Size);
   STE->ResetValue();
@@ -10679,7 +10328,6 @@ ASTBuilder::CreateASTOpenPulseWaveformArrayNode(const ASTIdentifierNode *Id,
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
 
   ASTArrayNode *ARN = new ASTOpenPulseWaveformArrayNode(Id, Size);
-  assert(ARN && "Could not create a valid ASTOpenPulseFrameArrayNode!");
 
   Id->SetBits(Size);
   STE->ResetValue();
@@ -10739,7 +10387,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.ANG->Size() && "Index is past ASTAngleArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeBoolArray:
     U.BOOL = dynamic_cast<ASTBoolArrayNode *>(ARN);
@@ -10747,7 +10394,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.BOOL->Size() && "Index is past ASTBoolArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeCBitArray:
     U.CB = dynamic_cast<ASTCBitArrayNode *>(ARN);
@@ -10755,7 +10401,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.CB->Size() && "Index is past ASTCBitArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeCBitNArray:
     U.CBN = dynamic_cast<ASTCBitNArrayNode *>(ARN);
@@ -10763,7 +10408,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.CBN->Size() && "Index is past ASTCBitNArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeFloatArray:
     U.FLT = dynamic_cast<ASTFloatArrayNode *>(ARN);
@@ -10771,7 +10415,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.FLT->Size() && "Index is past ASTFloatArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeIntArray:
     U.INT = dynamic_cast<ASTIntArrayNode *>(ARN);
@@ -10779,7 +10422,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.INT->Size() && "Index is past ASTIntArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeDurationArray:
     U.DUR = dynamic_cast<ASTDurationArrayNode *>(ARN);
@@ -10787,7 +10429,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.DUR->Size() && "Index is past ASTDurationArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeMPDecimalArray:
     U.MPD = dynamic_cast<ASTMPDecimalArrayNode *>(ARN);
@@ -10795,7 +10436,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.MPD->Size() && "Index is past ASTMPDecimalArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeMPComplexArray:
     U.MPC = dynamic_cast<ASTMPComplexArrayNode *>(ARN);
@@ -10803,7 +10443,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.MPC->Size() && "Index is past ASTMPComplexArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeMPIntegerArray:
     U.MPI = dynamic_cast<ASTMPIntegerArrayNode *>(ARN);
@@ -10811,7 +10450,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.MPI->Size() && "Index is past ASTMPIntegerArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeQubitArray:
     U.QB = dynamic_cast<ASTQubitArrayNode *>(ARN);
@@ -10819,7 +10457,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.QB->Size() && "Index is past ASTQubitArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   case ASTTypeQubitNArray:
     U.QBN = dynamic_cast<ASTQubitNArrayNode *>(ARN);
@@ -10827,7 +10464,6 @@ ASTIdentifierRefNode *ASTBuilder::CreateArrayASTIdentifierRefNode(
     assert(Index < U.QBN->Size() && "Index is past ASTQubitNArrayNode end!");
 
     IdR = new ASTIdentifierRefNode(S.str(), Id, Index);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     break;
   default:
     U.AN = nullptr;
@@ -10861,13 +10497,10 @@ ASTBuilder::CreateASTEllipsisNode(const ASTIdentifierNode *Id) {
 
   ASTSymbolTableEntry *STE =
       ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
-  if (!STE) {
+  if (!STE)
     STE = new ASTSymbolTableEntry(Id, ASTTypeEllipsis);
-    assert(STE && "Could not create a valid SymbolTable Entry!");
-  }
 
   ASTEllipsisNode *EN = new ASTEllipsisNode(Id);
-  assert(EN && "Could not create a valid ASTEllipsisNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(EN, ASTTypeEllipsis), ASTTypeEllipsis);
@@ -10892,7 +10525,6 @@ OpenPulse::ASTOpenPulseFrameNode *ASTBuilder::CreateASTOpenPulseFrameNode(
 
     OpenPulse::ASTOpenPulseFrameNode *FN = new OpenPulse::ASTOpenPulseFrameNode(
         Id, nullptr, nullptr, nullptr, Extern);
-    assert(FN && "Could not create a valid ASTOpenPulseFrameNode!");
 
     Id->SetBits(OpenPulse::ASTOpenPulseFrameNode::FrameBits);
     STE->ResetValue();
@@ -11118,7 +10750,6 @@ ASTBuilder::CreateASTOpenPulsePortNode(const ASTIdentifierNode *Id,
 
   OpenPulse::ASTOpenPulsePortNode *PN =
       new OpenPulse::ASTOpenPulsePortNode(Id, Extern);
-  assert(PN && "Could not create a valid ASTOpenPulsePortNode!");
 
   Id->SetBits(OpenPulse::ASTOpenPulsePortNode::PortBits);
   STE->ResetValue();
@@ -11157,7 +10788,6 @@ ASTBuilder::CreateASTOpenPulsePortNode(const ASTIdentifierNode *Id,
 
   OpenPulse::ASTOpenPulsePortNode *PN =
       new OpenPulse::ASTOpenPulsePortNode(Id, PId, Extern);
-  assert(PN && "Could not create a valid ASTOpenPulsePortNode!");
 
   Id->SetBits(OpenPulse::ASTOpenPulsePortNode::PortBits);
   STE->ResetValue();
@@ -11191,14 +10821,11 @@ ASTBuilder::CreateASTOpenPulseWaveformNode(const ASTIdentifierNode *Id,
   ASTType ITy = Id->GetSymbolTableEntry()->GetValueType();
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
       Id, OpenPulse::ASTOpenPulseWaveformNode::WaveformBits, ITy);
-  if (!STE) {
+  if (!STE)
     STE = new ASTSymbolTableEntry(Id, ASTTypeOpenPulseWaveform);
-    assert(STE && "Could not create a valid ASTSymbolTable Entry!");
-  }
 
   OpenPulse::ASTOpenPulseWaveformNode *WFN =
       new OpenPulse::ASTOpenPulseWaveformNode(Id, CXL);
-  assert(WFN && "Could not create a valid OpenPulse WaveformNode!");
 
   Id->SetBits(OpenPulse::ASTOpenPulseWaveformNode::WaveformBits);
   STE->ResetValue();
@@ -11237,7 +10864,6 @@ OpenPulse::ASTOpenPulsePlayNode *ASTBuilder::CreateASTOpenPulsePlayNode(
 
   OpenPulse::ASTOpenPulsePlayNode *PN =
       new OpenPulse::ASTOpenPulsePlayNode(Id, W, F);
-  assert(PN && "Could not create a valid ASTOpenPulseFrameNode!");
 
   Id->SetBits(OpenPulse::ASTOpenPulsePlayNode::PlayBits);
   const_cast<ASTIdentifierNode *>(Id)->SetLocalScope();
@@ -11262,7 +10888,6 @@ OpenPulse::ASTOpenPulsePlayNode *ASTBuilder::CreateASTOpenPulsePlayNode(
 
   OpenPulse::ASTOpenPulsePlayNode *PN =
       new OpenPulse::ASTOpenPulsePlayNode(Id, C, F);
-  assert(PN && "Could not create a valid ASTOpenPulseFrameNode!");
 
   Id->SetBits(OpenPulse::ASTOpenPulsePlayNode::PlayBits);
   const_cast<ASTIdentifierNode *>(Id)->SetLocalScope();
@@ -11287,7 +10912,6 @@ OpenPulse::ASTOpenPulsePlayNode *ASTBuilder::CreateASTOpenPulsePlayNode(
 
   OpenPulse::ASTOpenPulsePlayNode *PN =
       new OpenPulse::ASTOpenPulsePlayNode(Id, CXL, F);
-  assert(PN && "Could not create a valid ASTOpenPulseFrameNode!");
 
   Id->SetBits(OpenPulse::ASTOpenPulsePlayNode::PlayBits);
   const_cast<ASTIdentifierNode *>(Id)->SetLocalScope();
@@ -11312,7 +10936,6 @@ ASTBuilder::CreateASTOpenPulseCalibration(const ASTIdentifierNode *Id,
 
   OpenPulse::ASTOpenPulseCalibration *CAL =
       new OpenPulse::ASTOpenPulseCalibration(Id, OSL);
-  assert(CAL && "Could not create a valid ASTOpenPulseCalibration!");
 
   const ASTDeclarationContext *DCX =
       ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();

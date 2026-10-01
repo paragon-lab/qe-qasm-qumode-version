@@ -315,7 +315,6 @@ ASTProductionFactory::ProductionRule_1000(const ASTToken *TK,
 
     ASTSymbolTableEntry *QSTE =
         new ASTSymbolTableEntry(QId, QId->GetSymbolType());
-    assert(QSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     const_cast<ASTIdentifierNode *>(QId)->SetSymbolTableEntry(QSTE);
     ASTSymbolTable::Instance().SwapQSTMSymbolTableEntry(QId, QSTE);
@@ -339,7 +338,6 @@ ASTProductionFactory::ProductionRule_1000(const ASTToken *TK,
   QBN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(QId, QBN, ASTTypeQReg, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -399,7 +397,6 @@ ASTProductionFactory::ProductionRule_1001(const ASTToken *TK,
   CBN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -465,7 +462,6 @@ ASTProductionFactory::ProductionRule_1002(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -527,7 +523,6 @@ ASTProductionFactory::ProductionRule_1003(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -589,7 +584,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1004(
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -686,7 +680,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1005(
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -726,7 +719,6 @@ ASTProductionFactory::ProductionRule_100(const ASTToken *TK,
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -779,7 +771,6 @@ ASTProductionFactory::ProductionRule_101(const ASTToken *TK,
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -848,7 +839,6 @@ ASTProductionFactory::ProductionRule_102(const ASTToken *TK,
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -890,7 +880,6 @@ ASTProductionFactory::ProductionRule_103(const ASTToken *TK,
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -932,7 +921,6 @@ ASTProductionFactory::ProductionRule_104(const ASTToken *TK,
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -1139,7 +1127,6 @@ ASTProductionFactory::ProductionRule_105(const ASTToken *TK,
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -1191,7 +1178,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_106(
   BN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, BN, ASTTypeBool, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -1252,7 +1238,6 @@ ASTProductionFactory::ProductionRule_107(const ASTToken *TK,
   ASTCBitNodeMap::Instance().Insert(Id, CBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -1329,7 +1314,6 @@ ASTProductionFactory::ProductionRule_108(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(CTX);
@@ -1393,7 +1377,6 @@ ASTProductionFactory::ProductionRule_109(const ASTToken *TK,
   ASTCBitNodeMap::Instance().Insert(Id, CBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -1641,7 +1624,6 @@ ASTProductionFactory::ProductionRule_110(const ASTToken *TK,
   ASTCBitNodeMap::Instance().Insert(Id, DCBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, DCBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -1705,7 +1687,6 @@ ASTProductionFactory::ProductionRule_111(const ASTToken *TK,
   ASTCBitNodeMap::Instance().Insert(Id, CBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -1790,7 +1771,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_112(
 
   ASTBinaryOpNode *BOP = new ASTBinaryOpNode(
       ASTIdentifierNode::BinaryOp.Clone(), CBN, EN, ASTOpTypeAssign);
-  assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
   CBN->SetBinaryOp(BOP);
   CBN->SetLocation(TK->GetLocation());
@@ -1798,14 +1778,12 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_112(
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
   ASTDeclarationBuilder::Instance().Append(DN);
 
   ASTStatementNode *STN = new ASTStatementNode(Id, BOP);
-  assert(STN && "Could not create a valid ASTStatementNode!");
 
   ASTStatementBuilder::Instance().Append(STN);
   return DN;
@@ -1845,7 +1823,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_120(
   INT->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, INT, ASTTypeInt, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -1903,7 +1880,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
       FromValue = true;
       ISV = static_cast<int32_t>(B->GetValue());
       CX = new ASTCastExpressionNode(B, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeFloat:
@@ -1911,7 +1887,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
       FromValue = true;
       ISV = static_cast<int32_t>(F->GetValue());
       CX = new ASTCastExpressionNode(F, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -1919,7 +1894,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
       FromValue = true;
       ISV = static_cast<int32_t>(D->GetValue());
       CX = new ASTCastExpressionNode(D, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -1935,7 +1909,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
       FromValue = true;
       ISV = MPI->ToSignedInt();
       CX = new ASTCastExpressionNode(MPI, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeMPDecimal:
@@ -1944,7 +1917,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
       FromValue = true;
       ISV = static_cast<int32_t>(MPD->ToDouble());
       CX = new ASTCastExpressionNode(MPD, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeBinaryOp:
@@ -2033,7 +2005,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
             FromValue = true;
             ISV = BN->GetValue();
             CX = new ASTCastExpressionNode(BN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
           }
         } break;
         case ASTTypeInt: {
@@ -2048,7 +2019,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
             FromValue = true;
             ISV = static_cast<int32_t>(FN->GetValue());
             CX = new ASTCastExpressionNode(FN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
           }
         } break;
         case ASTTypeDouble: {
@@ -2058,7 +2028,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
             ISV = static_cast<int32_t>(DN->GetValue());
             ITW = true;
             CX = new ASTCastExpressionNode(DN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
           }
         } break;
         case ASTTypeMPInteger: {
@@ -2068,7 +2037,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
             ISV = MPI->ToSignedInt();
             CX =
                 new ASTCastExpressionNode(MPI, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (MPI->GetBits() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -2080,7 +2048,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
             ISV = static_cast<int32_t>(MPD->ToDouble());
             CX =
                 new ASTCastExpressionNode(MPD, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (MPD->GetBits() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -2092,7 +2059,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
                 CBN->AsVector());
             CX =
                 new ASTCastExpressionNode(CBN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (CBN->Size() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -2102,7 +2068,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
             FromValue = true;
             ISV = static_cast<int32_t>(AN->AsDouble());
             CX = new ASTCastExpressionNode(AN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (AN->GetBits() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -2136,7 +2101,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
                 STE->GetValue()->GetValue<ASTBoolNode *>())) {
           FromValue = true;
           CX = new ASTCastExpressionNode(BN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           ISV = BN->GetValue();
         }
       } break;
@@ -2153,7 +2117,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
           FromValue = true;
           ISV = static_cast<int32_t>(FN->GetValue());
           CX = new ASTCastExpressionNode(FN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -2161,7 +2124,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
           FromValue = true;
           ISV = static_cast<int32_t>(DN->GetValue());
           CX = new ASTCastExpressionNode(DN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           ITW = true;
         }
       } break;
@@ -2172,7 +2134,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
           FromValue = true;
           ISV = MPI->ToSignedInt();
           CX = new ASTCastExpressionNode(MPI, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (MPI->GetBits() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -2183,7 +2144,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
           FromValue = true;
           ISV = static_cast<int32_t>(MPD->ToDouble());
           CX = new ASTCastExpressionNode(MPD, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (MPD->GetBits() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -2194,7 +2154,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
           ISV = ASTMathUtils::Instance().BoolVectorToIntegral<int32_t>(
               CBN->AsVector());
           CX = new ASTCastExpressionNode(CBN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (CBN->Size() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -2204,7 +2163,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
           FromValue = true;
           ISV = static_cast<int32_t>(AN->AsDouble());
           CX = new ASTCastExpressionNode(AN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (AN->GetBits() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -2286,7 +2244,6 @@ ASTProductionFactory::ProductionRule_121(const ASTToken *TK,
   IN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, IN, ASTTypeInt, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -2361,7 +2318,6 @@ ASTProductionFactory::ProductionRule_122(const ASTToken *TK,
   IN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, IN, ASTTypeInt, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -2427,7 +2383,6 @@ ASTProductionFactory::ProductionRule_200(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -2477,7 +2432,6 @@ ASTProductionFactory::ProductionRule_201(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, CBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -2530,7 +2484,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       FromValue = true;
       BMS = BN->GetValue() ? "1" : "0";
       ICX = new ASTImplicitConversionNode(BN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeInt:
@@ -2541,7 +2494,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
         assert(MPI && "Could not obtain a valid ASTMPIntegerNode!");
         BMS = MPI->GetValue(2);
         ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-        assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
       } else {
         std::bitset<32> B(ASTUtils::Instance().GetUnsignedValue(IN));
         BMS = B.to_string();
@@ -2551,7 +2503,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
         }
 
         ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-        assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
       }
     }
     break;
@@ -2568,7 +2519,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       }
 
       ICX = new ASTImplicitConversionNode(FN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -2584,7 +2534,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       }
 
       ICX = new ASTImplicitConversionNode(DN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -2604,7 +2553,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       }
 
       ICX = new ASTImplicitConversionNode(LDN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPInteger:
@@ -2618,7 +2566,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       }
 
       ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPDecimal:
@@ -2632,7 +2579,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       }
 
       ICX = new ASTImplicitConversionNode(MPD, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeBinaryOp:
@@ -2641,7 +2587,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
   case ASTTypeImplicitConversion:
     FromExpr = true;
     ICX = new ASTImplicitConversionNode(EN, ASTTypeBitset, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   case ASTTypeCast:
     FromExpr = true;
@@ -2669,7 +2614,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
     assert(STN && "Could not dynamic_cast to a valid ASTStringNode!");
     BMS = STN->GetValue();
     ICX = new ASTImplicitConversionNode(STN, ASTTypeBitset, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
   } break;
   case ASTTypeIdentifier: {
     const ASTIdentifierNode *IId = EN->GetIdentifier();
@@ -2692,7 +2636,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           FromValue = true;
           BMS = BN->GetValue() ? "1" : "0";
           ICX = new ASTImplicitConversionNode(BN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeInt: {
@@ -2706,7 +2649,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeFloat: {
@@ -2722,7 +2664,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(FN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -2738,7 +2679,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(DN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeLongDouble: {
@@ -2758,7 +2698,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(LDN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeAngle: {
@@ -2771,7 +2710,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(AN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPInteger: {
@@ -2785,7 +2723,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPDecimal: {
@@ -2799,7 +2736,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
           }
 
           ICX = new ASTImplicitConversionNode(MPD, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeBitset: {
@@ -2831,8 +2767,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             FromValue = true;
             BMS = BN->GetValue() ? "1" : "0";
             ICX = new ASTImplicitConversionNode(BN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeInt:
@@ -2846,8 +2780,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeFloat:
@@ -2863,8 +2795,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(FN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeDouble:
@@ -2881,8 +2811,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(DN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeLongDouble:
@@ -2903,8 +2831,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(LDN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeMPInteger:
@@ -2918,8 +2844,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeMPDecimal:
@@ -2933,8 +2857,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(MPD, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeAngle:
@@ -2947,8 +2869,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
             }
 
             ICX = new ASTImplicitConversionNode(AN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeBitset:
@@ -3009,14 +2929,12 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       const ASTBinaryOpNode *BOP = dynamic_cast<const ASTBinaryOpNode *>(EN);
       assert(BOP && "Could not dynamic_cast to an ASTBinaryOpNode!");
       ICX = new ASTImplicitConversionNode(BOP, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, ICX);
     } break;
     case ASTTypeUnaryOp: {
       const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(EN);
       assert(UOP && "Could not dynamic_cast to an ASTBinaryOpNode!");
       ICX = new ASTImplicitConversionNode(UOP, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, ICX);
     } break;
     default: {
@@ -3092,7 +3010,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
   ASTCBitNodeMap::Instance().Insert(Id, DCBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, DCBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -3160,7 +3077,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_203(
   case ASTTypeAngle:
   case ASTTypeBitset:
     ICX = new ASTImplicitConversionNode(RN, ASTTypeBitset, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   default: {
     std::stringstream M;
@@ -3182,7 +3098,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_203(
   else
     BOP = new ASTBinaryOpNode(ASTIdentifierNode::BinaryOp.Clone(), DCBN, EN,
                               ASTOpTypeAssign);
-  assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
   BOP->SetLocation(TK->GetLocation());
   DCBN->SetLocation(TK->GetLocation());
@@ -3192,7 +3107,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_203(
   ASTCBitNodeMap::Instance().Insert(DId, DCBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DCBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -3245,7 +3159,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       FromValue = true;
       BMS = BN->GetValue() ? "1" : "0";
       ICX = new ASTImplicitConversionNode(BN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeInt:
@@ -3259,7 +3172,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       }
 
       ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeFloat:
@@ -3275,7 +3187,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       }
 
       ICX = new ASTImplicitConversionNode(FN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -3291,7 +3202,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       }
 
       ICX = new ASTImplicitConversionNode(DN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -3311,7 +3221,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       }
 
       ICX = new ASTImplicitConversionNode(LDN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPInteger:
@@ -3325,7 +3234,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       }
 
       ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPDecimal:
@@ -3339,7 +3247,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       }
 
       ICX = new ASTImplicitConversionNode(MPD, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeBinaryOp:
@@ -3348,7 +3255,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
   case ASTTypeImplicitConversion:
     FromExpr = true;
     ICX = new ASTImplicitConversionNode(EN, ASTTypeBitset, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   case ASTTypeCast:
     FromExpr = true;
@@ -3376,7 +3282,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
     assert(STN && "Could not dynamic_cast to a valid ASTStringNode!");
     BMS = STN->GetValue();
     ICX = new ASTImplicitConversionNode(STN, ASTTypeBitset, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
   } break;
   case ASTTypeIdentifier: {
     const ASTIdentifierNode *IId = EN->GetIdentifier();
@@ -3399,7 +3304,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           FromValue = true;
           BMS = BN->GetValue() ? "1" : "0";
           ICX = new ASTImplicitConversionNode(BN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeInt: {
@@ -3413,7 +3317,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeFloat: {
@@ -3429,7 +3332,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(FN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -3445,7 +3347,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(DN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeLongDouble: {
@@ -3465,7 +3366,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(LDN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeAngle: {
@@ -3478,7 +3378,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(AN, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPInteger: {
@@ -3492,7 +3391,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPDecimal: {
@@ -3506,7 +3404,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
           }
 
           ICX = new ASTImplicitConversionNode(MPD, ASTTypeBitset, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeBitset: {
@@ -3538,8 +3435,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             FromValue = true;
             BMS = BN->GetValue() ? "1" : "0";
             ICX = new ASTImplicitConversionNode(BN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeInt:
@@ -3553,8 +3448,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeFloat:
@@ -3570,8 +3463,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(FN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeDouble:
@@ -3588,8 +3479,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(DN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeLongDouble:
@@ -3610,8 +3499,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(LDN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeMPInteger:
@@ -3625,8 +3512,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeMPDecimal:
@@ -3640,8 +3525,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(MPD, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeAngle:
@@ -3654,8 +3537,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
             }
 
             ICX = new ASTImplicitConversionNode(AN, ASTTypeBitset, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeBitset:
@@ -3716,14 +3597,12 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
       const ASTBinaryOpNode *BOP = dynamic_cast<const ASTBinaryOpNode *>(EN);
       assert(BOP && "Could not dynamic_cast to an ASTBinaryOpNode!");
       ICX = new ASTImplicitConversionNode(BOP, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImpicitConversionNode!");
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, ICX);
     } break;
     case ASTTypeUnaryOp: {
       const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(EN);
       assert(UOP && "Could not dynamic_cast to an ASTBinaryOpNode!");
       ICX = new ASTImplicitConversionNode(UOP, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImpicitConversionNode!");
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, ICX);
     } break;
     default: {
@@ -3781,7 +3660,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
   ASTCBitNodeMap::Instance().Insert(Id, DCBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, DCBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -3849,7 +3727,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_205(
   case ASTTypeAngle:
   case ASTTypeBitset:
     ICX = new ASTImplicitConversionNode(RN, ASTTypeBitset, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   default: {
     std::stringstream M;
@@ -3871,7 +3748,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_205(
   else
     BOP = new ASTBinaryOpNode(ASTIdentifierNode::BinaryOp.Clone(), DCBN, EN,
                               ASTOpTypeAssign);
-  assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
   BOP->SetLocation(TK->GetLocation());
   DCBN->SetLocation(TK->GetLocation());
@@ -3881,7 +3757,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_205(
   ASTCBitNodeMap::Instance().Insert(DId, DCBN);
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DCBN, ASTTypeBitset, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -3928,7 +3803,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_220(
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, MPI, ASTTypeMPInteger, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -4002,7 +3876,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       }
 
       ICX = new ASTImplicitConversionNode(IN, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeBool:
@@ -4011,7 +3884,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       mpz_init2(MPV, Bits);
       mpz_set_si(MPV, static_cast<int32_t>(BN->GetValue()));
       ICX = new ASTImplicitConversionNode(BN, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeFloat:
@@ -4020,7 +3892,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       mpz_init2(MPV, Bits);
       mpz_set_d(MPV, FN->GetValue());
       ICX = new ASTImplicitConversionNode(FN, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -4031,7 +3902,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       if (Bits < 64)
         ITW = true;
       ICX = new ASTImplicitConversionNode(DN, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -4043,7 +3913,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       if (Bits < 128)
         ITW = true;
       ICX = new ASTImplicitConversionNode(LD, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPInteger:
@@ -4065,7 +3934,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       if (Bits < MPD->GetIdentifier()->GetBits())
         ITW = true;
       ICX = new ASTImplicitConversionNode(MPD, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeAngle:
@@ -4076,7 +3944,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       if (AN->GetIdentifier()->GetBits() > Bits)
         ITW = true;
       ICX = new ASTImplicitConversionNode(AN, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeBitset:
@@ -4088,7 +3955,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
       if (CB->Size() > Bits)
         ITW = true;
       ICX = new ASTImplicitConversionNode(CB, ASTTypeMPInteger, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeQubit: {
@@ -4121,7 +3987,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
     break;
   case ASTTypeImplicitConversion:
     ICX = new ASTImplicitConversionNode(EN, ASTTypeMPInteger, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     FromExpr = true;
     break;
   case ASTTypeCBitArray:
@@ -4162,7 +4027,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           mpz_init2(MPV, Bits);
           mpz_set_si(MPV, static_cast<int32_t>(BN->GetValue()));
           ICX = new ASTImplicitConversionNode(BN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeInt: {
@@ -4175,7 +4039,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
             mpz_set_si(MPV, static_cast<int32_t>(IN->GetUnsignedValue()));
 
           ICX = new ASTImplicitConversionNode(IN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeFloat: {
@@ -4184,7 +4047,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           mpz_init2(MPV, Bits);
           mpz_set_d(MPV, FN->GetValue());
           ICX = new ASTImplicitConversionNode(FN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -4193,7 +4055,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           mpz_init2(MPV, Bits);
           mpz_set_d(MPV, DN->GetValue());
           ICX = new ASTImplicitConversionNode(DN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeLongDouble: {
@@ -4203,7 +4064,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           mpz_init2(MPV, Bits);
           mpz_set_d(MPV, LN->GetValue());
           ICX = new ASTImplicitConversionNode(LN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeAngle: {
@@ -4213,7 +4073,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           ITW = true;
           mpfr_get_z(MPV, AN->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(AN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPInteger: {
@@ -4235,7 +4094,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           if (Bits < MPD->GetIdentifier()->GetBits())
             ITW = true;
           ICX = new ASTImplicitConversionNode(MPD, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeBitset: {
@@ -4246,7 +4104,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
           if (Bits < CBN->Size())
             ITW = true;
           ICX = new ASTImplicitConversionNode(CBN, ASTTypeMPInteger, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       default: {
@@ -4291,8 +4148,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
             mpz_init2(MPV, Bits);
             mpz_set_si(MPV, static_cast<int32_t>(BN->GetValue()));
             ICX = new ASTImplicitConversionNode(BN, ASTTypeMPInteger, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeInt:
@@ -4306,8 +4161,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
               mpz_set_si(MPV, static_cast<int32_t>(IN->GetUnsignedValue()));
 
             ICX = new ASTImplicitConversionNode(IN, ASTTypeMPInteger, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeFloat:
@@ -4316,8 +4169,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
             mpz_init2(MPV, Bits);
             mpz_set_d(MPV, FN->GetValue());
             ICX = new ASTImplicitConversionNode(FN, ASTTypeMPInteger, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeMPDecimal:
@@ -4329,8 +4180,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
             if (Bits < MPD->GetIdentifier()->GetBits())
               ITW = true;
             ICX = new ASTImplicitConversionNode(MPD, ASTTypeMPInteger, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeBitset:
@@ -4341,8 +4190,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
             if (Bits < CBN->Size())
               ITW = true;
             ICX = new ASTImplicitConversionNode(CBN, ASTTypeMPInteger, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
           break;
         case ASTTypeAngle: {
@@ -4352,8 +4199,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
             ITW = true;
             mpfr_get_z(MPV, AN->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(AN, ASTTypeMPInteger, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         default: {
@@ -4424,7 +4269,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_222(
   DMPI->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DMPI, ASTTypeMPInteger, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -4483,7 +4327,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_223(
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DMPI, ASTTypeMPInteger, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -4549,7 +4392,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
       FromValue = true;
       USV = static_cast<uint32_t>(B->GetValue());
       CX = new ASTCastExpressionNode(B, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeFloat:
@@ -4557,7 +4399,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
       USV = static_cast<uint32_t>(F->GetValue());
       FromValue = true;
       CX = new ASTCastExpressionNode(F, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -4566,7 +4407,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
       FromValue = true;
       ITW = true;
       CX = new ASTCastExpressionNode(D, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -4583,7 +4423,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
       USV = MPI->ToUnsignedInt();
       FromValue = true;
       CX = new ASTCastExpressionNode(MPI, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
       if (MPI->GetIdentifier()->GetBits() > ASTIntNode::IntBits)
         ITW = true;
     }
@@ -4594,7 +4433,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
       USV = static_cast<uint32_t>(MPD->ToDouble());
       FromValue = true;
       CX = new ASTCastExpressionNode(MPD, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
       if (MPD->GetIdentifier()->GetBits() > ASTIntNode::IntBits)
         ITW = true;
     }
@@ -4604,7 +4442,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
       USV = static_cast<uint32_t>(AN->AsDouble());
       FromValue = true;
       CX = new ASTCastExpressionNode(AN, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
       if (AN->GetBits() > ASTIntNode::IntBits)
         ITW = true;
     }
@@ -4613,7 +4450,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
     if (const ASTCBitNode *CB = dynamic_cast<const ASTCBitNode *>(EN)) {
       FromValue = true;
       CX = new ASTCastExpressionNode(CB, ASTTypeInt, ASTIntNode::IntBits);
-      assert(CX && "Could not create a valid ASTCastExpressionNode!");
 
       if (CB->Size() > ASTIntNode::IntBits)
         ITW = true;
@@ -4697,7 +4533,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
             FromValue = true;
             USV = BN->GetValue();
             CX = new ASTCastExpressionNode(BN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
           }
         } break;
         case ASTTypeInt: {
@@ -4712,7 +4547,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
             FromValue = true;
             USV = static_cast<uint32_t>(FN->GetValue());
             CX = new ASTCastExpressionNode(FN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
           }
         } break;
         case ASTTypeDouble: {
@@ -4722,7 +4556,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
             USV = static_cast<uint32_t>(DN->GetValue());
             ITW = true;
             CX = new ASTCastExpressionNode(DN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
           }
         } break;
         case ASTTypeMPInteger: {
@@ -4732,7 +4565,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
             USV = MPI->ToUnsignedInt();
             CX =
                 new ASTCastExpressionNode(MPI, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (MPI->GetBits() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -4744,7 +4576,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
             USV = static_cast<uint32_t>(MPD->ToDouble());
             CX =
                 new ASTCastExpressionNode(MPD, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (MPD->GetBits() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -4756,7 +4587,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
                 CBN->AsVector());
             CX =
                 new ASTCastExpressionNode(CBN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (CBN->Size() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -4766,7 +4596,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
             FromValue = true;
             USV = static_cast<uint32_t>(AN->AsDouble());
             CX = new ASTCastExpressionNode(AN, ASTTypeInt, ASTIntNode::IntBits);
-            assert(CX && "Could not create a valid ASTCastExpressionNode!");
             if (AN->GetBits() > ASTIntNode::IntBits)
               ITW = true;
           }
@@ -4801,7 +4630,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           USV = BN->GetValue();
           FromValue = true;
           CX = new ASTCastExpressionNode(BN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
         }
       } break;
       case ASTTypeInt:
@@ -4817,7 +4645,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           FromValue = true;
           USV = static_cast<uint32_t>(FN->GetValue());
           CX = new ASTCastExpressionNode(FN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -4825,7 +4652,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           FromValue = true;
           USV = static_cast<uint32_t>(DN->GetValue());
           CX = new ASTCastExpressionNode(DN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           ITW = true;
         }
       } break;
@@ -4836,7 +4662,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           FromValue = true;
           USV = MPI->ToUnsignedInt();
           CX = new ASTCastExpressionNode(MPI, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (MPI->GetBits() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -4847,7 +4672,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           FromValue = true;
           USV = static_cast<uint32_t>(MPD->ToDouble());
           CX = new ASTCastExpressionNode(MPD, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (MPD->GetBits() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -4858,7 +4682,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           USV = ASTMathUtils::Instance().BoolVectorToIntegral<uint32_t>(
               CBN->AsVector());
           CX = new ASTCastExpressionNode(CBN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (CBN->Size() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -4868,7 +4691,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
           FromValue = true;
           USV = static_cast<uint32_t>(AN->AsDouble());
           CX = new ASTCastExpressionNode(AN, ASTTypeInt, ASTIntNode::IntBits);
-          assert(CX && "Could not create a valid ASTCastExpressionNode!");
           if (AN->GetBits() > ASTIntNode::IntBits)
             ITW = true;
         }
@@ -4935,7 +4757,6 @@ ASTProductionFactory::ProductionRule_226(const ASTToken *TK,
   IN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, IN, ASTTypeInt, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -5002,7 +4823,6 @@ ASTProductionFactory::ProductionRule_227(const ASTToken *TK,
   IN->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(DId, IN, ASTTypeInt, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -5043,7 +4863,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
     Id->SetDeclarationContext(CTX);
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, ASTTypeInt);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     try {
       if (S[0] == u8'0' && (S[1] == u8'b' || S[1] == u8'B')) {
@@ -5088,7 +4907,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
       }
 
       RI = new ASTIntNode(Id, V, CVR);
-      assert(RI && "Could not create a valid ASTIntNode!");
 
       RI->SetLocation(TK->GetLocation());
       RI->SetConst();
@@ -5142,7 +4960,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
         if (R == 0) {
           MPId->SetBits(Bits);
           MPI = new ASTMPIntegerNode(MPId, Bits, MPZ, true);
-          assert(MPI && "Could not create a valid ASTMPIntegerNode!");
           MPI->SetLocation(TK->GetLocation());
           MPI->Mangle();
           break;
@@ -5154,7 +4971,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
       assert(MPI && "Could not create a valid ASTMPIntegerNode!");
 
       RI = new ASTIntNode(Id, MPI, Bits, CVR, ASTSignbit::Unsigned);
-      assert(RI && "Could not create a valid ASTIntNode!");
 
       RI->SetLocation(TK->GetLocation());
       RI->SetString(MPI->GetValue());
@@ -5223,7 +5039,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
     Id->SetDeclarationContext(CTX);
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, ASTTypeInt);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     try {
       if (S[0] == u8'-' || S[0] == u8'+') {
@@ -5321,7 +5136,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
       }
 
       RI = new ASTIntNode(Id, V, CVR);
-      assert(RI && "Could not create a valid ASTIntNode!");
 
       RI->SetLocation(TK->GetLocation());
       RI->SetConst();
@@ -5376,7 +5190,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
         if (R == 0) {
           MPId->SetBits(Bits);
           MPI = new ASTMPIntegerNode(MPId, Bits, MPZ, false);
-          assert(MPI && "Could not create a valid ASTMPIntegerNode!");
           MPI->SetLocation(TK->GetLocation());
           MPI->Mangle();
           break;
@@ -5389,7 +5202,6 @@ ASTProductionFactory::ProductionRule_800(const ASTToken *TK,
       assert(MPI && "Could not create a valid ASTMPIntegerNode!");
 
       RI = new ASTIntNode(Id, MPI, Bits, CVR, ASTSignbit::Signed);
-      assert(RI && "Could not create a valid ASTIntNode!");
 
       RI->SetLocation(TK->GetLocation());
       RI->SetString(MPI->GetValue());
@@ -5473,7 +5285,6 @@ ASTProductionFactory::ProductionRule_801(const ASTToken *TK,
   try {
     double D = std::stod(RS);
     RD = new ASTDoubleNode(Id, D, CVR);
-    assert(RD && "Could not create a valid ASTDoubleNode!");
     RD->SetConst();
     RD->SetConstantFolded();
   } catch (const std::out_of_range &E) {
@@ -5496,7 +5307,6 @@ ASTProductionFactory::ProductionRule_801(const ASTToken *TK,
       if (R == 0) {
         MPId->SetBits(Bits);
         MPD = new ASTMPDecimalNode(MPId, Bits, MPV);
-        assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
         MPD->SetLocation(TK->GetLocation());
         MPD->Mangle();
@@ -5510,7 +5320,6 @@ ASTProductionFactory::ProductionRule_801(const ASTToken *TK,
     assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
     RD = new ASTDoubleNode(Id, MPD, CVR);
-    assert(RD && "Could not create a valid ASTDoubleNode!");
 
     RD->SetLocation(TK->GetLocation());
     RD->SetString(RS);
@@ -5520,7 +5329,6 @@ ASTProductionFactory::ProductionRule_801(const ASTToken *TK,
     RD->Mangle();
 
     STE = new ASTSymbolTableEntry(Id, ASTTypeDouble);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     STE->SetContext(CTX);
     STE->ResetValue();
@@ -5563,7 +5371,6 @@ ASTProductionFactory::ProductionRule_801(const ASTToken *TK,
   }
 
   STE = new ASTSymbolTableEntry(Id, ASTTypeDouble);
-  assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
   RD->SetString(RS);
   RD->SetConst();
@@ -5619,7 +5426,6 @@ ASTIntNode *ASTProductionFactory::ProductionRule_802(const ASTToken *TK,
     RI->Mangle();
 
     ASTParameter *P = new ASTParameter(Id, RI);
-    assert(P && "Could not create a valid ASTParameter!");
 
     P->SetLocation(TK->GetLocation());
     ASTParameterBuilder::Instance().Append(P);
@@ -5642,7 +5448,6 @@ ASTIntNode *ASTProductionFactory::ProductionRule_802(const ASTToken *TK,
   RI->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, RI);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -5667,7 +5472,6 @@ ASTProductionFactory::ProductionRule_803(const ASTToken *TK) const {
   RF->SetLocation(TK->GetLocation());
   RF->Mangle();
   ASTParameter *P = new ASTParameter(Id, RF);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -5705,7 +5509,6 @@ ASTMPIntegerNode *ASTProductionFactory::ProductionRule_804(const ASTToken *TK,
   MPI->SetLocation(TK->GetLocation());
   MPI->Mangle();
   ASTParameter *P = new ASTParameter(Id, MPI);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -5743,7 +5546,6 @@ ASTProductionFactory::ProductionRule_806(const ASTToken *TK,
   MPD->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, MPD);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -5783,7 +5585,6 @@ ASTProductionFactory::ProductionRule_808(const ASTToken *TK,
   MPC->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, MPC);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -5824,13 +5625,11 @@ ASTProductionFactory::ProductionRule_811(const ASTToken *TK,
 
   ASTIdentifierNode *Id = new ASTIdentifierNode(SS.str(), ASTTypeStringLiteral,
                                                 S.length() * CHAR_BIT);
-  assert(Id && "Could not create a valid ASTIdentifierNode!");
 
   Id->SetLocation(TK->GetLocation());
   Id->SetPolymorphicName(S);
 
   ASTStringNode *SN = new ASTStringNode(Id, S, true);
-  assert(SN && "Could not create a valid ASTStringNode!");
 
   SN->SetLocation(TK->GetLocation());
   SN->Mangle();
@@ -5849,13 +5648,11 @@ ASTProductionFactory::ProductionRule_812(const ASTToken *TK,
 
   ASTIdentifierNode *Id = new ASTIdentifierNode(TSS.str(), ASTTypeStringLiteral,
                                                 TS.length() * CHAR_BIT);
-  assert(Id && "Could not create a valid ASTIdentifierNode!");
 
   Id->SetPolymorphicName(TK->GetString());
   Id->SetLocation(TK->GetLocation());
 
   ASTStringNode *TSN = new ASTStringNode(Id, TK->GetString(), true);
-  assert(TSN && "Could not create a valid TimeUnit ASTStringNode!");
 
   TSN->SetLocation(TK->GetLocation());
   TSN->Mangle();
@@ -5880,7 +5677,6 @@ ASTProductionFactory::ProductionRule_813(const ASTToken *TK) const {
     BN = new ASTBoolNode(true);
   else
     BN = new ASTBoolNode(false);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   BN->SetLocation(TK->GetLocation());
   BN->Mangle();
@@ -5903,7 +5699,6 @@ ASTStringNode *ASTProductionFactory::ProductionRule_814(const ASTToken *TK,
   }
 
   ASTStringNode *QSN = new ASTStringNode(TK->GetString());
-  assert(QSN && "Could not create a valid ASTStringNode!");
 
   if (const ASTSymbolTableEntry *STE =
           ASTSymbolTable::Instance().FindQubit(TK->GetString())) {
@@ -5963,7 +5758,6 @@ ASTStringNode *ASTProductionFactory::ProductionRule_815(
   QS << TK->GetString() << '[' << ASN->GetUnsignedIndexValue() << ']';
 
   ASTStringNode *QSN = new ASTStringNode(QS.str());
-  assert(QSN && "Could not create a valid ASTStringNode!");
 
   if (const ASTSymbolTableEntry *STE =
           ASTSymbolTable::Instance().FindQubit(QS.str())) {
@@ -6052,7 +5846,6 @@ ASTStringNode *ASTProductionFactory::ProductionRule_816(const ASTToken *ITK,
     S << ITK->GetString() << STK->GetString();
 
   ASTStringNode *SN = new ASTStringNode(S.str());
-  assert(SN && "Could not create a valid ASTStringNode!");
 
   SN->SetLocation(STK->GetLocation());
   SN->Mangle();
@@ -6093,7 +5886,6 @@ ASTProductionFactory::ProductionRule_817(const ASTToken *TK,
   ASTCBitNodeMap::Instance().Insert(Id, CBN);
 
   ASTParameter *P = new ASTParameter(Id, CBN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6131,7 +5923,6 @@ ASTProductionFactory::ProductionRule_817(const ASTToken *TK,
   ASTCBitNodeMap::Instance().Insert(Id, CBN);
 
   ASTParameter *P = new ASTParameter(Id, CBN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6159,7 +5950,6 @@ ASTProductionFactory::ProductionRule_817(const ASTToken *TK) const {
   ASTCBitNodeMap::Instance().Insert(Id, CBN);
 
   ASTParameter *P = new ASTParameter(Id, CBN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6200,7 +5990,6 @@ ASTProductionFactory::ProductionRule_818(const ASTToken *TK,
   ASTSymbolTable::Instance().TransferAngleToLSTM(Id, Bits, ASTTypeAngle);
 
   ASTParameter *P = new ASTParameter(Id, ANG);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6238,7 +6027,6 @@ ASTProductionFactory::ProductionRule_818(const ASTToken *TK,
   ASTSymbolTable::Instance().TransferAngleToLSTM(Id, Bits, ASTTypeAngle);
 
   ASTParameter *P = new ASTParameter(Id, ANG);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6267,7 +6055,6 @@ ASTProductionFactory::ProductionRule_818(const ASTToken *TK) const {
                                                  ASTTypeAngle);
 
   ASTParameter *P = new ASTParameter(Id, ANG);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6309,7 +6096,6 @@ ASTProductionFactory::ProductionRule_819(const ASTToken *TK,
   QCN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, QCN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6348,7 +6134,6 @@ ASTProductionFactory::ProductionRule_819(const ASTToken *TK,
   QCN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, QCN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6375,7 +6160,6 @@ ASTProductionFactory::ProductionRule_819(const ASTToken *TK) const {
   QCN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, QCN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6400,7 +6184,6 @@ ASTProductionFactory::ProductionRule_820(const ASTToken *TK) const {
   DN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, DN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6762,7 +6545,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6826,7 +6608,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6903,7 +6684,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -6961,7 +6741,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -7032,7 +6811,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -7085,7 +6863,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -7150,7 +6927,6 @@ ASTArrayNode *ASTProductionFactory::ProductionRule_821(
   AN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, AN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -7185,12 +6961,10 @@ static bool RebindProvisionalArrayIdentifier(const ASTIdentifierNode *Id,
 
   MId->SetSymbolType(Ty);
   MId->SetBits(Bits);
-  if (!STE) {
+  if (!STE)
     STE = new ASTSymbolTableEntry(MId, Ty);
-    assert(STE && "Could not create a SymbolTable Entry for array formal!");
-  } else {
+  else
     STE->SetValueType(Ty);
-  }
   MId->SetSymbolTableEntry(STE);
   STE->SetLocalScope();
 
@@ -7768,7 +7542,6 @@ ASTProductionFactory::ProductionRule_820(const ASTToken *TK,
   DN->Mangle();
 
   ASTParameter *P = new ASTParameter(Id, DN);
-  assert(P && "Could not create a valid ASTParameter!");
 
   P->SetLocation(TK->GetLocation());
   ASTParameterBuilder::Instance().Append(P);
@@ -7968,7 +7741,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, 1U, Ty);
 
     DN = new ASTDeclarationNode(Id, CB, ASTTypeBitset);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeBool: {
     ASTBoolNode *BB = ASTBuilder::Instance().CreateASTBoolNode(Id, false);
@@ -7981,7 +7753,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, ASTBoolNode::BoolBits, Ty);
 
     DN = new ASTDeclarationNode(Id, BB, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeInt: {
     ASTIntNode *II = ASTBuilder::Instance().CreateASTIntNode(Id, int32_t(0));
@@ -7994,7 +7765,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, ASTIntNode::IntBits, Ty);
 
     DN = new ASTDeclarationNode(Id, II, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeUInt: {
     ASTIntNode *II = ASTBuilder::Instance().CreateASTIntNode(Id, uint32_t(0));
@@ -8007,7 +7777,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, ASTIntNode::IntBits, ASTTypeInt);
 
     DN = new ASTDeclarationNode(Id, II, ASTTypeInt);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeFloat: {
     ASTFloatNode *FF = ASTBuilder::Instance().CreateASTFloatNode(Id, 0.0f);
@@ -8020,7 +7789,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, ASTFloatNode::FloatBits, Ty);
 
     DN = new ASTDeclarationNode(Id, FF, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeDouble: {
     ASTDoubleNode *DD = ASTBuilder::Instance().CreateASTDoubleNode(Id, 0.0);
@@ -8033,7 +7801,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, ASTDoubleNode::DoubleBits, Ty);
 
     DN = new ASTDeclarationNode(Id, DD, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeQubitContainer: {
     Id->SetBits(1U);
@@ -8052,7 +7819,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, 1U, Ty);
 
     DN = new ASTDeclarationNode(Id, QN, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeAngle: {
     ASTAngleNode *AN = ASTBuilder::Instance().CreateASTAngleNode(
@@ -8068,7 +7834,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, ASTAngleNode::AngleBits, Ty);
 
     DN = new ASTDeclarationNode(Id, AN, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeDuration: {
     ASTDurationNode *DDN;
@@ -8086,7 +7851,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
                                           Ty);
 
     DN = new ASTDeclarationNode(Id, DDN, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeOpenPulseFrame: {
     ASTExpressionList EL;
@@ -8103,7 +7867,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, FBits, Ty);
 
     DN = new ASTDeclarationNode(Id, FN, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeOpenPulsePort: {
     const unsigned PBits = OpenPulse::ASTOpenPulsePortNode::PortBits;
@@ -8119,7 +7882,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, PBits, Ty);
 
     DN = new ASTDeclarationNode(Id, PN, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeOpenPulseWaveform: {
     ASTMPComplexList CXL;
@@ -8135,7 +7897,6 @@ CreateFixedSizeNamedTypeDecl(const ASTToken *TK, const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().LocalScope(Id, WFBits, Ty);
 
     DN = new ASTDeclarationNode(Id, WF, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   default: {
     std::stringstream M;
@@ -8170,7 +7931,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, CB, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeMPInteger: {
     Id->SetBits(Bits);
@@ -8185,7 +7945,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, MPI, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeMPUInteger: {
     Id->SetBits(Bits);
@@ -8200,7 +7959,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, ASTTypeMPInteger);
 
     DN = new ASTDeclarationNode(Id, MPI, ASTTypeMPInteger);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeQubitContainer: {
     Id->SetBits(Bits);
@@ -8219,7 +7977,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, QN, ASTTypeQubitContainer);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeAngle: {
     Id->SetBits(Bits);
@@ -8236,7 +7993,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeMPDecimal: {
     Id->SetBits(Bits);
@@ -8251,7 +8007,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, MPD, Ty);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeMPComplex: {
     Id->SetBits(Bits);
@@ -8266,7 +8021,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, MPC, ASTTypeMPComplex);
-    assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
   } break;
   case ASTTypeCBitArray: {
     if (ASTCBitArrayNode *AN = dynamic_cast<ASTCBitArrayNode *>(ARN)) {
@@ -8285,8 +8039,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTCBitArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8313,8 +8065,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTQubitArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8341,8 +8091,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTAngleArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8369,8 +8117,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTBoolArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8397,8 +8143,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTIntArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8426,8 +8170,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTMPIntegerArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8454,8 +8196,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTFloatArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8483,8 +8223,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTMPDecimalArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8512,8 +8250,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTMPComplexArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8540,8 +8276,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid ASTDurationArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
@@ -8569,8 +8303,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M(
           "Could not dynamic_cast to a valid ASTOpenPulseFrameArrayNode.");
@@ -8599,8 +8331,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M(
           "Could not dynamic_cast to a valid ASTOpenPulsePortArrayNode.");
@@ -8629,8 +8359,6 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken *TK,
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
-      assert(DN &&
-             "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
       std::string M("Could not dynamic_cast to a valid "
                     "ASTOpenPulseWaveformArrayNode.");
@@ -8869,7 +8597,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_850(
   }
 
   DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle);
-  assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetConst(Const);
@@ -8889,7 +8616,6 @@ ASTProductionFactory::ProductionRule_850(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(EL->GetIdentifier(), EL, EL->GetASTType());
-  assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DN;
@@ -8965,7 +8691,6 @@ ASTForLoopRangeExpressionNode *ASTProductionFactory::ProductionRule_860(
 
   ASTForLoopRangeExpressionNode *LRE =
       new ASTForLoopRangeExpressionNode(*IL, BOP);
-  assert(LRE && "Could not create a valid ASTForLoopRangeExpressionNode!");
 
   LRE->ApplyPrefix(Prefix);
   std::vector<const ASTExpression *> Bounds = Prefix->ToExpressions();
@@ -9108,11 +8833,9 @@ ASTProductionFactory::ProductionRule_880(const ASTToken *TK,
 
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(
       ASTIdentifierNode::MPDec.Clone(), ASTMPDecimalNode::DefaultBits, 1.0);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   ASTBinaryOpNode *BOP = new ASTBinaryOpNode(
       ASTIdentifierNode::BinaryOp.Clone(), UOP, MPD, ASTOpTypeMul);
-  assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
   BOP->MakeImaginary();
   ASTComplexExpressionNode *ACE =
@@ -9156,7 +8879,6 @@ ASTProductionFactory::ProductionRule_150(const ASTToken *TK,
   DBL->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, DBL, ASTTypeDouble, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -9210,7 +8932,6 @@ ASTProductionFactory::ProductionRule_151(const ASTToken *TK,
   } else {
     const ASTImplicitConversionNode *ICX = new ASTImplicitConversionNode(
         EN, ASTTypeDouble, ASTDoubleNode::DoubleBits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     DN = ASTBuilder::Instance().CreateASTDoubleNode(Id, ICX);
   }
 
@@ -9220,7 +8941,6 @@ ASTProductionFactory::ProductionRule_151(const ASTToken *TK,
   DN->Mangle();
   ASTDeclarationNode *DDN =
       new ASTDeclarationNode(Id, DN, ASTTypeDouble, false);
-  assert(DDN && "Could not create a valid ASTDeclarationNode!");
 
   DDN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DDN);
@@ -9259,7 +8979,6 @@ ASTProductionFactory::ProductionRule_140(const ASTToken *TK,
   FLT->Mangle();
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, FLT, ASTTypeFloat, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -9502,7 +9221,6 @@ ASTProductionFactory::ProductionRule_141(const ASTToken *TK,
   FLT->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, FLT, ASTTypeFloat, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -9554,7 +9272,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_142(
   FLT->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, FLT, ASTTypeFloat, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -9600,7 +9317,6 @@ ASTProductionFactory::ProductionRule_143(const ASTToken *TK,
   MPD->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, MPD, ASTTypeMPDecimal, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -9655,7 +9371,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       mpfr_init2(MPV, Bits);
       mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(BN, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeInt: {
@@ -9667,7 +9382,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       else
         mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(IN, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeFloat: {
@@ -9676,7 +9390,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       mpfr_init2(MPV, Bits);
       mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(FN, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeDouble: {
@@ -9699,7 +9412,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       }
 
       ICX = new ASTImplicitConversionNode(DN, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeLongDouble: {
@@ -9709,7 +9421,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       mpfr_init2(MPV, Bits);
       mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(LN, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeMPInteger: {
@@ -9719,7 +9430,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       mpfr_init2(MPV, Bits);
       mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(MPI, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeMPDecimal: {
@@ -9736,7 +9446,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       if (mpfr_set_str(MPV, CB->AsString().c_str(), 2, MPFR_RNDN) != 0)
         mpfr_set_nan(MPV);
       ICX = new ASTImplicitConversionNode(CB, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeAngle: {
@@ -9745,7 +9454,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
       mpfr_init2(MPV, Bits);
       mpfr_set(MPV, AN->GetMPValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(AN, ASTTypeMPDecimal, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
   } break;
   case ASTTypeStringLiteral: {
@@ -9764,7 +9472,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
     break;
   case ASTTypeImplicitConversion:
     ICX = new ASTImplicitConversionNode(EN, ASTTypeMPDecimal, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     FromExpr = true;
     break;
   case ASTTypeCBitArray:
@@ -9815,7 +9522,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           mpfr_init2(MPV, Bits);
           mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(BN, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeInt: {
@@ -9827,7 +9533,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           else
             mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(IN, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeFloat: {
@@ -9836,7 +9541,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           mpfr_init2(MPV, Bits);
           mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(FN, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -9848,7 +9552,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           else
             mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(DN, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeLongDouble: {
@@ -9858,7 +9561,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           mpfr_init2(MPV, Bits);
           mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(LN, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPInteger: {
@@ -9868,7 +9570,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           mpfr_init2(MPV, Bits);
           mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPI, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPDecimal: {
@@ -9885,7 +9586,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           mpfr_init2(MPV, Bits);
           mpfr_set(MPV, AN->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(AN, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPComplex: {
@@ -9894,7 +9594,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           FromValue = true;
           mpfr_set(MPV, MPC->GetRealAsMPDecimal()->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPC, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeStringLiteral: {
@@ -9912,7 +9611,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
           if (mpfr_set_str(MPV, CB->AsString().c_str(), 2, MPFR_RNDN) != 0)
             mpfr_set_nan(MPV);
           ICX = new ASTImplicitConversionNode(CB, ASTTypeMPDecimal, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       default: {
@@ -9945,8 +9643,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             mpfr_init2(MPV, Bits);
             mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(BN, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeInt: {
@@ -9958,8 +9654,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             else
               mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(IN, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeFloat: {
@@ -9968,8 +9662,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             mpfr_init2(MPV, Bits);
             mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(FN, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeDouble: {
@@ -9982,8 +9674,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             else
               mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(DN, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeLongDouble: {
@@ -9993,8 +9683,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             mpfr_init2(MPV, Bits);
             mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(LN, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPInteger: {
@@ -10004,8 +9692,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             mpfr_init2(MPV, Bits);
             mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPI, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPDecimal: {
@@ -10022,8 +9708,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             mpfr_init2(MPV, Bits);
             mpfr_set(MPV, AN->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(AN, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPComplex: {
@@ -10032,8 +9716,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             FromValue = true;
             mpfr_set(MPV, MPC->GetRealAsMPDecimal()->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPC, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeStringLiteral: {
@@ -10053,8 +9735,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
             if (mpfr_set_str(MPV, CB->AsString().c_str(), 2, MPFR_RNDN) != 0)
               mpfr_set_nan(MPV);
             ICX = new ASTImplicitConversionNode(CB, ASTTypeMPDecimal, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         default: {
@@ -10116,7 +9796,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_145(
   MPDD->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, MPDD, ASTTypeMPDecimal, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -10175,7 +9854,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_146(
   MPDD->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, MPDD, ASTTypeMPDecimal, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -10354,53 +10032,42 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_170(
     if (ASTBoolNode *BN = dynamic_cast<ASTBoolNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(BN->GetValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeInt:
     if (ASTIntNode *IN = dynamic_cast<ASTIntNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(IN->GetSignedValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeFloat:
     if (ASTFloatNode *FN = dynamic_cast<ASTFloatNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(FN->GetValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeDouble:
     if (ASTDoubleNode *DN = dynamic_cast<ASTDoubleNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(DN->GetValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeLongDouble:
-    if (ASTLongDoubleNode *LN = dynamic_cast<ASTLongDoubleNode *>(EN)) {
+    if (ASTLongDoubleNode *LN = dynamic_cast<ASTLongDoubleNode *>(EN))
       ANG = new ASTAngleNode(Id, LN, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeMPInteger:
-    if (ASTMPIntegerNode *MPI = dynamic_cast<ASTMPIntegerNode *>(EN)) {
+    if (ASTMPIntegerNode *MPI = dynamic_cast<ASTMPIntegerNode *>(EN))
       ANG = new ASTAngleNode(Id, MPI, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeMPDecimal:
-    if (ASTMPDecimalNode *MPD = dynamic_cast<ASTMPDecimalNode *>(EN)) {
+    if (ASTMPDecimalNode *MPD = dynamic_cast<ASTMPDecimalNode *>(EN))
       ANG = new ASTAngleNode(Id, MPD, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeMPComplex:
     if (ASTMPComplexNode *MPC = dynamic_cast<ASTMPComplexNode *>(EN)) {
       ANG = new ASTAngleNode(Id, MPC->GetRealAsMPDecimal(), ASTAngleTypeGeneric,
                              Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeStringLiteral: {
@@ -10417,7 +10084,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_170(
       }
 
       ANG = new ASTAngleNode(Id, Bits, ASN, ASTAngleTypeGeneric, Base);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
   } break;
   case ASTTypeAngle:
@@ -10428,16 +10094,12 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_170(
     }
     break;
   case ASTTypeBinaryOp:
-    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EN)) {
+    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EN))
       ANG = new ASTAngleNode(Id, BOP, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeUnaryOp:
-    if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EN)) {
+    if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EN))
       ANG = new ASTAngleNode(Id, UOP, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   default: {
     std::stringstream M;
@@ -10468,7 +10130,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_170(
          "Could not create a valid SymbolTable Entry Value!");
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, ANG, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetConst();
@@ -10543,53 +10204,42 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_171(
     if (ASTBoolNode *BN = dynamic_cast<ASTBoolNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(BN->GetValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeInt:
     if (ASTIntNode *IN = dynamic_cast<ASTIntNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(IN->GetSignedValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeFloat:
     if (ASTFloatNode *FN = dynamic_cast<ASTFloatNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(FN->GetValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeDouble:
     if (ASTDoubleNode *DN = dynamic_cast<ASTDoubleNode *>(EN)) {
       ANG = new ASTAngleNode(Id, static_cast<double>(DN->GetValue()),
                              ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeLongDouble:
-    if (ASTLongDoubleNode *LN = dynamic_cast<ASTLongDoubleNode *>(EN)) {
+    if (ASTLongDoubleNode *LN = dynamic_cast<ASTLongDoubleNode *>(EN))
       ANG = new ASTAngleNode(Id, LN, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeMPInteger:
-    if (ASTMPIntegerNode *MPI = dynamic_cast<ASTMPIntegerNode *>(EN)) {
+    if (ASTMPIntegerNode *MPI = dynamic_cast<ASTMPIntegerNode *>(EN))
       ANG = new ASTAngleNode(Id, MPI, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeMPDecimal:
-    if (ASTMPDecimalNode *MPD = dynamic_cast<ASTMPDecimalNode *>(EN)) {
+    if (ASTMPDecimalNode *MPD = dynamic_cast<ASTMPDecimalNode *>(EN))
       ANG = new ASTAngleNode(Id, MPD, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeMPComplex:
     if (ASTMPComplexNode *MPC = dynamic_cast<ASTMPComplexNode *>(EN)) {
       ANG = new ASTAngleNode(Id, MPC->GetRealAsMPDecimal(), ASTAngleTypeGeneric,
                              Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
     break;
   case ASTTypeStringLiteral: {
@@ -10608,7 +10258,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_171(
       }
 
       ANG = new ASTAngleNode(Id, Bits, ASN, ASTAngleTypeGeneric, Base);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
     }
   } break;
   case ASTTypeAngle:
@@ -10619,16 +10268,12 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_171(
     }
     break;
   case ASTTypeBinaryOp:
-    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EN)) {
+    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EN))
       ANG = new ASTAngleNode(Id, BOP, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   case ASTTypeUnaryOp:
-    if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EN)) {
+    if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EN))
       ANG = new ASTAngleNode(Id, UOP, ASTAngleTypeGeneric, Bits);
-      assert(ANG && "Could not create a valid ASTAngleNode!");
-    }
     break;
   default: {
     std::stringstream M;
@@ -10662,7 +10307,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_171(
          "Could not create a valid SymbolTable Entry Value!");
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, ANG, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetConst();
@@ -10708,7 +10352,6 @@ ASTProductionFactory::ProductionRule_180(const ASTToken *TK,
   ASTAngleNodeBuilder::Instance().Insert(AN);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -10758,7 +10401,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       mpfr_init2(MPV, Bits);
       mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(BN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeInt:
@@ -10770,7 +10412,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       else
         mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(IN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeFloat:
@@ -10779,7 +10420,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       FromValue = true;
       mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(FN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -10788,7 +10428,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       FromValue = true;
       mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(DN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -10798,7 +10437,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       FromValue = true;
       mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(LN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPInteger:
@@ -10808,7 +10446,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       mpfr_init2(MPV, Bits);
       mpfr_set_z(MPV, MPII->GetMPValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(MPII, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPDecimal:
@@ -10818,7 +10455,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       mpfr_init2(MPV, Bits);
       mpfr_set(MPV, MPDD->GetMPValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(MPDD, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeBitset:
@@ -10828,7 +10464,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
       if (mpfr_set_str(MPV, CB->AsString().c_str(), 2, MPFR_RNDN) != 0)
         mpfr_set_nan(MPV);
       ICX = new ASTImplicitConversionNode(CB, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeAngle:
@@ -10853,7 +10488,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
   case ASTTypeExpression:
     FromExpr = true;
     ICX = new ASTImplicitConversionNode(EN, ASTTypeAngle, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   case ASTTypeCast:
     FromExpr = true;
@@ -10861,7 +10495,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
   case ASTTypeImplicitConversion:
     FromExpr = true;
     ICX = new ASTImplicitConversionNode(EN, ASTTypeAngle, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   case ASTTypeCBitArray:
   case ASTTypeCBitNArray:
@@ -10911,7 +10544,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           mpfr_init2(MPV, Bits);
           mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(BN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeInt: {
@@ -10923,7 +10555,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           else
             mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(IN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeFloat: {
@@ -10932,7 +10563,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           FromValue = true;
           mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(FN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -10941,7 +10571,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           FromValue = true;
           mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(DN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeLongDouble: {
@@ -10951,7 +10580,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           FromValue = true;
           mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(LN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeAngle: {
@@ -10968,7 +10596,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           mpfr_init2(MPV, Bits);
           mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPI, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPDecimal: {
@@ -10978,7 +10605,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           mpfr_init2(MPV, Bits);
           mpfr_set(MPV, MPD->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPD, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPComplex: {
@@ -10988,7 +10614,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           mpfr_init2(MPV, Bits);
           mpfr_set(MPV, MPC->GetRealAsMPDecimal()->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPC, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeBitset: {
@@ -10998,7 +10623,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
           if (mpfr_set_str(MPV, CBN->AsString().c_str(), 2, MPFR_RNDN) != 0)
             mpfr_set_nan(MPV);
           ICX = new ASTImplicitConversionNode(CBN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       default: {
@@ -11032,8 +10656,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             mpfr_init2(MPV, Bits);
             mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(BN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeInt: {
@@ -11045,8 +10667,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             else
               mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(IN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeFloat: {
@@ -11055,8 +10675,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             FromValue = true;
             mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(FN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeDouble: {
@@ -11066,8 +10684,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             FromValue = true;
             mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(DN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeLongDouble: {
@@ -11077,8 +10693,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             FromValue = true;
             mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(LN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeAngle: {
@@ -11095,8 +10709,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             mpfr_init2(MPV, Bits);
             mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPI, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPDecimal: {
@@ -11106,8 +10718,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             mpfr_init2(MPV, Bits);
             mpfr_set(MPV, MPD->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPD, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPComplex: {
@@ -11117,8 +10727,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             mpfr_init2(MPV, Bits);
             mpfr_set(MPV, MPC->GetRealAsMPDecimal()->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPC, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeBitset: {
@@ -11128,8 +10736,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
             if (mpfr_set_str(MPV, CBN->AsString().c_str(), 2, MPFR_RNDN) != 0)
               mpfr_set_nan(MPV);
             ICX = new ASTImplicitConversionNode(CBN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         default: {
@@ -11213,7 +10819,6 @@ ASTProductionFactory::ProductionRule_181(const ASTToken *TK,
   ASTAngleNodeBuilder::Instance().Insert(AN);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -11269,7 +10874,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_182(
   ASTAngleNodeBuilder::Instance().Insert(AN);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -11316,7 +10920,6 @@ ASTProductionFactory::ProductionRule_240(const ASTToken *TK,
   ASTAngleNodeBuilder::Instance().Insert(AN);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -11372,7 +10975,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       mpfr_init2(MPV, Bits);
       mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(BN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeInt:
@@ -11384,7 +10986,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       else
         mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(IN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeFloat:
@@ -11393,7 +10994,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       FromValue = true;
       mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(FN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeDouble:
@@ -11402,7 +11002,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       FromValue = true;
       mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(DN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeLongDouble:
@@ -11412,7 +11011,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       FromValue = true;
       mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(LN, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPInteger:
@@ -11422,7 +11020,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       mpfr_init2(MPV, Bits);
       mpfr_set_z(MPV, MPII->GetMPValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(MPII, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeMPDecimal:
@@ -11432,7 +11029,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       mpfr_init2(MPV, Bits);
       mpfr_set(MPV, MPDD->GetMPValue(), MPFR_RNDN);
       ICX = new ASTImplicitConversionNode(MPDD, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeBitset:
@@ -11442,7 +11038,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
       if (mpfr_set_str(MPV, CB->AsString().c_str(), 2, MPFR_RNDN) != 0)
         mpfr_set_nan(MPV);
       ICX = new ASTImplicitConversionNode(CB, ASTTypeAngle, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     }
     break;
   case ASTTypeAngle:
@@ -11467,7 +11062,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
   case ASTTypeExpression:
     FromExpr = true;
     ICX = new ASTImplicitConversionNode(EN, ASTTypeAngle, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   case ASTTypeCast:
     FromExpr = true;
@@ -11475,7 +11069,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
   case ASTTypeImplicitConversion:
     FromExpr = true;
     ICX = new ASTImplicitConversionNode(EN, ASTTypeAngle, Bits);
-    assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
     break;
   case ASTTypeCBitArray:
   case ASTTypeCBitNArray:
@@ -11525,7 +11118,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           mpfr_init2(MPV, Bits);
           mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(BN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeInt: {
@@ -11537,7 +11129,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           else
             mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(IN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeFloat: {
@@ -11546,7 +11137,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           FromValue = true;
           mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(FN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeDouble: {
@@ -11555,7 +11145,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           FromValue = true;
           mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(DN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeLongDouble: {
@@ -11565,7 +11154,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           FromValue = true;
           mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(LN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeAngle: {
@@ -11582,7 +11170,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           mpfr_init2(MPV, Bits);
           mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPI, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPDecimal: {
@@ -11592,7 +11179,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           mpfr_init2(MPV, Bits);
           mpfr_set(MPV, MPD->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPD, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeMPComplex: {
@@ -11602,7 +11188,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           mpfr_init2(MPV, Bits);
           mpfr_set(MPV, MPC->GetRealAsMPDecimal()->GetMPValue(), MPFR_RNDN);
           ICX = new ASTImplicitConversionNode(MPC, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       case ASTTypeBitset: {
@@ -11612,7 +11197,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
           if (mpfr_set_str(MPV, CBN->AsString().c_str(), 2, MPFR_RNDN) != 0)
             mpfr_set_nan(MPV);
           ICX = new ASTImplicitConversionNode(CBN, ASTTypeAngle, Bits);
-          assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
         }
       } break;
       default: {
@@ -11646,8 +11230,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             mpfr_init2(MPV, Bits);
             mpfr_set_ui(MPV, static_cast<unsigned>(BN->GetValue()), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(BN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeInt: {
@@ -11659,8 +11241,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             else
               mpfr_set_ui(MPV, IN->GetUnsignedValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(IN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeFloat: {
@@ -11669,8 +11249,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             FromValue = true;
             mpfr_set_flt(MPV, FN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(FN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeDouble: {
@@ -11680,8 +11258,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             FromValue = true;
             mpfr_set_d(MPV, DN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(DN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeLongDouble: {
@@ -11691,8 +11267,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             FromValue = true;
             mpfr_set_ld(MPV, LN->GetValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(LN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeAngle: {
@@ -11709,8 +11283,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             mpfr_init2(MPV, Bits);
             mpfr_set_z(MPV, MPI->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPI, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPDecimal: {
@@ -11720,8 +11292,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             mpfr_init2(MPV, Bits);
             mpfr_set(MPV, MPD->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPD, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeMPComplex: {
@@ -11731,8 +11301,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             mpfr_init2(MPV, Bits);
             mpfr_set(MPV, MPC->GetRealAsMPDecimal()->GetMPValue(), MPFR_RNDN);
             ICX = new ASTImplicitConversionNode(MPC, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         case ASTTypeBitset: {
@@ -11742,8 +11310,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
             if (mpfr_set_str(MPV, CBN->AsString().c_str(), 2, MPFR_RNDN) != 0)
               mpfr_set_nan(MPV);
             ICX = new ASTImplicitConversionNode(CBN, ASTTypeAngle, Bits);
-            assert(ICX &&
-                   "Could not create a valid ASTImplicitConversionNode!");
           }
         } break;
         default: {
@@ -11826,7 +11392,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_242(
   ASTAngleNodeBuilder::Instance().Insert(ANG);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, ANG, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -11887,7 +11452,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_243(
   ASTAngleNodeBuilder::Instance().Insert(ANG);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, ANG, ASTTypeAngle, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -12055,7 +11619,6 @@ ASTMPComplexNode *ASTProductionFactory::ProductionRule_254(
 
   ASTComplexExpressionNode *CEN =
       new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, BOP);
-  assert(CEN && "Could not create a valid ASTComplexExpressionNode!");
 
   ASTMPComplexNode *MPC =
       ASTBuilder::Instance().CreateASTMPComplexNode(Id, CEN, Bits);
@@ -12103,7 +11666,6 @@ ASTMPComplexNode *ASTProductionFactory::ProductionRule_255(
 
   ASTComplexExpressionNode *CEN =
       new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, UOP);
-  assert(CEN && "Could not create a valid ASTComplexExpressionNode!");
 
   ASTMPComplexNode *MPC =
       ASTBuilder::Instance().CreateASTMPComplexNode(Id, CEN, Bits);
@@ -12309,7 +11871,6 @@ ASTMPComplexNode *ASTProductionFactory::ProductionRule_259(
     ASTMPDecimalNode *MPCI =
         new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
                              ASTMPDecimalNode::DefaultBits, double(1.0));
-    assert(MPCI && "Could not create a valid ASTMPDecimalNode!");
     MPC = ASTBuilder::Instance().CreateASTMPComplexNode(Id, MPD, MPCI,
                                                         ASTOpTypeMul);
   }
@@ -12851,7 +12412,6 @@ ASTProductionFactory::ProductionRule_310(const ASTToken *TK,
   assert(RN && "Invalid ASTRotationNode argument!");
 
   ASTRotateStatementNode *RSN = new ASTRotateStatementNode(RN);
-  assert(RSN && "Could not create a valid ASTRotateStatementNode!");
   if (!RSN) {
     std::stringstream M;
     M << "Could not create a valid ASTRotateStatementNode.";
@@ -13029,7 +12589,6 @@ ASTProductionFactory::ProductionRule_320(const ASTToken *TK,
   assert(PN && "Invalid ASTPopcountNode argument!");
 
   ASTPopcountStatementNode *PSN = new ASTPopcountStatementNode(PN);
-  assert(PSN && "Could not create a valid ASTPopcountStatementNode!");
   if (!PSN) {
     std::stringstream M;
     M << "Could not create a valid ASTPopcountStatementNode.";
@@ -14213,7 +13772,6 @@ ASTProductionFactory::ProductionRule_605(const ASTToken *TK,
   assert(BOP && "Invalid ASTBinaryOpNode argument!");
 
   ASTBinaryOpStatementNode *BON = new ASTBinaryOpStatementNode(BOP);
-  assert(BON && "Could not create a valid ASTBinaryOpStatementNode!");
 
   BON->SetLocation(TK->GetLocation());
   return BON;
@@ -14254,7 +13812,6 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1200(
   DRN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DRN, ASTTypeDuration, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DRN;
@@ -14293,7 +13850,6 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1201(
   DRN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DRN, ASTTypeDuration, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DRN;
@@ -14421,7 +13977,6 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1202(
   DRN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DRN, ASTTypeDuration, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DRN;
@@ -14546,7 +14101,6 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1203(
   DRN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DRN, ASTTypeDuration, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DRN;
@@ -14585,7 +14139,6 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1204(
   DRN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DRN, ASTTypeDuration, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DRN;
@@ -14645,7 +14198,6 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1205(
   DRN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, DRN, ASTTypeDuration, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   return DRN;
@@ -14661,7 +14213,6 @@ ASTProductionFactory::ProductionRule_1206(const ASTToken *TK,
 
   ASTDeclarationNode *DDN =
       new ASTDeclarationNode(DN->GetIdentifier(), DN, ASTTypeDuration, false);
-  assert(DDN && "Could not create a valid ASTDeclarationNode!");
 
   DDN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DDN);
@@ -14678,7 +14229,6 @@ ASTProductionFactory::ProductionRule_1207(const ASTToken *TK,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DON->GetIdentifier(), ASTTypeDurationOf);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -14904,7 +14454,6 @@ ASTProductionFactory::ProductionRule_1300(const ASTToken *TK,
   // is created directly instead of through ASTBuilder.
   ASTIdentifierNode *TId =
       new ASTIdentifierNode(TS->GetValue(), ASTTypeTimeUnit, 64U);
-  assert(TId && "Could not create a valid ASTIdentifierNode!");
 
   TId->SetLocation(TK->GetLocation());
 
@@ -14948,7 +14497,6 @@ ASTProductionFactory::ProductionRule_1300(const ASTToken *TK,
   // is created directly instead of through ASTBuilder.
   ASTIdentifierNode *TId =
       new ASTIdentifierNode(TS->GetValue(), ASTTypeTimeUnit, 64U);
-  assert(TId && "Could not create a valid ASTIdentifierNode!");
 
   TId->SetLocation(TK->GetLocation());
 
@@ -15282,7 +14830,6 @@ ASTProductionFactory::ProductionRule_1350(const ASTToken *TK,
 
   ASTDeclarationNode *DSN =
       new ASTDeclarationNode(DId, SN, ASTTypeStretch, false);
-  assert(DSN && "Could not create a valid Stretch ASTDeclarationNode!");
   if (!DSN) {
     std::stringstream M;
     M << "Could not create a valid Stretch ASTDeclarationNode.";
@@ -15294,7 +14841,6 @@ ASTProductionFactory::ProductionRule_1350(const ASTToken *TK,
   ASTDeclarationBuilder::Instance().Append(DSN);
 
   ASTStretchStatementNode *SSN = new ASTStretchStatementNode(SN);
-  assert(SSN && "Could not create a valid ASTStretchStatementNode!");
   if (!SSN) {
     std::stringstream M;
     M << "Could not create a valid ASTStretchStatementNode.";
@@ -15314,7 +14860,6 @@ ASTProductionFactory::ProductionRule_1350(const ASTToken *TK,
   assert(SN && "Invalid ASTStretchNode argument!");
 
   ASTStretchStatementNode *SSN = new ASTStretchStatementNode(SN);
-  assert(SSN && "Could not create a valid ASTStretchStatementNode!");
   if (!SSN) {
     std::stringstream M;
     M << "Could not create a valid ASTStretchStatementNode.";
@@ -15361,7 +14906,6 @@ ASTProductionFactory::ProductionRule_1400(const ASTToken *TK,
   BX->Mangle();
 
   ASTBoxStatementNode *BXSN = new ASTBoxStatementNode(BX);
-  assert(BXSN && "Could not create a valid ASTBoxStatementNode!");
   if (!BXSN) {
     std::stringstream M;
     M << "Could not create a valid ASTBoxStatementNode.";
@@ -15408,7 +14952,6 @@ ASTProductionFactory::ProductionRule_1401(const ASTToken *TK,
   BXA->Mangle();
 
   ASTBoxStatementNode *BXSN = new ASTBoxStatementNode(BXA);
-  assert(BXSN && "Could not create a valid ASTBoxStatementNode!");
   if (!BXSN) {
     std::stringstream M;
     M << "Could not create a valid ASTBoxStatementNode.";
@@ -15454,7 +14997,6 @@ ASTProductionFactory::ProductionRule_1402(const ASTToken *TK,
   BXT->Mangle();
 
   ASTBoxStatementNode *BXSN = new ASTBoxStatementNode(BXT);
-  assert(BXSN && "Could not create a valid ASTBoxStatementNode!");
   if (!BXSN) {
     std::stringstream M;
     M << "Could not create a valid ASTBoxStatementNode.";
@@ -15503,7 +15045,6 @@ ASTProductionFactory::ProductionRule_1100(const ASTToken *TK,
   QCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, QCN, ASTTypeQubitContainer, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -15551,7 +15092,6 @@ ASTProductionFactory::ProductionRule_1101(const ASTToken *TK,
   QCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, QCN, ASTTypeQubitContainer, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -15601,7 +15141,6 @@ ASTProductionFactory::ProductionRule_1102(const ASTToken *TK,
   QCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, QCN, ASTTypeQubitContainer, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -15644,7 +15183,6 @@ ASTProductionFactory::ProductionRule_10000(const ASTToken *TK,
   QCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, QCN, ASTTypeQumodeContainer, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -15693,8 +15231,6 @@ ASTProductionFactory::ProductionRule_10003(const ASTToken *TK,
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, UN, ASTTypeUnitary, false);
 
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
-
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -15742,7 +15278,6 @@ ASTProductionFactory::ProductionRule_10001(const ASTToken *TK,
   QCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, QCN, ASTTypeQumodeContainer, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -15792,7 +15327,6 @@ ASTProductionFactory::ProductionRule_10002(const ASTToken *TK,
   QCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, QCN, ASTTypeQumodeContainer, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -15866,7 +15400,6 @@ ASTProductionFactory::ProductionRule_1103(const ASTToken *TK,
     ASTQubitNode *QN = STE->GetValue()->GetValue<ASTQubitNode *>();
     if (QN) {
       QCN = new ASTQubitContainerNode(QN->GetIdentifier(), 1U);
-      assert(QCN && "Could not create a valid ASTQubitContainerNode!");
     } else {
       QCN = STE->GetValue()->GetValue<ASTQubitContainerNode *>();
       assert(QCN && "Could not obtain a valid ASTQubitContainerNode!");
@@ -15904,7 +15437,6 @@ ASTProductionFactory::ProductionRule_1103(const ASTToken *TK,
   NQCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, NQCN, ASTTypeQubitContainer, false);
-  assert(DN && "Could not create a valid ASTQubitContainerNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -16023,7 +15555,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1105(
   NQCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, NQCN, ASTTypeQubitContainer, false);
-  assert(DN && "Could not create a valid ASTQubitContainerNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -16104,7 +15635,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1106(
     ASTQubitNode *QN = STE->GetValue()->GetValue<ASTQubitNode *>();
     if (QN) {
       QCN = new ASTQubitContainerNode(QN->GetIdentifier(), 1U);
-      assert(QCN && "Could not create a valid ASTQubitContainerNode!");
     } else {
       QCN = STE->GetValue()->GetValue<ASTQubitContainerNode *>();
       assert(QCN && "Could not obtain a valid ASTQubitContainerNode!");
@@ -16144,7 +15674,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1106(
   NQCN->Mangle();
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, NQCN, ASTTypeQubitContainer, false);
-  assert(DN && "Could not create a valid ASTQubitContainerNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTStatementBuilder::Instance().Append(DN);
@@ -16235,7 +15764,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1150(
     assert(ASTE->HasValue() && "Container SymbolTable Entry has no Value!");
 
     DN = new ASTDeclarationNode(AId, QCAN, ASTTypeQubitContainerAlias, false);
-    assert(DN && "Could not create a valid ASTDeclarationNode!");
 
     DN->SetLocation(AId->GetLocation());
     ASTDeclarationBuilder::Instance().Append(DN);
@@ -16254,7 +15782,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1150(
     ASTE->SetValue(new ASTValue<>(TQCAN, ASTTypeQubitContainerAlias),
                    ASTTypeQubitContainerAlias);
     DN = new ASTDeclarationNode(AId, TQCAN, ASTTypeQubitContainerAlias, false);
-    assert(DN && "Could not create a valid ASTDeclarationNode!");
 
     DN->SetLocation(AId->GetLocation());
     ASTDeclarationBuilder::Instance().Append(DN);
@@ -16357,7 +15884,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1151(
                    ASTTypeQubitContainerAlias);
 
     DN = new ASTDeclarationNode(AId, QCAN, ASTTypeQubitContainerAlias, false);
-    assert(DN && "Could not create a valid ASTDeclarationNode!");
 
     DN->SetLocation(AId->GetLocation());
     ASTDeclarationBuilder::Instance().Append(DN);
@@ -16377,7 +15903,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1151(
                    ASTTypeQubitContainerAlias);
 
     DN = new ASTDeclarationNode(AId, TQCAN, ASTTypeQubitContainerAlias, false);
-    assert(DN && "Could not create a valid ASTDeclarationNode!");
 
     DN->SetLocation(AId->GetLocation());
     ASTDeclarationBuilder::Instance().Append(DN);
@@ -16481,7 +16006,6 @@ ASTProductionFactory::ProductionRule_1152(const ASTIdentifierNode *AId,
                    ASTTypeQubitContainerAlias);
 
     DN = new ASTDeclarationNode(AId, QCAN, ASTTypeQubitContainerAlias, false);
-    assert(DN && "Could not create a valid ASTDeclarationNode!");
 
     DN->SetLocation(AId->GetLocation());
     ASTDeclarationBuilder::Instance().Append(DN);
@@ -16503,7 +16027,6 @@ ASTProductionFactory::ProductionRule_1152(const ASTIdentifierNode *AId,
                    ASTTypeQubitContainerAlias);
 
     DN = new ASTDeclarationNode(AId, TQCAN, ASTTypeQubitContainerAlias, false);
-    assert(DN && "Could not create a valid ASTDeclarationNode!");
 
     DN->SetLocation(AId->GetLocation());
     ASTDeclarationBuilder::Instance().Append(DN);
@@ -16684,7 +16207,6 @@ ASTProductionFactory::ProductionRule_1153(const ASTIdentifierNode *AId,
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(AId, QCA, ASTTypeQubitContainerAlias, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(AId->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -17375,7 +16897,6 @@ ASTProductionFactory::ProductionRule_1740(const ASTToken *TK,
   if (!ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX)) {
     ASTIdentifierNode *CId =
         new ASTIdentifierNode("calibration-error", ASTTypeOpenPulseCalibration);
-    assert(CId && "Could not create a valid ASTIdentifierNode!");
 
     std::stringstream M;
     M << "A calibration can only be declared within a calibration context.";
@@ -17388,7 +16909,6 @@ ASTProductionFactory::ProductionRule_1740(const ASTToken *TK,
           CTX->GetParentContext())) {
     ASTIdentifierNode *CId =
         new ASTIdentifierNode("calibration-error", ASTTypeOpenPulseCalibration);
-    assert(CId && "Could not create a valid ASTIdentifierNode!");
 
     std::stringstream M;
     M << "A calibration can only be declared at global context.";
@@ -17730,7 +17250,6 @@ ASTProductionFactory::ProductionRule_2005(const ASTToken *TK) const {
   assert(Id && "Could not create a valid Return ASTIdentifierNode!");
 
   ASTVoidNode *VN = new ASTVoidNode(ASTIdentifierNode::Void.Clone(), nullptr);
-  assert(VN && "Could not create a valid ASTVoidNode!");
 
   VN->SetLocation(TK->GetLocation());
   VN->Mangle();
@@ -17768,7 +17287,6 @@ ASTProductionFactory::ProductionRule_2006(const ASTToken *TK,
 
   bool BV = BS == "true";
   ASTBoolNode *BN = new ASTBoolNode(ASTIdentifierNode::Bool.Clone(), BV);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   BN->SetLocation(TK->GetLocation());
 
@@ -17798,7 +17316,6 @@ ASTProductionFactory::ProductionRule_2150(const ASTToken *TK,
   assert(Id && "Invalid ASTIdentifierNode for FuncResultNode!");
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(Id, RN, ASTTypeResult, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -17827,7 +17344,6 @@ ASTProductionFactory::ProductionRule_3000(const ASTArrayNode *AN) const {
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, AN, STE->GetValueType(), false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(AN->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -17848,7 +17364,6 @@ ASTProductionFactory::ProductionRule_9000(const ASTMPComplexNode *MPC) const {
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, MPC, STE->GetValueType(), false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(MPC->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -17864,7 +17379,6 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_5000(
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(Id, DG, ASTTypeDefcalGrammar, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(DG->GetLocation());
   ASTDeclarationBuilder::Instance().Append(DN);
@@ -18023,7 +17537,6 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
   ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   ASTParameterList *PAL = new ASTParameterList(DL);
-  assert(PAL && "Could not create a valid ASTParameterList!");
 
   if (GN == "U" || GN == "CX" || GN == "CCX" || GN == "CNOT") {
     std::stringstream M;
@@ -18078,12 +17591,10 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
   GTN->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, GTN);
-  assert(GDN && "Could not create a valid ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(GCX);
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, GTN, GT, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(GCX);
@@ -18182,7 +17693,6 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
   ASTIdentifierTypeController::Instance().CheckGateOperandParamType(LQIL);
 
   ASTParameterList *PAL = new ASTParameterList();
-  assert(PAL && "Could not create a valid ASTParameterList!");
 
   PAL->SetLocation(TK->GetLocation());
 
@@ -18210,12 +17720,10 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1431(
   GTN->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, GTN);
-  assert(GDN && "Could not create a valid ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(GCX);
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, GTN, GT, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(GCX);
@@ -18300,12 +17808,10 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1432(
   CXG->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, CXG);
-  assert(GDN && "Could not create a valid CX ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(GCX);
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, CXG, ASTTypeGate, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(GCX);
@@ -18404,7 +17910,6 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1433(
       ASTDeclarationContextTracker::Instance().GetGlobalContext();
 
   ASTParameterList *PAL = new ASTParameterList();
-  assert(PAL && "Could not create a valid ASTParameterList!");
 
   PAL->SetLocation(TK->GetLocation());
 
@@ -18417,13 +17922,11 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1433(
   GTN->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, GTN);
-  assert(GDN && "Could not create a valid ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(CXG);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, GTN, ASTTypeGate, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(CXG);
@@ -18504,7 +18007,6 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1434(
   }
 
   ASTParameterList *PAL = new ASTParameterList(DL);
-  assert(PAL && "Could not create a valid ASTParameterList!");
 
   PAL->SetLocation(TK->GetLocation());
 
@@ -18565,13 +18067,11 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1434(
   GTN->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, GTN);
-  assert(GDN && "Could not create a valid ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(GCX);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, GTN, ASTTypeGate, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(GCX);
@@ -18659,7 +18159,6 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1435(
 
   ASTGateQOpList GOL;
   ASTParameterList *PAL = new ASTParameterList(*DL);
-  assert(PAL && "Could not create a valid ASTParameterList!");
 
   PAL->SetLocation(TK->GetLocation());
   PAL->SetLocalScope();
@@ -18711,13 +18210,11 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1435(
   GTN->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, GTN);
-  assert(GDN && "Could not create a valid ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(GCX);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, GTN, GT, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(GCX);
@@ -18820,7 +18317,6 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken *TK,
 
   ASTGateQOpList GOL;
   ASTParameterList *PAL = new ASTParameterList();
-  assert(PAL && "Invalid ASTParameterList argument!");
 
   PAL->SetLocation(TK->GetLocation());
   PAL->SetLocalScope();
@@ -18836,13 +18332,11 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken *TK,
   GTN->Mangle();
 
   ASTGateDeclarationNode *GDN = new ASTGateDeclarationNode(GId, GTN);
-  assert(GDN && "Could not create a valid ASTGateDeclarationNode!");
 
   GDN->SetLocation(TK->GetLocation());
   GDN->SetDeclarationContext(GCX);
 
   ASTDeclarationNode *DN = new ASTDeclarationNode(GId, GTN, GT, false);
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->SetDeclarationContext(GCX);
@@ -18940,7 +18434,6 @@ ASTDefcalDeclarationNode *ASTProductionFactory::ProductionRule_1440(
   ASTScopeController::Instance().SetLocalScope(DSL);
 
   ASTExpressionNodeList *EL = new ASTExpressionNodeList(*DEL);
-  assert(EL && "Could not create a valid ASTExpressionNodeList!");
 
   EL->SetLocation(TK->GetLocation());
   ASTScopeController::Instance().SetDeclarationContext(EL, CTX);
@@ -19408,7 +18901,6 @@ ASTDefcalDeclarationNode *ASTProductionFactory::ProductionRule_1444(
   DLId->SetPolymorphicName("delay");
   ASTIdentifierNode *TId =
       new ASTIdentifierNode(TS->GetValue(), ASTTypeTimeUnit, 64U);
-  assert(TId && "Could not create a valid ASTIdentifierNode!");
 
   ASTIdentifierList IL;
 
@@ -19792,7 +19284,6 @@ ASTProductionFactory::ProductionRule_1445(const ASTToken *TK,
     assert(GCX && "Could not obtain a valid Global ASTDeclarationContext!");
 
     DG = new ASTDefcalGrammarNode(Id, GS);
-    assert(DG && "Could not create a valid ASTDefcalGrammarNode!");
 
     DG->SetLocation(TK->GetLocation());
     DG->SetDeclarationContext(GCX);
@@ -20172,7 +19663,6 @@ ASTProductionFactory::ProductionRule_1461(const ASTToken *TK,
       ASTQubitNode *QN = TSTE->GetValue()->GetValue<ASTQubitNode *>();
       assert(QN && "Could not obtain a valid ASTQubitNode!");
       QCN = new ASTQubitContainerNode(TId, 1U, {QN});
-      assert(QCN && "Could not create a valid ASTQubitContainerNode!");
       QCN->SetLocation(QN->GetLocation());
       QCN->SetDeclarationContext(QN->GetDeclarationContext());
     } else if (TId->IsReference()) {
@@ -21088,11 +20578,9 @@ ASTProductionFactory::ProductionRule_1507(const ASTToken *TK,
 
   ASTIdentifierNode *QId =
       new ASTIdentifierNode(N, ASTTypeGateOperandParam, 1U);
-  assert(QId && "Could not create a valid GateOperandParam ASTIdentifierNode!");
 
   ASTSymbolTableEntry *STE =
       new ASTSymbolTableEntry(QId, ASTTypeGateOperandParam);
-  assert(STE && "Could not create a valid GateOperandParam SymbolTable Entry!");
 
   STE->ResetValue();
   STE->SetLocalScope();
@@ -21118,8 +20606,6 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
   else
     ASN = new ASTArraySubscriptNode(II);
 
-  assert(ASN && "Could not create a valid ASTArraySubscriptNode!");
-
   ASN->SetLocation(TK->GetLocation());
   return ASN;
 }
@@ -21144,7 +20630,6 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
                  IId->GetSymbolType() == ASTTypeMPUInteger))) {
     const_cast<ASTIdentifierNode *>(IId)->SetInductionVariable(true);
     ASTArraySubscriptNode *ASN = new ASTArraySubscriptNode(IId);
-    assert(ASN && "Could not create a valid ASTArraySubscriptNode!");
     ASN->SetInductionVariable(IId);
     ASN->SetLocation(TK->GetLocation());
     return ASN;
@@ -21167,17 +20652,12 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
   switch (IIV.index()) {
   case 0:
     ASN = new ASTArraySubscriptNode(std::get<0>(IIV));
-    assert(ASN && "Could not obtain a valid ASTIntNode from std::variant!");
     break;
   case 1:
     ASN = new ASTArraySubscriptNode(std::get<1>(IIV));
-    assert(ASN &&
-           "Could not obtain a valid ASTMPIntegerNode from std::variant!");
     break;
   case 2:
     ASN = new ASTArraySubscriptNode(std::get<2>(IIV));
-    assert(ASN &&
-           "Could not obtain a valid ASTMPIntegerNode from std::variant!");
     break;
   default:
     break;
@@ -21217,7 +20697,6 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
   }
 
   ASTArraySubscriptNode *ASN = new ASTArraySubscriptNode(BOP);
-  assert(ASN && "Could not obtain a valid ASTArraySubscriptNode!");
 
   if (!ASN) {
     std::stringstream M;
@@ -21248,7 +20727,6 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken *TK,
   }
 
   ASTArraySubscriptNode *ASN = new ASTArraySubscriptNode(UOP);
-  assert(ASN && "Could not obtain a valid ASTArraySubscriptNode!");
 
   if (!ASN) {
     std::stringstream M;
@@ -22622,11 +22100,9 @@ ASTProductionFactory::ProductionRule_2100(const ASTToken *TK) const {
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *AId =
       new ASTIdentifierNode("angle", ASTTypeAngle, ASTAngleNode::AngleBits);
-  assert(AId && "Could not create a valid ASTIdentifierNode!");
 
   AId->SetLocation(TK->GetLocation());
   ASTAngleNode *AN = new ASTAngleNode(AId);
-  assert(AN && "Could not create a valid ASTAngleNode!");
 
   AN->SetLocation(TK->GetLocation());
   AN->Mangle();
@@ -22661,11 +22137,9 @@ ASTProductionFactory::ProductionRule_2102(const ASTIntNode *II,
 
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *AId = new ASTIdentifierNode("angle", ASTTypeAngle, Bits);
-  assert(AId && "Could not create a valid ASTIdentifierNode!");
 
   AId->SetLocation(TK->GetLocation());
   ASTAngleNode *AN = new ASTAngleNode(AId, ASTAngleTypeGeneric, Bits);
-  assert(AN && "Could not create a valid ASTAngleNode!");
 
   AN->SetLocation(TK->GetLocation());
   AN->Mangle();
@@ -22699,12 +22173,10 @@ ASTProductionFactory::ProductionRule_2103(const ASTBinaryOpNode *BOP,
 
   ASTIdentifierNode *AId =
       new ASTIdentifierNode("angle", ASTTypeAngle, ASTAngleNode::AngleBits);
-  assert(AId && "Could not create a valid ASTIdentifierNode!");
 
   AId->SetLocation(TK->GetLocation());
   ASTAngleNode *AN =
       new ASTAngleNode(AId, ASTAngleTypeGeneric, ASTAngleNode::AngleBits);
-  assert(AN && "Could not create a valid ASTAngleNode!");
 
   AN->SetLocation(TK->GetLocation());
   AN->Mangle();
@@ -22734,11 +22206,9 @@ ASTProductionFactory::ProductionRule_2104(const ASTToken *TK) const {
 
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *BId = new ASTIdentifierNode("bitset", ASTTypeBitset, 1U);
-  assert(BId && "Could not create a valid ASTIdentifierNode!");
 
   BId->SetLocation(TK->GetLocation());
   ASTCBitNode *CBN = new ASTCBitNode(BId, 1U);
-  assert(CBN && "Could not create a valid ASTCBitNode!");
 
   CBN->SetLocation(TK->GetLocation());
   CBN->Mangle();
@@ -22794,10 +22264,8 @@ ASTProductionFactory::ProductionRule_2107(const std::string *IS,
 
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *BId = new ASTIdentifierNode("bitset", ASTTypeBitset, Bits);
-  assert(BId && "Could not create a valid ASTIdentifierNode!");
 
   ASTCBitNode *CBN = new ASTCBitNode(BId, Bits);
-  assert(CBN && "Could not create a valid ASTCBitNode!");
 
   CBN->SetLocation(TK->GetLocation());
   CBN->Mangle();
@@ -22839,11 +22307,9 @@ ASTProductionFactory::ProductionRule_2109(const ASTToken *TK) const {
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *BId =
       new ASTIdentifierNode("bool", ASTTypeBool, ASTBoolNode::BoolBits);
-  assert(BId && "Could not create a valid ASTBoolNode!");
 
   BId->SetLocation(TK->GetLocation());
   ASTBoolNode *BN = new ASTBoolNode(BId, false);
-  assert(BN && "Could not create a valid ASTBoolNode!");
 
   BN->SetLocation(TK->GetLocation());
   BN->Mangle();
@@ -22874,12 +22340,10 @@ ASTProductionFactory::ProductionRule_2110(const ASTToken *TK) const {
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *IId =
       new ASTIdentifierNode("int", ASTTypeInt, ASTIntNode::IntBits);
-  assert(IId && "Could not create a valid ASTIntNode!");
 
   IId->SetLocation(TK->GetLocation());
 
   ASTIntNode *IN = new ASTIntNode(IId, int32_t(0));
-  assert(IN && "Could not create a valid ASTIntNode!");
 
   IN->SetLocation(TK->GetLocation());
   IN->Mangle();
@@ -22911,12 +22375,10 @@ ASTProductionFactory::ProductionRule_2111(const ASTToken *TK) const {
 
   ASTIdentifierNode *IId =
       new ASTIdentifierNode("uint", ASTTypeInt, ASTIntNode::IntBits);
-  assert(IId && "Could not create a valid ASTIntNode!");
 
   IId->SetLocation(TK->GetLocation());
 
   ASTIntNode *IN = new ASTIntNode(IId, uint32_t(0U));
-  assert(IN && "Could not create a valid ASTIntNode!");
 
   IN->SetLocation(TK->GetLocation());
   IN->Mangle();
@@ -22972,11 +22434,9 @@ ASTProductionFactory::ProductionRule_2113(const ASTToken *TK) const {
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *FId =
       new ASTIdentifierNode("float", ASTTypeFloat, ASTFloatNode::FloatBits);
-  assert(FId && "Could not create a valid ASTIdentifierNode!");
 
   FId->SetLocation(TK->GetLocation());
   ASTFloatNode *FN = new ASTFloatNode(FId, 0.0f);
-  assert(FN && "Could not create a valid ASTFloatNode!");
 
   FN->SetLocation(TK->GetLocation());
   FN->Mangle();
@@ -23007,11 +22467,9 @@ ASTProductionFactory::ProductionRule_2114(const ASTToken *TK) const {
   RN->SetLocation(TK->GetLocation());
   ASTIdentifierNode *DId =
       new ASTIdentifierNode("double", ASTTypeDouble, ASTDoubleNode::DoubleBits);
-  assert(DId && "Could not create a valid ASTIdentifierNode!");
 
   DId->SetLocation(TK->GetLocation());
   ASTDoubleNode *DN = new ASTDoubleNode(DId, 0.0);
-  assert(DN && "Could not create a valid ASTDoubleNode!");
 
   DN->SetLocation(TK->GetLocation());
   DN->Mangle();
@@ -23093,12 +22551,10 @@ ASTProductionFactory::ProductionRule_2117(const ASTToken *TK) const {
   ASTIdentifierNode *WId =
       new ASTIdentifierNode("waveform", ASTTypeOpenPulseWaveform,
                             OpenPulse::ASTOpenPulseWaveformNode::WaveformBits);
-  assert(WId && "Could not create a valid ASTIdentifierNode!");
 
   WId->SetLocation(TK->GetLocation());
   OpenPulse::ASTOpenPulseWaveformNode *WFN =
       new OpenPulse::ASTOpenPulseWaveformNode(WId, ASTMPComplexList());
-  assert(WFN && "Could not create a valid ASTOpenPulseWaveformNode!");
 
   WFN->SetLocation(TK->GetLocation());
   WFN->Mangle();
@@ -23130,13 +22586,11 @@ ASTProductionFactory::ProductionRule_2118(const ASTToken *TK) const {
   ASTIdentifierNode *FId =
       new ASTIdentifierNode("frame", ASTTypeOpenPulseFrame,
                             OpenPulse::ASTOpenPulseFrameNode::FrameBits);
-  assert(FId && "Could not create a valid ASTIdentifierNode!");
 
   FId->SetLocation(TK->GetLocation());
 
   OpenPulse::ASTOpenPulseFrameNode *FN =
       new OpenPulse::ASTOpenPulseFrameNode(FId);
-  assert(FN && "Could not create a valid ASTOpenPulseFrameNode!");
 
   FN->SetLocation(TK->GetLocation());
   FN->Mangle();
@@ -23171,12 +22625,10 @@ ASTProductionFactory::ProductionRule_2600(const ASTToken *TK,
        I != PDV.end(); ++I) {
     ASTIdentifierNode *SId =
         new ASTIdentifierNode(*I, ASTTypeStringLiteral, 0UL);
-    assert(SId && "Could not create a valid ASTIdentifierNode!");
 
     SId->SetLocation(Loc);
     SId->SetPolymorphicName(*I);
     ASTStringNode *SN = new ASTStringNode(SId, *I, true);
-    assert(SN && "Could not create a valid ASTStringNode!");
 
     SN->SetLocation(Loc);
     SN->Mangle();
@@ -23189,13 +22641,11 @@ ASTProductionFactory::ProductionRule_2600(const ASTToken *TK,
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *Id = new ASTIdentifierNode(PSS.str(), ASTTypePragma,
                                                 ASTPragmaNode::PragmaBits);
-  assert(Id && "Could not create a valid ASTIdentifierNode!");
 
   Id->SetLocation(TK->GetLocation());
   Id->SetPolymorphicName("pragma");
 
   ASTPragmaNode *PN = new ASTPragmaNode(Id, PD, EL);
-  assert(PN && "Could not create a valid ASTPragmaNode!");
 
   PN->SetLocation(TK->GetLocation());
   PN->Mangle();
@@ -23218,7 +22668,6 @@ ASTProductionFactory::ProductionRule_2601(const ASTPragmaNode *PN) const {
   }
 
   ASTPragmaStatementNode *PSN = new ASTPragmaStatementNode(PN);
-  assert(PSN && "Could not create a valid ASTPragmaStatementNode!");
 
   PSN->SetLocation(PN->GetLocation());
   return PSN;
@@ -23260,13 +22709,11 @@ ASTProductionFactory::ProductionRule_2610(const ASTToken *TK,
 
   ASTIdentifierNode *Id = new ASTIdentifierNode(
       ANS.str(), ASTTypeAnnotation, ASTAnnotationNode::AnnotationBits);
-  assert(Id && "Could not create a valid ASTIdentifierNode!");
 
   Id->SetLocation(TK->GetLocation());
   Id->SetPolymorphicName(ADS);
 
   ASTAnnotationNode *AN = new ASTAnnotationNode(Id, ADS, EXL);
-  assert(AN && "Could not create a valid ASTAnnotationNode!");
 
   AN->SetLocation(TK->GetLocation());
   AN->Mangle();
@@ -23293,7 +22740,6 @@ ASTProductionFactory::ProductionRule_2610(const ASTToken *TK,
   }
 
   ASTAnnotationStatementNode *ASN = new ASTAnnotationStatementNode(AN);
-  assert(ASN && "Could not create a valid ASTAnnotationStatementNode!");
 
   ASN->SetLocation(TK->GetLocation());
   ASN->Mangle();
@@ -23492,7 +22938,6 @@ ASTIfStatementNode *ASTProductionFactory::ProductionRule_3000(
   SL->Append(SN);
 
   ASTIfStatementNode *ISN = new ASTIfStatementNode(EN, SL);
-  assert(ISN && "Failed to create the ASTIfStatementNode!");
 
   ISN->SetLocation(TK->GetLocation());
   ISN->SetDeclarationContext(CTX->GetParentContext());
@@ -23747,7 +23192,6 @@ ASTIfStatementNode *ASTProductionFactory::ProductionRule_3001(
   ASTArgumentNodeBuilder::Instance().Clear();
 
   ASTIfStatementNode *ISN = new ASTIfStatementNode(EN, SL);
-  assert(ISN && "Failed to create the ASTIfStatementNode!");
 
   ISN->SetLocation(TK->GetLocation());
   ISN->SetDeclarationContext(CTX->GetParentContext());
@@ -23984,7 +23428,6 @@ ASTElseIfStatementNode *ASTProductionFactory::ProductionRule_3010(
   SL->SetLocalScope();
 
   ASTElseIfStatementNode *EIN = new ASTElseIfStatementNode(CIF, EN, SL);
-  assert(EIN && "Failed to create a valid ASTElseIfStatementNode!");
 
   EIN->SetLocation(TK->GetLocation());
   EIN->SetDeclarationContext(CTX->GetParentContext());
@@ -24209,7 +23652,6 @@ ASTElseIfStatementNode *ASTProductionFactory::ProductionRule_3011(
   SL->SetLocalScope();
 
   ASTElseIfStatementNode *EIN = new ASTElseIfStatementNode(CIF, EN, SL);
-  assert(EIN && "Failed to create a valid ASTElseIfStatementNode!");
 
   EIN->SetDeclarationContext(CTX->GetParentContext());
   EIN->SetLocation(TK->GetLocation());
@@ -24327,7 +23769,6 @@ ASTProductionFactory::ProductionRule_3020(const ASTToken *TK,
   assert(ICTX && "Could not obtain a valid ASTDeclarationContext!");
 
   ASTElseStatementNode *ESN = new ASTElseStatementNode(CIF, SL);
-  assert(ESN && "Failed to create the ElseNode from the IfNode Dominator!");
   assert(CIF->GetISC() == ESN->GetISC() &&
          "Inconsistent ASTIfStatementNode <-> ASTElseStatementNode ISC!");
   assert(CIF->GetStackFrame() == ESN->GetStackFrame() &&
@@ -24556,7 +23997,6 @@ ASTElseStatementNode *ASTProductionFactory::ProductionRule_3021(
   SL->SetLocalScope();
 
   ASTElseStatementNode *ESN = new ASTElseStatementNode(CIF, SL);
-  assert(ESN && "Failed to create the ElseNode for the IfNode Dominator!");
   assert(CIF->GetISC() == ESN->GetISC() &&
          "Inconsistent ASTIfStatementNode <-> ASTElseStatementNode ISC!");
   assert(CIF->GetStackFrame() == ESN->GetStackFrame() &&
@@ -24657,7 +24097,6 @@ ASTProductionFactory::ProductionRule_3110(const ASTToken *TK,
 
   ASTCaseStatementNode *CSN =
       new ASTCaseStatementNode(CIX, static_cast<unsigned>(~0x0), SL, SC);
-  assert(CSN && "Could not create a valid ASTCaseStatementNode!");
 
   CSN->SetDeclarationContext(CTX);
   CSN->SetLocation(TK->GetLocation());
@@ -24745,7 +24184,6 @@ ASTCaseStatementNode *ASTProductionFactory::ProductionRule_3111(
 
   ASTCaseStatementNode *CSN =
       new ASTCaseStatementNode(CIX, static_cast<unsigned>(~0x0), SL, BK, SC);
-  assert(CSN && "Could not create a valid ASTCaseStatementNode!");
 
   CSN->SetDeclarationContext(CTX);
   CSN->SetLocation(TK->GetLocation());
@@ -24796,7 +24234,6 @@ ASTProductionFactory::ProductionRule_3120(const ASTToken *TK,
 
   ASTDefaultStatementNode *DSN =
       new ASTDefaultStatementNode(static_cast<unsigned>(~0x0), SL, SC);
-  assert(DSN && "Could not create a valid ASTDefaultStatementNode!");
 
   DSN->SetDeclarationContext(CTX);
   DSN->SetLocation(TK->GetLocation());
@@ -24847,7 +24284,6 @@ ASTDefaultStatementNode *ASTProductionFactory::ProductionRule_3121(
 
   ASTDefaultStatementNode *DSN =
       new ASTDefaultStatementNode(static_cast<unsigned>(~0x0), SL, BK, SC);
-  assert(DSN && "Could not create a valid ASTDefaultStatementNode!");
 
   DSN->SetDeclarationContext(CTX);
   DSN->SetLocation(TK->GetLocation());
@@ -24895,7 +24331,6 @@ ASTProductionFactory::ProductionRule_3150(const ASTToken *TK) const {
 
   Id->SetLocation(TK->GetLocation());
   ASTBreakStatementNode *BKN = new ASTBreakStatementNode(Id);
-  assert(BKN && "Could not create a valid ASTBreakStatementNode!");
 
   BKN->SetLocation(TK->GetLocation());
   BKN->Mangle();
@@ -24916,7 +24351,6 @@ ASTProductionFactory::ProductionRule_3151(const ASTToken *TK) const {
 
   Id->SetLocation(TK->GetLocation());
   ASTContinueStatementNode *CTN = new ASTContinueStatementNode(Id);
-  assert(CTN && "Could not create a valid ASTContinueStatementNode!");
 
   CTN->SetLocation(TK->GetLocation());
   CTN->Mangle();
@@ -24935,7 +24369,6 @@ ASTSwitchStatementNode *ASTProductionFactory::ProductionRule_3100(
     ASTMPIntegerNode *MPI =
         new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), DI->GetSignBit(),
                              128U, DI->GetString().c_str());
-    assert(MPI && "Could not create a valid ASTMPIntegerNode!");
 
     return ProductionRule_3105(TK, MPI, SL);
   }
@@ -24954,7 +24387,6 @@ ASTSwitchStatementNode *ASTProductionFactory::ProductionRule_3100(
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *SId = new ASTIdentifierNode(
       SSI.str(), ASTTypeSwitchStatement, ASTSwitchStatementNode::SwitchBits);
-  assert(SId && "Could not create a valid ASTIdentifierNode!");
 
   SId->SetLocation(TK->GetLocation());
   SId->SetDeclarationContext(PCX);
@@ -24968,7 +24400,6 @@ ASTSwitchStatementNode *ASTProductionFactory::ProductionRule_3100(
   ASTScopeController::Instance().SetLocalScope(SL);
 
   ASTSwitchStatementNode *SN = new ASTSwitchStatementNode(SId, DI, SL);
-  assert(SN && "Could not create a valid ASTSwitchStatementNode!");
 
   if (!SN->CheckValidLabels()) {
     std::stringstream M;
@@ -25015,7 +24446,6 @@ ASTProductionFactory::ProductionRule_3101(const ASTToken *TK,
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *SId = new ASTIdentifierNode(
       SSI.str(), ASTTypeSwitchStatement, ASTSwitchStatementNode::SwitchBits);
-  assert(SId && "Could not create a valid ASTIdentifierNode!");
 
   SId->SetLocation(TK->GetLocation());
   SId->SetDeclarationContext(PCX);
@@ -25029,7 +24459,6 @@ ASTProductionFactory::ProductionRule_3101(const ASTToken *TK,
   ASTScopeController::Instance().SetLocalScope(SL);
 
   ASTSwitchStatementNode *SN = new ASTSwitchStatementNode(SId, BOP, SL);
-  assert(SN && "Could not create a valid ASTSwitchStatementNode!");
 
   if (!SN->CheckValidLabels()) {
     std::stringstream M;
@@ -25074,7 +24503,6 @@ ASTSwitchStatementNode *ASTProductionFactory::ProductionRule_3102(
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *SId = new ASTIdentifierNode(
       SSI.str(), ASTTypeSwitchStatement, ASTSwitchStatementNode::SwitchBits);
-  assert(SId && "Could not create a valid ASTIdentifierNode!");
 
   SId->SetLocation(TK->GetLocation());
   SId->SetDeclarationContext(PCX);
@@ -25088,7 +24516,6 @@ ASTSwitchStatementNode *ASTProductionFactory::ProductionRule_3102(
   ASTScopeController::Instance().SetLocalScope(SL);
 
   ASTSwitchStatementNode *SN = new ASTSwitchStatementNode(SId, UOP, SL);
-  assert(SN && "Could not create a valid ASTSwitchStatementNode!");
 
   if (!SN->CheckValidLabels()) {
     std::stringstream M;
@@ -25135,7 +24562,6 @@ ASTProductionFactory::ProductionRule_3103(const ASTToken *TK,
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *SId = new ASTIdentifierNode(
       SSI.str(), ASTTypeSwitchStatement, ASTSwitchStatementNode::SwitchBits);
-  assert(SId && "Could not create a valid ASTIdentifierNode!");
 
   SId->SetLocation(TK->GetLocation());
   SId->SetDeclarationContext(PCX);
@@ -25149,7 +24575,6 @@ ASTProductionFactory::ProductionRule_3103(const ASTToken *TK,
   ASTScopeController::Instance().SetLocalScope(SL);
 
   ASTSwitchStatementNode *SN = new ASTSwitchStatementNode(SId, DId, SL);
-  assert(SN && "Could not create a valid ASTSwitchStatementNode!");
 
   if (!SN->CheckValidLabels()) {
     std::stringstream M;
@@ -25196,7 +24621,6 @@ ASTProductionFactory::ProductionRule_3104(const ASTToken *TK,
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *SId = new ASTIdentifierNode(
       SSI.str(), ASTTypeSwitchStatement, ASTSwitchStatementNode::SwitchBits);
-  assert(SId && "Could not create a valid ASTIdentifierNode!");
 
   SId->SetLocation(TK->GetLocation());
   SId->SetDeclarationContext(PCX);
@@ -25210,7 +24634,6 @@ ASTProductionFactory::ProductionRule_3104(const ASTToken *TK,
   ASTScopeController::Instance().SetLocalScope(SL);
 
   ASTSwitchStatementNode *SN = new ASTSwitchStatementNode(SId, FC, SL);
-  assert(SN && "Could not create a valid ASTSwitchStatementNode!");
 
   if (!SN->CheckValidLabels()) {
     std::stringstream M;
@@ -25257,7 +24680,6 @@ ASTProductionFactory::ProductionRule_3105(const ASTToken *TK,
       << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *SId = new ASTIdentifierNode(
       SSI.str(), ASTTypeSwitchStatement, ASTSwitchStatementNode::SwitchBits);
-  assert(SId && "Could not create a valid ASTIdentifierNode!");
 
   SId->SetLocation(TK->GetLocation());
   SId->SetDeclarationContext(PCX);
@@ -25271,7 +24693,6 @@ ASTProductionFactory::ProductionRule_3105(const ASTToken *TK,
   ASTScopeController::Instance().SetLocalScope(SL);
 
   ASTSwitchStatementNode *SN = new ASTSwitchStatementNode(SId, DI, SL);
-  assert(SN && "Could not create a valid ASTSwitchStatementNode!");
 
   if (!SN->CheckValidLabels()) {
     std::stringstream M;
@@ -25422,7 +24843,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3200(
 
   if (!ISTE->HasValue()) {
     ASTIntNode *IV = new ASTIntNode(LId, int32_t(0));
-    assert(IV && "Could not create a valid ASTIntNode induction variable!");
 
     ISTE->ResetValue();
     ISTE->SetValue(new ASTValue<>(IV, ASTTypeInt), ASTTypeInt);
@@ -25455,7 +24875,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3200(
 
   ASTForLoopNode *FL = new ASTForLoopNode(
       Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
-  assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -25471,7 +24890,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3200(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create a valid ASTForStatementNode!");
 
   FSN->SetDeclarationContext(CTX->GetParentContext());
   FSN->SetLocation(TK->GetLocation());
@@ -25520,14 +24938,12 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3201(
 
   if (!ISTE->HasValue()) {
     ASTIntNode *IV = new ASTIntNode(LId, int32_t(0));
-    assert(IV && "Could not create a valid ASTIntNode induction variable!");
     ISTE->ResetValue();
     ISTE->SetValue(new ASTValue<>(IV, ASTTypeInt), ASTTypeInt);
     assert(ISTE->HasValue() && "Loop induction variable has no Value!");
   }
 
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->Append(ST);
   SL->SetDeclarationContext(CTX);
@@ -25559,7 +24975,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3201(
 
   ASTForLoopNode *FL = new ASTForLoopNode(
       Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
-  assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -25575,7 +24990,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3201(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create a valid ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -25619,7 +25033,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
   LId->SetDeclarationContext(CTX);
 
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->SetLocation(ST->GetLocation());
   SL->Append(ST);
@@ -25650,7 +25063,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
 
   if (!ISTE->HasValue()) {
     ASTIntNode *IV = new ASTIntNode(LId, int32_t(0));
-    assert(IV && "Could not create a valid ASTIntNode induction variable!");
     ISTE->ResetValue();
     ISTE->SetValue(new ASTValue<>(IV, ASTTypeInt), ASTTypeInt);
     assert(ISTE->HasValue() && "Loop induction variable has no Value!");
@@ -25662,7 +25074,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
                                           *SL, LIV, ASTForLoopNode::IVDiscrete);
-  assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -25678,7 +25089,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create a valid ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -25727,7 +25137,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3203(
 
   if (!ISTE->HasValue()) {
     ASTIntNode *IV = new ASTIntNode(LId, int32_t(0));
-    assert(IV && "Could not create a valid ASTIntNode induction variable!");
     ISTE->ResetValue();
     ISTE->SetValue(new ASTValue<>(IV, ASTTypeInt), ASTTypeInt);
     assert(ISTE->HasValue() && "Loop induction variable has no Value!");
@@ -25758,7 +25167,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3203(
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
                                           *SL, LIV, ASTForLoopNode::IVDiscrete);
-  assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -25774,7 +25182,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3203(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create a valid ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -25823,7 +25230,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3204(
 
   if (!ISTE->HasValue()) {
     ASTIntNode *IV = new ASTIntNode(LId, int32_t(0));
-    assert(IV && "Could not create a valid ASTIntNode induction variable!");
     ISTE->ResetValue();
     ISTE->SetValue(new ASTValue<>(IV, ASTTypeInt), ASTTypeInt);
     assert(ISTE->HasValue() && "Loop induction variable has no Value!");
@@ -25850,7 +25256,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3204(
                 "an invalid Type!");
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, FLR, *SL, LIV);
-  assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -25866,7 +25271,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3204(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create a valid ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -25915,14 +25319,12 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3205(
 
   if (!ISTE->HasValue()) {
     ASTIntNode *IV = new ASTIntNode(LId, int32_t(0));
-    assert(IV && "Could not create a valid ASTIntNode induction variable!");
     ISTE->ResetValue();
     ISTE->SetValue(new ASTValue<>(IV, ASTTypeInt), ASTTypeInt);
     assert(ISTE->HasValue() && "Loop induction variable has no Value!");
   }
 
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->Append(ST);
   SL->SetDeclarationContext(CTX);
@@ -25951,7 +25353,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3205(
                 "an invalid Type!");
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, FLR, *SL, LIV);
-  assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -25967,7 +25368,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3205(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create a valid ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26045,7 +25445,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3206(
 
   ASTForLoopNode *FL = new ASTForLoopNode(
       Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
-  assert(FL && "Could not create an ASTForLoopNode!");
 
   SL->TransferDeclarations(FL->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX,
@@ -26061,7 +25460,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3206(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create an ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26114,7 +25512,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3207(
   assert(ISTE->HasValue() && "Loop induction variable has no Value!");
 
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->Append(ST);
   SL->SetLocalScope();
@@ -26143,7 +25540,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3207(
 
   ASTForLoopNode *FL = new ASTForLoopNode(
       Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
-  assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -26159,7 +25555,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3207(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create an ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26238,7 +25633,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3208(
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
                                           *SL, LIV, ASTForLoopNode::IVDiscrete);
-  assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   FL->SetDeclarationContext(CTX->GetParentContext());
@@ -26254,7 +25648,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3208(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create an ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26299,7 +25692,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3209(
   LId->SetDeclarationContext(CTX);
 
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->Append(ST);
   SL->SetDeclarationContext(CTX);
@@ -26337,7 +25729,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3209(
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
                                           *SL, LIV, ASTForLoopNode::IVDiscrete);
-  assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   FL->SetDeclarationContext(CTX->GetParentContext());
@@ -26353,7 +25744,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3209(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create an ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26431,7 +25821,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3210(
                 "an invalid Type!");
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, FLR, *SL, LIV);
-  assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   FL->SetDeclarationContext(CTX->GetParentContext());
@@ -26447,7 +25836,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3210(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create an ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26500,7 +25888,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3211(
   assert(ISTE->HasValue() && "Loop induction variable has no Value!");
 
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->SetDeclarationContext(CTX);
   SL->SetLocalScope();
@@ -26528,7 +25915,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3211(
                 "an invalid Type!");
 
   ASTForLoopNode *FL = new ASTForLoopNode(Id, FLR, *SL, LIV);
-  assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
   FL->SetDeclarationContext(CTX->GetParentContext());
@@ -26544,7 +25930,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3211(
 
   ASTForStatementBuilder::Instance().Clear();
   ASTForStatementNode *FSN = new ASTForStatementNode(FL);
-  assert(FSN && "Could not create an ASTForStatementNode!");
 
   FSN->SetLocation(TK->GetLocation());
   FSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26559,7 +25944,6 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3211(
 static ASTStatementList *
 GateQOpListToStatementList(const ASTGateQOpList *Body) {
   ASTStatementList *SL = new ASTStatementList();
-  assert(SL && "Could not create a valid ASTStatementList!");
   if (!Body)
     return SL;
   for (ASTGateQOpList::const_iterator I = Body->begin(); I != Body->end(); ++I)
@@ -26585,7 +25969,6 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3220(
 
   ASTGateForOpNode *GFN =
       new ASTGateForOpNode(ASTIdentifierNode::GateQOp.Clone(), FSN);
-  assert(GFN && "Could not create a valid ASTGateForOpNode!");
   GFN->SetLocation(TK->GetLocation());
   GFN->Mangle();
   return GFN;
@@ -26609,7 +25992,6 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3221(
 
   ASTGateForOpNode *GFN =
       new ASTGateForOpNode(ASTIdentifierNode::GateQOp.Clone(), FSN);
-  assert(GFN && "Could not create a valid ASTGateForOpNode!");
   GFN->SetLocation(TK->GetLocation());
   GFN->Mangle();
   return GFN;
@@ -26658,7 +26040,6 @@ ASTWhileStatementNode *ASTProductionFactory::ProductionRule_3300(
   SL->SetLocalScope();
 
   ASTWhileLoopNode *WL = new ASTWhileLoopNode(Id, EN, SL);
-  assert(WL && "Could not create a valid ASTWhileLoopNode!");
 
   WL->SetLocation(TK->GetLocation());
   WL->SetDeclarationContext(CTX->GetParentContext());
@@ -26672,7 +26053,6 @@ ASTWhileStatementNode *ASTProductionFactory::ProductionRule_3300(
   assert(STE->HasValue() && "WhileLoop SymbolTable Entry has no Value!");
 
   ASTWhileStatementNode *WSN = new ASTWhileStatementNode(WL);
-  assert(WSN && "Could not create a valid ASTWhileStatementNode!");
 
   WSN->SetLocation(TK->GetLocation());
   WSN->SetDeclarationContext(CTX->GetParentContext());
@@ -26728,7 +26108,6 @@ ASTDoWhileStatementNode *ASTProductionFactory::ProductionRule_3400(
   SL->SetLocalScope();
 
   ASTDoWhileLoopNode *DWL = new ASTDoWhileLoopNode(Id, EN, SL);
-  assert(DWL && "Could not create a valid ASTDoWhileLoopNode!");
 
   DWL->SetLocation(TK->GetLocation());
   DWL->SetDeclarationContext(CTX->GetParentContext());
@@ -26741,7 +26120,6 @@ ASTDoWhileStatementNode *ASTProductionFactory::ProductionRule_3400(
   assert(STE->HasValue() && "DoWhileLoop SymbolTable Entry has no Value!");
 
   ASTDoWhileStatementNode *DWSN = new ASTDoWhileStatementNode(DWL);
-  assert(DWSN && "Could not create a valid ASTDoWhileStatementNode!");
 
   DWSN->SetLocation(TK->GetLocation());
   DWSN->SetDeclarationContext(CTX->GetParentContext());
@@ -27576,7 +26954,6 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3500(
           OwnedTemplateArgs = ASTExpressionBuilder::Instance().NewList();
           ASTIntNode *IN =
               new ASTIntNode(static_cast<int32_t>(ASN->GetIndex()));
-          assert(IN && "Could not create template arg ASTIntNode!");
           OwnedTemplateArgs->Append(IN);
           ResolvedTemplateArgs = OwnedTemplateArgs;
         }
@@ -28367,7 +27744,6 @@ void ASTProductionFactory::ProductionRule_10031(
   }
   if (!STE) {
     STE = new ASTSymbolTableEntry(IId, ASTTypeInt);
-    assert(STE && "Could not create SymbolTable Entry for template param!");
     IId->SetSymbolTableEntry(STE);
     IId->SetHasSymbolTableEntry(true);
     STE->SetLocalScope();
@@ -28461,12 +27837,10 @@ ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
     ASTIdentifierNode *ArrId =
         new ASTIdentifierNode(ArrName.str(), ASTTypeMPComplexArray,
                               static_cast<unsigned>(Complexes.size()));
-    assert(ArrId && "Could not create a Complex Array ASTIdentifierNode!");
 
     ArrId->SetPolymorphicName("gatearraycomplex");
     ASTMPComplexArrayNode *CAN = new ASTMPComplexArrayNode(
         ArrId, Complexes, ASTMPComplexNode::DefaultBits);
-    assert(CAN && "Could not create a valid ASTMPComplexArrayNode!");
 
     CAN->Mangle();
     return CAN;
@@ -28531,11 +27905,9 @@ ASTProductionFactory::ProductionRule_10010(const ASTExpressionList *EL) const {
   ArrName << "ast-gate-angle-array-lit-" << Angles.size();
   ASTIdentifierNode *ArrId = new ASTIdentifierNode(
       ArrName.str(), ASTTypeAngleArray, static_cast<unsigned>(Angles.size()));
-  assert(ArrId && "Could not create an Array ASTIdentifierNode!");
 
   ArrId->SetPolymorphicName("gatearrayangle");
   ASTAngleArrayNode *AAN = new ASTAngleArrayNode(ArrId, Angles);
-  assert(AAN && "Could not create a valid ASTAngleArrayNode!");
 
   AAN->Mangle();
   return AAN;
@@ -28547,7 +27919,6 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3507(
   assert(GPE && "Invalid ASTGPhaseExpressionNode argument!");
 
   ASTGateQOpNode *GQO = new ASTGateQOpNode(GPE->GetIdentifier(), GPE);
-  assert(GQO && "Could not create a valid GPhase ASTGateQOpNode!");
 
   if (!GQO) {
     std::stringstream M;
@@ -28804,7 +28175,6 @@ ASTProductionFactory::ProductionRule_3854(const ASTToken *TK,
   assert(IL && "Invalid ASTIdentifierList argument!");
 
   ASTGateControlNode *GCN = new ASTGateControlNode(GPN);
-  assert(GCN && "Could not create a valid ASTGateControlNode!");
 
   if (!GCN) {
     std::stringstream M;
@@ -28849,7 +28219,6 @@ ASTProductionFactory::ProductionRule_3854(const ASTToken *TK,
       if (!QSTE->HasValue()) {
         ASTGateOperandParamNode *QPN = new ASTGateOperandParamNode(
             QId, QIX++, QId->GetBits(), QId->GetName());
-        assert(QPN && "Could not create a valid ASTGateOperandParamNode!");
         if (!QPN) {
           std::stringstream M;
           M << "Could not create a valid ASTGateOperandParamNode.";
@@ -28877,7 +28246,6 @@ ASTProductionFactory::ProductionRule_3854(const ASTToken *TK,
   }
 
   ASTGateGPhaseExpressionNode *GEN = new ASTGateGPhaseExpressionNode(GCN, *IL);
-  assert(GEN && "Could not create a valid ASTGateGPhaseExpressionNode!");
 
   if (!GEN) {
     std::stringstream M;
@@ -28902,7 +28270,6 @@ ASTProductionFactory::ProductionRule_5300(const ASTToken *TK,
   uint32_t LN = static_cast<uint32_t>(std::stoi(*S));
   DIAGLineCounter::Instance().SetLineCount(LN);
   ASTDirectiveStatementNode *DSN = new ASTDirectiveStatementNode(LN);
-  assert(DSN && "Could not create a valid ASTDirectiveStatementNode!");
 
   DSN->SetLocation(TK->GetLocation());
   return DSN;
@@ -28917,7 +28284,6 @@ ASTProductionFactory::ProductionRule_5301(const ASTToken *TK,
 
   DIAGLineCounter::Instance().SetTranslationUnit(*S);
   ASTDirectiveStatementNode *DSN = new ASTDirectiveStatementNode(*S);
-  assert(DSN && "Could not create a valid ASTDirectiveStatementNode!");
 
   DSN->SetLocation(TK->GetLocation());
   return DSN;
@@ -29019,7 +28385,6 @@ ASTProductionFactory::ProductionRule_7006(const ASTToken *TK) const {
 
   std::string ERM = "Feature not yet implemented.";
   ASTInvalidArrayNode *IVN = new ASTInvalidArrayNode(ERM, TK);
-  assert(IVN && "Could not create a valid ASTInvalidArrayNode!");
   return IVN;
 }
 

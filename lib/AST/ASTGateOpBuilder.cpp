@@ -44,7 +44,6 @@ ASTGateOpBuilder::CreateASTQGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid QGate GateNode!");
 
   ASTGateQOpNode *QG = new ASTGateQOpNode(Id, GateNode);
-  assert(QG && "Failed to create an ASTHGateOpNode!");
 
   AppendUnlessControlTarget(QG);
   return QG;
@@ -57,7 +56,6 @@ ASTGateOpBuilder::CreateASTGenericGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid GGate GateNode!");
 
   ASTGenericGateOpNode *GG = new ASTGenericGateOpNode(Id, GateNode);
-  assert(GG && "Failed to create an ASTGenericGateOpNode!");
 
   AppendUnlessControlTarget(GG);
   return GG;
@@ -69,7 +67,6 @@ ASTGenericGateOpNode *ASTGateOpBuilder::CreateASTGenericDefcalOpNode(
   assert(DefcalNode && "Invalid DefcalNode argument!");
 
   ASTGenericGateOpNode *GG = new ASTGenericGateOpNode(Id, DefcalNode);
-  assert(GG && "Failed to create an ASTGenericGateOpNode!");
 
   AppendUnlessControlTarget(GG);
   return GG;
@@ -82,7 +79,6 @@ ASTGateOpBuilder::CreateASTHGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid HGate GateNode!");
 
   ASTHGateOpNode *HG = new ASTHGateOpNode(Id, GateNode);
-  assert(HG && "Failed to create an ASTHGateOpNode!");
 
   AppendUnlessControlTarget(HG);
   return HG;
@@ -95,7 +91,6 @@ ASTGateOpBuilder::CreateASTCXGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid CXGate GateNode!");
 
   ASTCXGateOpNode *CXG = new ASTCXGateOpNode(Id, GateNode);
-  assert(CXG && "Failed to create an ASTCXGateOpNode!");
 
   AppendUnlessControlTarget(CXG);
   return CXG;
@@ -108,7 +103,6 @@ ASTGateOpBuilder::CreateASTCCXGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid CCXGate GateNode!");
 
   ASTCCXGateOpNode *CCXG = new ASTCCXGateOpNode(Id, GateNode);
-  assert(CCXG && "Failed to create an ASTCCXGateOpNode!");
 
   AppendUnlessControlTarget(CCXG);
   return CCXG;
@@ -121,7 +115,6 @@ ASTGateOpBuilder::CreateASTCNotGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid CNotGate GateNode!");
 
   ASTCNotGateOpNode *CNG = new ASTCNotGateOpNode(Id, GateNode);
-  assert(CNG && "Failed to create an ASTCNotGateOpNode!");
 
   AppendUnlessControlTarget(CNG);
   return CNG;
@@ -134,7 +127,6 @@ ASTGateOpBuilder::CreateASTUGateOpNode(const ASTIdentifierNode *Id,
   assert(GateNode && "Invalid UGate GateNode!");
 
   ASTUGateOpNode *UG = new ASTUGateOpNode(Id, GateNode);
-  assert(UG && "Failed to create an ASTUGateOpNode!");
 
   AppendUnlessControlTarget(UG);
   return UG;

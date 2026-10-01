@@ -2854,7 +2854,6 @@ const char *ASTDemangler::ParseType(const char *N, ASTDemangled *DMP) {
 
         // Use a clean ASTDemangled for the binary op's dependent types.
         ASTDemangled *BDMP = new ASTDemangled();
-        assert(BDMP && "Could not create a valid ASTDemangled!");
 
         BDMP->TD.Ty = DMP->TD.Ty;
         BDMP->TD.Name = DMP->TD.Name;
@@ -2966,7 +2965,6 @@ const char *ASTDemangler::ParseType(const char *N, ASTDemangled *DMP) {
           DMP->DTD0.Ty = DDM.TD.Ty;
           DDM.Clear();
           ASTDemangled *BDMP = new ASTDemangled();
-          assert(BDMP && "Could not create a valid ASTDemangled!");
 
           NP = ParseBinaryOp(NP, BDMP, BDMP->DTV);
           VDMT.push_back(BDMP);
@@ -3034,7 +3032,6 @@ const char *ASTDemangler::ParseType(const char *N, ASTDemangled *DMP) {
             NP = ValidateEndOfExpression(NP);
             while (NP) {
               ASTDemangled *DDMP = new ASTDemangled();
-              assert(DDMP && "Could not create a valid ASTDemangled!");
               NP = ParseType(NP, DDMP);
               NP = ParseName(NP, DDMP);
               VDMT.push_back(DDMP);
@@ -3531,7 +3528,6 @@ const char *ASTDemangler::ParseParam(const char *S, ASTType Ty,
     VDMT.push_back(DMP);
 
     ASTDemangled *PDM = new ASTDemangled();
-    assert(PDM && "Could not create a valid ASTDemangled!");
 
     R = ParseType(R, PDM);
     if (VDMT.size() && !VDMT.back())
@@ -3608,7 +3604,6 @@ const char *ASTDemangler::ParseOpFoldType(const char *S,
 
   while (R[0] == 'f') {
     ASTDemangled *N = new ASTDemangled();
-    assert(N && "Could not create a valid ASTDemangled!");
 
     if (R[1] == 'l') {
       N->TD.Ty = ASTTypeOpTy;
@@ -3964,7 +3959,6 @@ const char *ASTDemangler::ParseArg(const char *S, ASTType Ty,
     VDMT.push_back(DMP);
 
     ASTDemangled *PDM = new ASTDemangled();
-    assert(PDM && "Could not create a valid ASTDemangled!");
 
     R = ParseType(R, PDM);
     if (VDMT.size() && !VDMT.back())
@@ -4001,7 +3995,6 @@ const char *ASTDemangler::ResolveLiteralCReal(const char *S,
   DMP->DTD0.Name = "creal";
 
   ASTDemangled *ODMP = new ASTDemangled();
-  assert(ODMP && "Could not create a valid ASTDemangled!");
 
   std::vector<ASTDemangled *> D;
   R = ParseOpType(R, ODMP, D);
@@ -4408,7 +4401,6 @@ const char *ASTDemangler::ParseBinaryOp(const char *S, ASTDemangled *DMP,
 
   if (IsBinaryOp(NP)) {
     ASTDemangled *BODM = new ASTDemangled();
-    assert(BODM && "Could not create a valid ASTDemangled!");
     BODM->TD.Ty = ASTTypeBinaryOp;
     BODM->TD.Name = "binaryop";
     NP += 3U;
@@ -4422,7 +4414,6 @@ const char *ASTDemangler::ParseBinaryOp(const char *S, ASTDemangled *DMP,
     VDM.push_back(BODM);
   } else if (IsUnaryOp(NP)) {
     ASTDemangled *UODM = new ASTDemangled();
-    assert(UODM && "Could not create a valid ASTDemangled!");
     UODM->TD.Ty = ASTTypeUnaryOp;
     UODM->TD.Name = "unaryop";
     NP += 3U;
@@ -4444,7 +4435,6 @@ const char *ASTDemangler::ParseBinaryOp(const char *S, ASTDemangled *DMP,
 
     if (NP && IsOperator(NP)) {
       ASTDemangled *ODM = new ASTDemangled();
-      assert(ODM && "Could not create a valid ASTDemangled!");
 
       NP = ParseOpType(NP, ODM, VDM);
       if (ODM->TD.OpTy != ASTOpTypeUndefined)
@@ -4455,7 +4445,6 @@ const char *ASTDemangler::ParseBinaryOp(const char *S, ASTDemangled *DMP,
 
     if (NP) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       for (std::vector<ASTDemangled *>::iterator I = VDMT.begin();
            I != VDMT.end(); ++I) {
@@ -4474,7 +4463,6 @@ const char *ASTDemangler::ParseBinaryOp(const char *S, ASTDemangled *DMP,
 
     if (NP) {
       ASTDemangled *ODM = new ASTDemangled();
-      assert(ODM && "Could not create a valid ASTDemangled!");
 
       NP = ParseOpType(NP, ODM, VDM);
       if (ODM->TD.OpTy != ASTOpTypeUndefined)
@@ -4644,7 +4632,6 @@ const char *ASTDemangler::ParseUnaryOp(const char *S, ASTDemangled *DMP,
     };
 
     ASTDemangled *DMM0 = new ASTDemangled();
-    assert(DMM0 && "Could not create a valid ASTDemangled!");
     DMM0->TD.Ty = ASTTypeOpTy;
     DMM0->TD.OpTy = OTy;
     DMM0->TD.Name = OTMM[OTy].Token();
@@ -4652,7 +4639,6 @@ const char *ASTDemangler::ParseUnaryOp(const char *S, ASTDemangled *DMP,
 
     if (NP[0] == 'f' && NP[1] == 'l') {
       ASTDemangled *DMM1 = new ASTDemangled();
-      assert(DMM1 && "Could not create a valid ASTDemangled!");
       DMM1->TD.Ty = ASTTypeOpTy;
       DMM1->TD.OpTy = ASTOpTypeUnaryLeftFold;
       DMM1->TD.Name = '(';
@@ -4661,7 +4647,6 @@ const char *ASTDemangler::ParseUnaryOp(const char *S, ASTDemangled *DMP,
     }
 
     ASTDemangled *DMM2 = new ASTDemangled();
-    assert(DMM2 && "Could not create a valid ASTDemangled!");
 
     NP = ParseType(NP, DMM2);
     VDMT.push_back(DMM2);
@@ -4671,7 +4656,6 @@ const char *ASTDemangler::ParseUnaryOp(const char *S, ASTDemangled *DMP,
 
     if (OTy == ASTOpTypeRotl || OTy == ASTOpTypeRotr) {
       ASTDemangled *DMMI = new ASTDemangled();
-      assert(DMMI && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DMMI);
       DMMI->TD.UBits = ASTIntNode::IntBits;
@@ -4688,7 +4672,6 @@ const char *ASTDemangler::ParseUnaryOp(const char *S, ASTDemangled *DMP,
 
     if (NP[0] == 'f' && NP[1] == 'r') {
       ASTDemangled *DMM3 = new ASTDemangled();
-      assert(DMM3 && "Could not create a valid ASTDemangled!");
       DMM3->TD.Ty = ASTTypeOpTy;
       DMM3->TD.OpTy = ASTOpTypeUnaryRightFold;
       DMM3->TD.Name = ')';
@@ -4709,7 +4692,6 @@ const char *ASTDemangler::ParseMeasure(const char *S, ASTDemangled *DMP) {
   // Measure Qubit targets.
   while (NP[0] == 'Q' && NP[1] == 'C' && std::isdigit(NP[2])) {
     ASTDemangled *DDMP = new ASTDemangled();
-    assert(DDMP && "Could not create a valid ASTDemangled!");
 
     NP = ParseType(NP, DDMP);
     NP = ParseName(NP, DDMP);
@@ -4723,7 +4705,6 @@ const char *ASTDemangler::ParseMeasure(const char *S, ASTDemangled *DMP) {
   do {
     if (NP[0] == 'H') {
       ASTDemangled *HDMP = new ASTDemangled();
-      assert(HDMP && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, HDMP);
       HDMP->TD.ULVal = ASTStringUtils::HexToUnsigned<uint64_t>(NP, 16U, &J);
@@ -4735,7 +4716,6 @@ const char *ASTDemangler::ParseMeasure(const char *S, ASTDemangled *DMP) {
 
     while (NP[0] == 'j') {
       ASTDemangled *JDMP = new ASTDemangled();
-      assert(JDMP && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, JDMP);
       JDMP->TD.UIVal = ASTStringUtils::HexToUnsigned<uint32_t>(NP, 8U, &J);
@@ -4751,7 +4731,6 @@ const char *ASTDemangler::ParseMeasure(const char *S, ASTDemangled *DMP) {
 
   // Measure result.
   ASTDemangled *DDMP = new ASTDemangled();
-  assert(DDMP && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, DDMP);
   NP = ParseName(NP, DDMP);
@@ -4776,14 +4755,12 @@ const char *ASTDemangler::ParseDefcalMeasure(const char *S, ASTDemangled *DMP) {
 
   // Defcal Measure.
   ASTDemangled *DMMP = new ASTDemangled();
-  assert(DMMP && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, DMMP);
   VDMT.insert(VDMT.begin(), DMMP);
 
   // Defcal return.
   ASTDemangled *TDMP = new ASTDemangled();
-  assert(TDMP && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, TDMP);
   VDMT.push_back(TDMP);
@@ -4794,7 +4771,6 @@ const char *ASTDemangler::ParseDefcalMeasure(const char *S, ASTDemangled *DMP) {
   while (NP[0] == 'D' && NP[1] == 'p' && std::isdigit(NP[2])) {
     unsigned J;
     ASTDemangled *DDMP = new ASTDemangled();
-    assert(DDMP && "Could not create a valid ASTDemangled!");
 
     DDMP->TD.Ty = ASTTypeDefcalParam;
     DDMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
@@ -4829,7 +4805,6 @@ const char *ASTDemangler::ParseDefcalReset(const char *S, ASTDemangled *DMP) {
 
   // Defcal Reset.
   ASTDemangled *DMR = new ASTDemangled();
-  assert(DMR && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, DMR);
   NP = ParseName(NP, DMR);
@@ -4854,7 +4829,6 @@ const char *ASTDemangler::ParseDefcalReset(const char *S, ASTDemangled *DMP) {
   // Defcal params.
   while (NP[0] == 'D' && NP[1] == 'p' && std::isdigit(NP[2])) {
     ASTDemangled *DDMP = new ASTDemangled();
-    assert(DDMP && "Could not create a valid ASTDemangled!");
 
     DDMP->TD.Ty = ASTTypeDefcalParam;
     DDMP->TD.Name = ASTStringUtils::Instance().Substring(NP, '_');
@@ -4933,7 +4907,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, GP)) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DDM);
       NP = ParseName(NP, DDM);
@@ -4954,7 +4927,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
           VDMT.pop_back();
       } else {
         ASTDemangled *DMA = new ASTDemangled();
-        assert(DMA && "Could not create a valid ASTDemangled!");
         NP = ParseType(NP, DMA);
         NP = ParseName(NP, DMA);
 
@@ -4973,7 +4945,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, GA)) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DDM);
       NP = ParseName(NP, DDM);
@@ -4994,7 +4965,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
           VDMT.pop_back();
       } else {
         ASTDemangled *DMA = new ASTDemangled();
-        assert(DMA && "Could not create a valid ASTDemangled!");
         NP = ParseType(NP, DMA);
         NP = ParseName(NP, DMA);
 
@@ -5013,7 +4983,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DP)) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DDM);
       NP = ParseName(NP, DDM);
@@ -5034,7 +5003,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
           VDMT.pop_back();
       } else {
         ASTDemangled *DMA = new ASTDemangled();
-        assert(DMA && "Could not create a valid ASTDemangled!");
         NP = ParseType(NP, DMA);
         NP = ParseName(NP, DMA);
 
@@ -5061,7 +5029,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DA)) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       if (IsParamOrArgument(NP)) {
         NP = ParseType(NP, DDM);
@@ -5085,7 +5052,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
             VDMT.pop_back();
         } else {
           ASTDemangled *DMA = new ASTDemangled();
-          assert(DMA && "Could not create a valid ASTDemangled!");
           NP = ParseType(NP, DMA);
           NP = ParseName(NP, DMA);
 
@@ -5113,7 +5079,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DA)) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       if (IsParamOrArgument(NP)) {
         NP = ParseType(NP, DDM);
@@ -5137,7 +5102,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
             VDMT.pop_back();
         } else {
           ASTDemangled *DMA = new ASTDemangled();
-          assert(DMA && "Could not create a valid ASTDemangled!");
           NP = ParseType(NP, DMA);
           NP = ParseName(NP, DMA);
 
@@ -5165,7 +5129,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DA)) {
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled!");
 
       if (IsParamOrArgument(NP)) {
         NP = ParseType(NP, DDM);
@@ -5189,7 +5152,6 @@ const char *ASTDemangler::ParseDurationOfTarget(const char *S,
             VDMT.pop_back();
         } else {
           ASTDemangled *DMA = new ASTDemangled();
-          assert(DMA && "Could not create a valid ASTDemangled!");
           NP = ParseType(NP, DMA);
           NP = ParseName(NP, DMA);
 
@@ -5261,7 +5223,6 @@ bool ASTDemangler::Demangle(const std::string &N) {
       }
 
       ASTDemangled *DDM = new ASTDemangled();
-      assert(DDM && "Could not create a valid ASTDemangled instance!");
 
       P = ParseType(P, DDM);
 

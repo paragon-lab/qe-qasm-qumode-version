@@ -62,7 +62,6 @@ ASTExpressionNodeList::ASTExpressionNodeList(const ASTExpressionList &EL)
                    dynamic_cast<const ASTExpression *>(*I)) {
       ASTExpressionNode *EN =
           new ASTExpressionNode(EX, EX->GetIdentifier(), EX->GetASTType());
-      assert(EN && "Could not create a valid ASTExpressionNode!");
       Append(EN);
     }
   }

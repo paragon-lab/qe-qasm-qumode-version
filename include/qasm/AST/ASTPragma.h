@@ -126,7 +126,6 @@ public:
 
     ASTPragmaStatementNode *SR =
         new ASTPragmaStatementNode(Id, ASTPragmaNode::ExpressionError(Id, ERM));
-    assert(SR && "Could not create a valid ASTStatementNode!");
     return SR;
   }
 

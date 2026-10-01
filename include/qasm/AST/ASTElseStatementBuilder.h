@@ -18,7 +18,6 @@ public:
 
   ASTStatementList *List() const {
     ASTStatementList *SL = new ASTStatementList(++ISC);
-    assert(SL && "Could not create an ASTStatementList!");
 
     if (!ElseMap.insert(std::make_pair(ISC, SL)).second) {
       assert(0 && "Could not create a new ASTStatementList!");

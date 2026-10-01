@@ -50,7 +50,6 @@ public:
 
   static ASTExpressionNodeList *NewList() {
     ASTExpressionNodeList *IEL = new ASTExpressionNodeList();
-    assert(IEL && "Could not create a valid ASTExpressionNodeList!");
     ELP = IEL;
     ELV.push_back(ELP);
     return ELP;
@@ -70,7 +69,6 @@ public:
 
   void Restart() {
     ASTExpressionNodeList *IEL = new ASTExpressionNodeList();
-    assert(IEL && "Could not create a valid ASTExpressionNodeList!");
     ELP = IEL;
     ELV.push_back(ELP);
   }

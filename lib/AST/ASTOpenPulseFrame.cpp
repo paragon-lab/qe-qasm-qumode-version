@@ -688,7 +688,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
       MPD = new ASTMPDecimalNode(&ASTIdentifierNode::MPDec,
                                  ASTMPDecimalNode::DefaultBits,
                                  static_cast<double>(I->GetSignedValue()));
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeFloat: {
@@ -696,7 +695,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
     if (F) {
       MPD = new ASTMPDecimalNode(&ASTIdentifierNode::MPDec,
                                  ASTMPDecimalNode::DefaultBits, F->GetValue());
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeDouble: {
@@ -704,7 +702,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
     if (D) {
       MPD = new ASTMPDecimalNode(&ASTIdentifierNode::MPDec,
                                  ASTMPDecimalNode::DefaultBits, D->GetValue());
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeMPInteger: {
@@ -712,7 +709,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
     if (MPI) {
       MPD =
           new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, MPI->GetBits(), MPI);
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeMPDecimal: {
@@ -720,7 +716,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
     if (MPDD) {
       MPD = new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, MPDD->GetBits(),
                                  MPDD->GetMPValue());
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeBinaryOp: {
@@ -728,7 +723,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
     if (BOP) {
       MPD = new ASTMPDecimalNode(&ASTIdentifierNode::MPDec,
                                  ASTMPDecimalNode::DefaultBits, BOP);
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   case ASTTypeUnaryOp: {
@@ -736,7 +730,6 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(const ASTIdentifierNode *Id) {
     if (UOP) {
       MPD = new ASTMPDecimalNode(&ASTIdentifierNode::MPDec,
                                  ASTMPDecimalNode::DefaultBits, UOP);
-      assert(MPD && "Could not create a valid ASTMPDecimalNode!");
     }
   } break;
   default: {
@@ -839,7 +832,6 @@ ASTOpenPulseFrameNodeResolver::ResolveDuration(ASTExpressionNode *E0,
   ASTSymbolTable::Instance().Erase(I1);
 
   ASTDurationNode *DN = new ASTDurationNode(&ASTIdentifierNode::Duration, DS);
-  assert(DN && "Could not create a valid ASTDurationNode!");
 
   return DN;
 }

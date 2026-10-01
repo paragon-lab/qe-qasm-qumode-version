@@ -167,7 +167,6 @@ public:
 
   static ASTBoundQubitList *NewList() {
     ASTBoundQubitList *QL = new ASTBoundQubitList();
-    assert(QL && "Could not create a valid ASTBoundQubitList!");
 
     BQP = QL;
     BQV.push_back(BQP);

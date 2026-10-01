@@ -74,10 +74,8 @@ ASTExpressionNode *
 ASTExpressionNode::ExpressionError(const ASTIdentifierNode *Id,
                                    const std::string &ERM) {
   ASTStringNode *SN = new ASTStringNode(ERM);
-  assert(SN && "Could not create a valid ASTStringNode!");
 
   ASTExpressionNode *ER = new ASTExpressionNode(Id, SN, ASTTypeExpressionError);
-  assert(ER && "Could not create a valid ASTExpressionNode!");
   ER->SetLocation(Id->GetLocation());
   return ER;
 }
@@ -86,11 +84,9 @@ ASTExpressionNode *
 ASTExpressionNode::ExpressionError(const ASTIdentifierRefNode *IdR,
                                    const std::string &ERM) {
   ASTStringNode *SN = new ASTStringNode(ERM);
-  assert(SN && "Could not create a valid ASTStringNode!");
 
   ASTExpressionNode *ER =
       new ASTExpressionNode(IdR, SN, ASTTypeExpressionError);
-  assert(ER && "Could not create a valid ASTExpressionNode!");
   ER->SetLocation(IdR->GetLocation());
   return ER;
 }
@@ -214,7 +210,6 @@ const ASTMPIntegerNode *ASTIntNode::GetMPInteger() const {
 ASTMPIntegerNode *ASTIntNode::AsMPInteger(unsigned W) const {
   ASTMPIntegerNode *MPI =
       new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signbit, W);
-  assert(MPI && "Could not create a valid ASTMPIntegerNode!");
 
   MPI->InitFromString(GetString().c_str(), Signbit, W, 0);
   return MPI;
@@ -352,7 +347,6 @@ void ASTFloatNode::MangleLiteral() {
 ASTMPDecimalNode *ASTDoubleNode::AsMPDecimal(unsigned W) const {
   ASTMPDecimalNode *MPD = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
                                                W, GetString().c_str());
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
   return MPD;
 }
 

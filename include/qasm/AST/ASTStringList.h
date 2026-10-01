@@ -141,7 +141,6 @@ public:
 
   static ASTStringList *NewList() {
     ASTStringList *SSL = new ASTStringList();
-    assert(SSL && "Could not create a valid ASTStringList!");
     SLP = SSL;
     SLV.push_back(SLP);
     return SLP;

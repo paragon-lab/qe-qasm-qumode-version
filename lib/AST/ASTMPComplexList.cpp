@@ -50,8 +50,6 @@ void ASTMPComplexList::ConstructFromExpressionList(
                 dynamic_cast<const ASTBinaryOpNode *>(EN)) {
           ASTComplexExpressionNode *CEN =
               new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, BOP);
-          assert(CEN && "Could not create a valid ASTComplexExpression from "
-                        "an ASTBinaryOpNode!");
           ASTMPComplexNode *MPC =
               new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, CEN, 128);
           List.push_back(

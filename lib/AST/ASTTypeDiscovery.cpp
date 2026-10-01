@@ -882,7 +882,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
           if (!Id->GetSymbolTableEntry()) {
             ASTSymbolTableEntry *STE =
                 new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-            assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
             Id->SetLocalScope();
             STE->SetLocalScope();
@@ -914,7 +913,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             if (!Id->GetSymbolTableEntry()) {
               ASTSymbolTableEntry *STE =
                   new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-              assert(STE && "Could not create a valid ASTSymbolTable Entry!");
 
               Id->SetSymbolTableEntry(STE);
 
@@ -942,7 +940,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
 
           ASTSymbolTableEntry *STE =
               new ASTSymbolTableEntry(QId, QId->GetSymbolType());
-          assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
           ASTSymbolTable::Instance().EraseLocalSymbol(Id, Id->GetBits(),
                                                       Id->GetSymbolType());
@@ -1098,7 +1095,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
           if (!Id->GetSymbolTableEntry()) {
             ASTSymbolTableEntry *STE =
                 new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-            assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
             Id->SetLocalScope();
             STE->SetLocalScope();
@@ -1141,7 +1137,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       }
 
       STE = new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-      assert(STE && "Could not create a valid SymbolTable Entry!");
 
       STE->SetContext(Id->GetDeclarationContext());
 
@@ -1474,7 +1469,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         if (!Id->GetSymbolTableEntry()) {
           ASTSymbolTableEntry *STE =
               new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-          assert(STE && "Could not create a valid SymbolTable Entry!");
           Id->SetSymbolTableEntry(STE);
         }
       }
@@ -1740,10 +1734,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
 
       Id->SetLocation(TK->GetLocation());
       ASTSymbolTableEntry *STE = Id->GetSymbolTableEntry();
-      if (!STE) {
+      if (!STE)
         STE = new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-        assert(STE && "Could not create a valid SymbolTable Entry!");
-      }
 
       ASTIdentifierTypeController::Instance().SetCurrentType(PTy);
       ASTIdentifierTypeController::Instance().SetPreviousType(PTy);
@@ -1757,10 +1749,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
 
       Id->SetLocation(TK->GetLocation());
       ASTSymbolTableEntry *STE = Id->GetSymbolTableEntry();
-      if (!STE) {
+      if (!STE)
         STE = new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-        assert(STE && "Could not create a valid SymbolTable Entry!");
-      }
     } else if (CTy == ASTTypeForStatement &&
                DCX->GetContextType() == ASTTypeForStatement) {
       // Bind induction before the PTy==Array arm: a gate formal
@@ -2235,7 +2225,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
     ASTSymbolTableEntry *STE = Id->GetSymbolTableEntry();
     if (!STE) {
       STE = new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-      assert(STE && "Could not create a valid SymbolTable Entry!");
 
       Id->SetSymbolTableEntry(STE);
 
@@ -2303,7 +2292,6 @@ static bool ReuseIndexedRef(const std::string &US, const std::string &IS,
     ASTIdentifierRefNode *IdR =
         new ASTIdentifierRefNode(US, IS, ContainerTy, STE->GetIdentifier(),
                                  RegisterRefBits(IX), true, STE, ASN, ASL);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
     IdR->SetSymbolTableEntry(STE);
     Out = IdR;
     return true;
@@ -2350,10 +2338,8 @@ ResolveQuantumRegisterRef(const std::string &US, const std::string &IS,
     ASTIdentifierRefNode *XIdR =
         new ASTIdentifierRefNode(US, IS, ContainerTy, BaseSTE->GetIdentifier(),
                                  RegisterRefBits(IX), true, BaseSTE, ASN, ASL);
-    assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
 
     ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(XIdR, ElementTy);
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
     XSTE->SetContext(
         ASTDeclarationContextTracker::Instance().GetCurrentContext());
     XSTE->SetLocalScope();
@@ -2399,7 +2385,6 @@ ResolveQuantumRegisterRef(const std::string &US, const std::string &IS,
 
         ASTIdentifierRefNode *IdR =
             new ASTIdentifierRefNode(IS, XSTE->GetIdentifier(), 1U);
-        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
         IdR->SetBits(1U);
         IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -2431,7 +2416,6 @@ ResolveQuantumRegisterRef(const std::string &US, const std::string &IS,
   ASTIdentifierRefNode *XIdR =
       new ASTIdentifierRefNode(US, IS, ContainerTy, Id, CreateBits, true,
                                Id->GetSymbolTableEntry(), ASN, ASL);
-  assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
 
   XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
   if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
@@ -2537,7 +2521,6 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
         ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
             US, S, A->GetElementType(), XSTE->GetIdentifier(), CtorBits, true,
             XSTE, ASN, ASL);
-        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
         IdR->SetBits(Bits);
         IdR->SetSymbolTableEntry(XSTE);
         IdR->SetPolymorphicName(S);
@@ -2553,7 +2536,6 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
   ASTIdentifierRefNode *IdR =
       new ASTIdentifierRefNode(US, S, A->GetElementType(), A->GetIdentifier(),
                                CtorBits, true, STE, ASN, ASL);
-  assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
   IdR->SetBits(Bits);
   IdR->SetPolymorphicName(S);
@@ -2563,7 +2545,6 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
   IdR->SetArraySubscriptList(ASL);
 
   XSTE = new ASTSymbolTableEntry(IdR, A->GetElementType());
-  assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
   XSTE->SetContext(DCX);
 
@@ -2782,7 +2763,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
     ASTIdentifierRefNode *IdR =
         new ASTIdentifierRefNode(IS, AN->GetIdentifier(), ASTIntNode::IntBits);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     IdR->SetBits(ASTIntNode::IntBits);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -2790,7 +2770,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     IdR->SetArraySubscriptList(ASL);
 
     ASTE = new ASTSymbolTableEntry(IdR, AN->GetASTType());
-    assert(ASTE && "Could not create a valid ASTSymbolTableEntry!");
 
     ASTE->SetValue(new ASTValue<>(AN, AN->GetASTType()), AN->GetASTType(),
                    true);
@@ -2847,7 +2826,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
     ASTIdentifierRefNode *IdR =
         new ASTIdentifierRefNode(IS, CBN->GetIdentifier(), CBN->GetASTType());
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     IdR->SetBits(1U);
     IdR->SetPolymorphicName(US);
@@ -2857,10 +2835,8 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     IdR->SetArraySubscriptList(ASL);
 
     XSTE = new ASTSymbolTableEntry(IdR, CBN->GetASTType());
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     ASTCBitNode *RCBN = new ASTCBitNode(IdR, 1U, 0UL);
-    assert(RCBN && "Could not create a valid ASTCBitNode!");
 
     RCBN->Mangle();
     XSTE->SetContext(DC);
@@ -2942,7 +2918,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
       ASTIdentifierRefNode *IdR =
           new ASTIdentifierRefNode(IS, XSTE->GetIdentifier(), 1U);
-      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
       IdR->SetBits(1U);
       IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -2966,7 +2941,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
       IdR = new ASTIdentifierRefNode(IS, QCN->GetIdentifier(), 1U);
     else
       IdR = new ASTIdentifierRefNode(IS, QN->GetIdentifier(), 1U);
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     IdR->SetBits(1U);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -2975,14 +2949,12 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
     if (QCC) {
       XSTE = new ASTSymbolTableEntry(IdR, QCN->GetASTType());
-      assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
       XSTE->SetValue(new ASTValue<>(QCN, QCN->GetASTType()), QCN->GetASTType(),
                      true);
       IdR->SetSymbolTableEntry(XSTE);
     } else {
       XSTE = new ASTSymbolTableEntry(IdR, QN->GetASTType());
-      assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
       XSTE->SetValue(new ASTValue<>(QN, QN->GetASTType()), QN->GetASTType(),
                      true);
       IdR->SetSymbolTableEntry(XSTE);
@@ -3033,7 +3005,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
     ASTIdentifierRefNode *IdR =
         new ASTIdentifierRefNode(IS, QCN->GetIdentifier(), QCN->GetASTType());
-    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
     IdR->SetBits(1U);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -3041,7 +3012,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     IdR->SetArraySubscriptList(ASL);
 
     XSTE = new ASTSymbolTableEntry(IdR, QCN->GetASTType());
-    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
 
     XSTE->SetValue(new ASTValue<>(QCN, QCN->GetASTType()), QCN->GetASTType(),
                    true);
@@ -3072,7 +3042,6 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
           US, IS, ASTTypeGate, Id, /*NumBits=*/0U, /*LV=*/true,
           const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()), ASN,
           ASL);
-      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
       IdR->SetArraySubscriptNode(ASN);
       IdR->SetArraySubscriptList(ASL);
       return IdR;

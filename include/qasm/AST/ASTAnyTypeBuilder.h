@@ -47,7 +47,6 @@ public:
 
   static ASTAnyTypeList *NewList() {
     ASTAnyTypeList *TL = new ASTAnyTypeList();
-    assert(TL && "Could not create a valid ASTAnyTypeList!");
     ATP = TL;
     ALV.push_back(ATP);
     return ATP;

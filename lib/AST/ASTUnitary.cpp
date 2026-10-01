@@ -8,9 +8,9 @@
 
 #include <qasm/AST/ASTUnitary.h>
 
-#include <qasm/AST/ASTMangler.h>
 #include <cassert>
 #include <iostream>
+#include <qasm/AST/ASTMangler.h>
 
 namespace QASM {
 
@@ -25,27 +25,20 @@ void ASTUnitaryNode::Mangle() {
       ->SetMangledName(M.AsString());
 }
 
-
-ASTUnitaryNode *
-ASTUnitaryNode::CloneCall(const ASTIdentifierNode *Id,
-                          const ASTArgumentNodeList &AL,
-                          const ASTAnyTypeList &QL) {
+ASTUnitaryNode *ASTUnitaryNode::CloneCall(const ASTIdentifierNode *Id,
+                                          const ASTArgumentNodeList &AL,
+                                          const ASTAnyTypeList &QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   ASTIdentifierNode *UId =
-      GateCallIdentifier(Id->GetName(),
-                         Id->GetSymbolType(),
-                         Id->GetBits());
+      GateCallIdentifier(Id->GetName(), Id->GetSymbolType(), Id->GetBits());
 
-  assert(UId &&
-         "Could not create a valid Unitary Call ASTIdentifierNode!");
+  assert(UId && "Could not create a valid Unitary Call ASTIdentifierNode!");
 
   UId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
 
   ASTUnitaryNode *RU = new ASTUnitaryNode(UId, AL, QL, true);
-
-  assert(RU && "Could not create a valid ASTUnitaryNode call!");
 
   RU->OpList = OpList;
   RU->GDId = Id;
@@ -65,6 +58,5 @@ void ASTUnitaryNode::print() const {
             << std::endl;
   std::cout << "</Unitary>" << std::endl;
 }
-
 
 } // namespace QASM

@@ -36,10 +36,8 @@ protected:
   ASTExpressionBuilder() = default;
 
   static void Init() {
-    if (!EL) {
+    if (!EL)
       EL = new ASTExpressionList();
-      assert(EL && "Could not create a valid ASTExpressionList!");
-    }
   }
 
 public:

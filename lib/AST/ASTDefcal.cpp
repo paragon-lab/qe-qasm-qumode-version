@@ -159,10 +159,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTIdentifierNode *XId,
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), FN,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(FN, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeDouble: {
@@ -172,10 +170,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTIdentifierNode *XId,
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), DN,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(DN, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeInt:
@@ -186,10 +182,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTIdentifierNode *XId,
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), IN,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(IN, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeMPInteger:
@@ -201,10 +195,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTIdentifierNode *XId,
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), MPI,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(MPI, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeMPDecimal: {
@@ -215,10 +207,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTIdentifierNode *XId,
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), MPD,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(MPD, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeBitset: {
@@ -248,9 +238,7 @@ ASTDefcalNode::CreateAngleConversion(const ASTIdentifierNode *XId,
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), D,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(CBN, ASTTypeAngle, SZ);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   default: {
@@ -295,10 +283,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), FN,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(FN, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeDouble: {
@@ -308,10 +294,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), DN,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(DN, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeInt:
@@ -322,10 +306,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), IN,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(IN, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeMPInteger:
@@ -337,10 +319,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), MPI,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(MPI, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeMPDecimal: {
@@ -351,10 +331,8 @@ ASTDefcalNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), MPD,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(MPD, ASTTypeAngle,
                                         XSTE->GetIdentifier()->GetBits());
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeBitset: {
@@ -385,9 +363,7 @@ ASTDefcalNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
     XAN =
         new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), D,
                          ASTAngleTypeGeneric, XSTE->GetIdentifier()->GetBits());
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(CBN, ASTTypeAngle, SZ);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   default: {
@@ -425,7 +401,6 @@ ASTDefcalNode::CreateAngleTemporary(const ASTSymbolTableEntry *XSTE) const {
   ASTAngleNode *XAN =
       new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), ASTAngleTypeGeneric,
                        XSTE->GetIdentifier()->GetBits());
-  assert(XAN && "Could not create a valid ASTAngleNode!");
 
   ASTObjectTracker::Instance().Unregister(XAN);
   return XAN;
@@ -438,7 +413,6 @@ ASTDefcalNode::CreateAngleSymbolTableEntry(ASTSymbolTableEntry *XSTE) const {
   ASTAngleNode *XAN =
       new ASTAngleNode(XSTE->GetIdentifier(), ASTAngleTypeGeneric,
                        XSTE->GetIdentifier()->GetBits());
-  assert(XAN && "Could not create a valid ASTAngleNode!");
 
   XSTE->ResetValue();
   XSTE->SetValue(new ASTValue<>(XAN, ASTTypeAngle), ASTTypeAngle);
@@ -720,7 +694,6 @@ void ASTDefcalNode::ResolveReset() {
 const ASTExpressionNode *ASTDefcalNode::AsExpression() const {
   ASTExpressionNode *EXN = new ASTExpressionNode(
       ASTStatementNode::GetIdentifier(), this, ASTTypeDefcal);
-  assert(EXN && "Could not create a valid Defcal ASTExpressionNode!");
   return EXN;
 }
 
@@ -734,7 +707,6 @@ ASTDefcalNode *ASTDefcalNode::CloneCall(const ASTIdentifierNode *Id,
       << DIAGLineCounter::Instance().GetIdentifierLocation();
 
   ASTDefcalNode *RDN = new ASTDefcalNode(Id);
-  assert(RDN && "Could not create a valid ASTDefcalNode!");
   assert(RDN->QTarget && "Clone ASTDefcalNode has an invalid QTarget!");
 
   RDN->SetDefcalCall(true);
@@ -1563,7 +1535,6 @@ void ASTDefcalNode::ResolveParams() {
 
             if (!ASTE) {
               ASTE = new ASTSymbolTableEntry(AId, ASTTypeAngle);
-              assert(ASTE && "Could not create a valid ASTSymbolTableEntry!");
               AId->SetSymbolTableEntry(ASTE);
             }
 

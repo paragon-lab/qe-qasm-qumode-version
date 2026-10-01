@@ -209,7 +209,6 @@ public:
     ASTDeclarationContext *DC = new ASTDeclarationContext(
         ASTStringUtils::Instance().GenRandomString(RSL), CIX++,
         GetCurrentContext());
-    assert(DC && "Could not create a valid ASTDeclarationContext!");
 
     M.insert(std::make_pair(DC->GetIndex(), DC));
     CCV.push_back(DC);
@@ -220,7 +219,6 @@ public:
     ASTDeclarationContext *DC = new ASTDeclarationContext(
         ASTStringUtils::Instance().GenRandomString(RSL), CIX++, CTy,
         GetCurrentContext());
-    assert(DC && "Could not create a valid ASTDeclarationContext!");
 
     M.insert(std::make_pair(DC->GetIndex(), DC));
     CCV.push_back(DC);
