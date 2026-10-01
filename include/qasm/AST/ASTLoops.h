@@ -26,8 +26,44 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace QASM {
+
+// Prefix of a for-range before the end bound: [start:end] or [start:step:end].
+// Integer tokens stay literals. Identifiers keep their names and, when the
+// symbol already has an integer value, that value too.
+class ASTForRangePrefix {
+public:
+  struct Element {
+    const ASTIdentifierNode *Symbol;
+    int32_t Value;
+    bool HasValue;
+  };
+
+public:
+  ASTForRangePrefix() = default;
+
+  void AppendValue(int32_t V);
+
+  void AppendSymbol(const ASTIdentifierNode *Id);
+
+  std::size_t Size() const { return Elems.size(); }
+
+  const std::vector<Element> &GetElements() const { return Elems; }
+
+  // Each prefix element as an expression: a constant int, or the identifier.
+  std::vector<const ASTExpression *> ToExpressions() const;
+
+  // Literal integer prefix only. A name is an expression, not a folded
+  // constant, so the list is empty when any element is an identifier.
+  ASTIntegerList *ToIntegerList() const;
+
+private:
+  std::vector<Element> Elems;
+
+  static bool TryIntValue(const ASTIdentifierNode *Id, int32_t &Out);
+};
 
 class ASTForLoopRangeExpressionNode : public ASTExpressionNode {
   friend class ASTForLoopNode;
@@ -35,6 +71,12 @@ class ASTForLoopRangeExpressionNode : public ASTExpressionNode {
 private:
   ASTIntegerList IVL;
   ASTBinaryOpNode *BOP;
+  const ASTIdentifierNode *StartSymbol;
+  const ASTIdentifierNode *StepSymbol;
+  bool ExplicitStep;
+  int StepValue;
+  // Prefix bounds, then the end expression. IndexSet is this list.
+  std::vector<const ASTExpression *> Bounds;
 
 private:
   ASTForLoopRangeExpressionNode() = delete;
@@ -43,13 +85,15 @@ protected:
   ASTForLoopRangeExpressionNode(const std::string &ERM)
       : ASTExpressionNode(ASTIdentifierNode::ForLoopRange.Clone(),
                           new ASTStringNode(ERM), ASTTypeExpressionError),
-        IVL(), BOP(nullptr) {}
+        IVL(), BOP(nullptr), StartSymbol(nullptr), StepSymbol(nullptr),
+        ExplicitStep(false), StepValue(0), Bounds() {}
 
 public:
   ASTForLoopRangeExpressionNode(const ASTIntegerList &IL, ASTBinaryOpNode *BOp)
       : ASTExpressionNode(ASTIdentifierNode::ForLoopRange.Clone(),
                           ASTTypeForLoopRange),
-        IVL(IL), BOP(BOp) {}
+        IVL(IL), BOP(BOp), StartSymbol(nullptr), StepSymbol(nullptr),
+        ExplicitStep(false), StepValue(0), Bounds() {}
 
   virtual ~ASTForLoopRangeExpressionNode() = default;
 
@@ -70,6 +114,31 @@ public:
 
   const ASTBinaryOpNode *GetBinaryOp() const { return BOP; }
 
+  void ApplyPrefix(const ASTForRangePrefix *Prefix);
+
+  bool HasExplicitStep() const { return ExplicitStep; }
+
+  int GetStepValue() const { return StepValue; }
+
+  const ASTIdentifierNode *GetStartSymbol() const { return StartSymbol; }
+
+  const ASTIdentifierNode *GetStepSymbol() const { return StepSymbol; }
+
+  void SetBounds(std::vector<const ASTExpression *> B) {
+    Bounds = std::move(B);
+  }
+
+  // The end bound of a bare range (`[0:N]`) is the identifier itself.
+  // GetBinaryOp() may still be the N+0 node older lowering unwraps.
+  void SetEndBound(const ASTExpression *E) {
+    if (Bounds.empty())
+      Bounds.push_back(E);
+    else
+      Bounds.back() = E;
+  }
+
+  const std::vector<const ASTExpression *> &GetBounds() const { return Bounds; }
+
   virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
   virtual const std::string &GetError() const override {
@@ -84,6 +153,11 @@ public:
   virtual void print() const override {
     std::cout << "<ForLoopRangeExpression>" << std::endl;
     IVL.print();
+    if (StartSymbol)
+      std::cout << "<Start>" << StartSymbol->GetName() << "</Start>"
+                << std::endl;
+    if (StepSymbol)
+      std::cout << "<Step>" << StepSymbol->GetName() << "</Step>" << std::endl;
     BOP->print();
     std::cout << "</ForLoopRangeExpression>" << std::endl;
   }
@@ -102,15 +176,62 @@ private:
   ASTStatementList FSL;
   ASTForLoopRangeExpressionNode *LRE;
   ASTIntNode *IV;
+  std::vector<const ASTExpression *> Bounds;
   std::map<std::string, const ASTSymbolTableEntry *> STM;
   int STP;
+  char BoundSep;
   IVMethod IVM;
 
 private:
+  void AdoptIntegerBounds(const ASTIntegerList &IL) {
+    BoundSep = IL.GetSeparator();
+    for (int32_t V : IL)
+      Bounds.push_back(new ASTIntNode(V));
+  }
+
+  void AdoptRangeBounds(const ASTForLoopRangeExpressionNode *LE) {
+    BoundSep = ':';
+    if (!LE)
+      return;
+    Bounds = LE->GetBounds();
+  }
+
+  // When every bound is an integer constant, keep that list available through
+  // GetIntegerList(). A name or an arithmetic bound stays only in Bounds.
+  void RecordConstantBounds() {
+    for (const ASTExpression *E : Bounds)
+      if (!dynamic_cast<const ASTIntNode *>(E))
+        return;
+    IVL.SetSeparator(BoundSep);
+    for (const ASTExpression *E : Bounds) {
+      const ASTIntNode *IN = static_cast<const ASTIntNode *>(E);
+      IVL.Append(IN->IsSigned() ? IN->GetSignedValue()
+                                : static_cast<int32_t>(IN->GetUnsignedValue()));
+    }
+  }
+
+  // A numeric stride exists for a set (the -1 marker), for [start:end]
+  // (implicit 1), and for [start:step:end] when step is an integer constant.
+  bool HasConstantStep() const {
+    if (IVM == IVDiscrete)
+      return true;
+    if (Bounds.size() == 3)
+      return dynamic_cast<const ASTIntNode *>(Bounds[1]) != nullptr;
+    return true;
+  }
+
   void DetermineStepping() {
     switch (IVM) {
     case IVMonotonic:
-      if (IVL.Size() == 3)
+      if (Bounds.size() == 3)
+        if (const ASTIntNode *Step =
+                dynamic_cast<const ASTIntNode *>(Bounds[1]))
+          STP = Step->IsSigned() ? Step->GetSignedValue()
+                                 : static_cast<int>(Step->GetUnsignedValue());
+        else
+          // Step is a name or an arithmetic expression.
+          STP = 0;
+      else if (IVL.Size() == 3)
         STP = IVL[1];
       else
         STP = 1;
@@ -133,31 +254,45 @@ public:
   ASTForLoopNode(const ASTIdentifierNode *Id, const ASTIntegerList &IL,
                  const ASTStatementList &SL, ASTIntNode *IVR,
                  IVMethod MT = IVMonotonic)
-      : ASTStatementNode(Id), IVL(IL), FSL(SL), LRE(nullptr), IV(IVR), STM(),
-        STP(1), IVM(MT) {
+      : ASTStatementNode(Id), IVL(IL), FSL(SL), LRE(nullptr), IV(IVR), Bounds(),
+        STM(), STP(1), BoundSep(':'), IVM(MT) {
+    AdoptIntegerBounds(IL);
     DetermineStepping();
   }
 
   ASTForLoopNode(const ASTIdentifierNode *Id, const ASTIntegerList &IL,
                  ASTStatement *S, ASTIntNode *IVR, IVMethod MT = IVMonotonic)
-      : ASTStatementNode(Id), IVL(IL), FSL(), LRE(nullptr), IV(IVR), STM(),
-        STP(1), IVM(MT) {
+      : ASTStatementNode(Id), IVL(IL), FSL(), LRE(nullptr), IV(IVR), Bounds(),
+        STM(), STP(1), BoundSep(':'), IVM(MT) {
     FSL.Append(S);
+    AdoptIntegerBounds(IL);
     DetermineStepping();
   }
 
   ASTForLoopNode(const ASTIdentifierNode *Id, ASTForLoopRangeExpressionNode *LE,
                  const ASTStatementList &SL, ASTIntNode *IVR)
-      : ASTStatementNode(Id), IVL(), FSL(SL), LRE(LE), IV(IVR), STM(), STP(1),
-        IVM(IVMonotonic) {
+      : ASTStatementNode(Id), IVL(), FSL(SL), LRE(LE), IV(IVR), Bounds(), STM(),
+        STP(1), BoundSep(':'), IVM(IVMonotonic) {
+    AdoptRangeBounds(LE);
     DetermineStepping();
   }
 
   ASTForLoopNode(const ASTIdentifierNode *Id, ASTForLoopRangeExpressionNode *LE,
                  ASTStatement *S, ASTIntNode *IVR)
-      : ASTStatementNode(Id), IVL(), FSL(), LRE(LE), IV(IVR), STM(), STP(1),
-        IVM(IVMonotonic) {
+      : ASTStatementNode(Id), IVL(), FSL(), LRE(LE), IV(IVR), Bounds(), STM(),
+        STP(1), BoundSep(':'), IVM(IVMonotonic) {
     FSL.Append(S);
+    AdoptRangeBounds(LE);
+    DetermineStepping();
+  }
+
+  // Brace set whose elements are expressions (constants, names, arithmetic).
+  ASTForLoopNode(const ASTIdentifierNode *Id,
+                 std::vector<const ASTExpression *> B, char Sep,
+                 const ASTStatementList &SL, ASTIntNode *IVR, IVMethod MT)
+      : ASTStatementNode(Id), IVL(), FSL(SL), LRE(nullptr), IV(IVR),
+        Bounds(std::move(B)), STM(), STP(1), BoundSep(Sep), IVM(MT) {
+    RecordConstantBounds();
     DetermineStepping();
   }
 
@@ -188,6 +323,11 @@ public:
   }
 
   const ASTIntegerList &GetIntegerList() const { return IVL; }
+
+  // [start:end], [start:step:end], or the elements of a {set}, as expressions.
+  const std::vector<const ASTExpression *> &GetIndexBounds() const {
+    return Bounds;
+  }
 
   const ASTStatementList &GetStatementList() const { return FSL; }
 
@@ -227,15 +367,22 @@ public:
     std::cout << "<ForLoop>" << std::endl;
     std::cout << "<IVMethod>" << PrintIVMethod(IVM) << "</IVMethod>"
               << std::endl;
-    std::cout << "<Stepping>" << STP << "</Stepping>" << std::endl;
+    if (HasConstantStep())
+      std::cout << "<Stepping>" << STP << "</Stepping>" << std::endl;
     std::cout << "<InductionVariable>" << IV->GetName()
               << "</InductionVariable>" << std::endl;
     std::cout << "<IndexSet>" << std::endl;
-    IVL.print();
+    std::cout << "<IntegerList>" << std::endl;
+    std::cout << "<Separator>" << BoundSep << "</Separator>" << std::endl;
+    for (const ASTExpression *E : Bounds) {
+      std::cout << "<Bound>" << std::endl;
+      if (E)
+        E->print();
+      std::cout << "</Bound>" << std::endl;
+    }
+    std::cout << "</IntegerList>" << std::endl;
     std::cout << "</IndexSet>" << std::endl;
     FSL.print();
-    if (LRE)
-      LRE->print();
     std::cout << "</ForLoop>" << std::endl;
   }
 

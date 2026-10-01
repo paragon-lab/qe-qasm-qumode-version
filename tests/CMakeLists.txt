@@ -686,6 +686,8 @@ add_test(NAME t00338
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-17.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-17.qasm.out 2>&1")
 add_test(NAME t00339
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-18.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-18.qasm.out 2>&1")
+add_test(NAME t00340
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-identifier-range.qasm > ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '<Size>3</Size>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Stepping>1</Stepping>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Stepping>2</Stepping>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Name>BEGIN</Name>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Name>STEP</Name>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Op>-</Op>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Bound>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out")
 
 # -----------------------------------------------------------------------------
 # Qumode tests

@@ -413,7 +413,8 @@ public:
 
   // For Loop Range Expression
   ASTForLoopRangeExpressionNode *ProductionRule_860(
-      const ASTToken *TK, const ASTIdentifierNode *Id, const ASTIntegerList *IL,
+      const ASTToken *TK, const ASTIdentifierNode *Id,
+      const ASTForRangePrefix *Prefix,
       const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
       ASTOpType OTy) const;
 
@@ -1274,19 +1275,19 @@ public:
   // For Loop
   ASTForStatementNode *ProductionRule_3200(const ASTToken *TK,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatementList *SL) const;
   ASTForStatementNode *ProductionRule_3201(const ASTToken *TK,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatement *ST) const;
   ASTForStatementNode *ProductionRule_3202(const ASTToken *TK,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatement *ST) const;
   ASTForStatementNode *ProductionRule_3203(const ASTToken *TK,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatementList *SL) const;
   ASTForStatementNode *ProductionRule_3204(const ASTToken *TK,
                                            ASTIdentifierNode *LId,
@@ -1298,19 +1299,19 @@ public:
                                            ASTStatement *ST) const;
   ASTForStatementNode *ProductionRule_3206(const ASTToken *TK, ASTIntNode *IVT,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatementList *SL) const;
   ASTForStatementNode *ProductionRule_3207(const ASTToken *TK, ASTIntNode *IVT,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatement *ST) const;
   ASTForStatementNode *ProductionRule_3208(const ASTToken *TK, ASTIntNode *IVT,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatementList *SL) const;
   ASTForStatementNode *ProductionRule_3209(const ASTToken *TK, ASTIntNode *IVT,
                                            ASTIdentifierNode *LId,
-                                           ASTIntegerList *IL,
+                                           const ASTExpressionList *EL,
                                            ASTStatement *ST) const;
   ASTForStatementNode *ProductionRule_3210(const ASTToken *TK, ASTIntNode *IVT,
                                            ASTIdentifierNode *LId,
@@ -1328,7 +1329,7 @@ public:
                                       ASTGateQOpList *Body) const;
   ASTGateQOpNode *ProductionRule_3221(const ASTToken *TK,
                                       ASTIdentifierNode *LId,
-                                      ASTIntegerList *IL,
+                                      const ASTExpressionList *EL,
                                       ASTGateQOpList *Body) const;
 
   // While Loop

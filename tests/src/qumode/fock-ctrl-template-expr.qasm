@@ -4,6 +4,7 @@ OPENQASM 3.0;
 gate foo[uint N](array[float[64], N] thetas) qumode qm {
   ctrl[N-1] @ gphase(pi/2) qm;
   ctrl[(N-1)*2/3] @ gphase(pi/4) qm;
+  ctrl[N-1-2] @ gphase(pi/8) qm;
 }
 
 qumode qm;
