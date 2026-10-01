@@ -71,8 +71,10 @@
 #include <qasm/Frontend/QasmFeatureTester.h>
 
 #include <cassert>
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <string>
 
@@ -107,6 +109,187 @@ unsigned ASTProductionFactory::GetVariantBits(
   }
 
   return static_cast<unsigned>(~0x0);
+}
+
+namespace {
+
+bool FoldSizeValue(const ASTExpressionNode *E, int64_t &Out) {
+  if (!E || E->IsError())
+    return false;
+
+  if (const ASTIntNode *I = dynamic_cast<const ASTIntNode *>(E)) {
+    if (E->GetASTType() == ASTTypeInt || E->GetASTType() == ASTTypeUInt) {
+      Out = I->IsSigned() ? static_cast<int64_t>(I->GetSignedValue())
+                          : static_cast<int64_t>(I->GetUnsignedValue());
+      return true;
+    }
+  }
+
+  if (const ASTMPIntegerNode *M = dynamic_cast<const ASTMPIntegerNode *>(E)) {
+    Out = M->ToSignedLong();
+    return true;
+  }
+
+  if (E->GetASTType() == ASTTypeIdentifier ||
+      (E->IsIdentifier() && E->GetIdentifier())) {
+    const ASTIdentifierNode *Id = E->GetIdentifier();
+    if (!Id)
+      return false;
+
+    ASTScopeController::Instance().CheckUndefined(Id);
+    ASTScopeController::Instance().CheckOutOfScope(Id);
+    ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+        Id, Id->GetBits(), Id->GetSymbolType());
+    if (!STE)
+      STE = ASTSymbolTable::Instance().Lookup(Id);
+    if (!STE || !STE->HasValue())
+      return false;
+
+    try {
+      if (STE->GetValueType() == ASTTypeInt ||
+          STE->GetValueType() == ASTTypeUInt) {
+        ASTIntNode *I = STE->GetValue()->GetValue<ASTIntNode *>();
+        // An uninitialized int is stored as 0 and is not a constant.
+        if (!I || !I->IsConstantFolded())
+          return false;
+        Out = I->IsSigned() ? static_cast<int64_t>(I->GetSignedValue())
+                            : static_cast<int64_t>(I->GetUnsignedValue());
+        return true;
+      }
+      if (STE->GetValueType() == ASTTypeMPInteger ||
+          STE->GetValueType() == ASTTypeMPUInteger) {
+        ASTMPIntegerNode *M = STE->GetValue()->GetValue<ASTMPIntegerNode *>();
+        if (!M || !M->IsConstantFolded())
+          return false;
+        Out = M->ToSignedLong();
+        return true;
+      }
+    } catch (const std::bad_any_cast &) {
+      return false;
+    }
+    return false;
+  }
+
+  if (const ASTBinaryOpNode *B = dynamic_cast<const ASTBinaryOpNode *>(E)) {
+    int64_t L = 0;
+    int64_t R = 0;
+    if (!FoldSizeValue(B->GetLeft(), L) || !FoldSizeValue(B->GetRight(), R))
+      return false;
+
+    switch (B->GetOpType()) {
+    case ASTOpTypeAdd:
+      if ((R > 0 && L > INT64_MAX - R) || (R < 0 && L < INT64_MIN - R))
+        return false;
+      Out = L + R;
+      return true;
+    case ASTOpTypeSub:
+      if ((R < 0 && L > INT64_MAX + R) || (R > 0 && L < INT64_MIN + R))
+        return false;
+      Out = L - R;
+      return true;
+    case ASTOpTypeMul:
+      if (L != 0 && R != 0) {
+        if (L > 0 && R > 0 && L > INT64_MAX / R)
+          return false;
+        if (L < 0 && R < 0 && L < INT64_MAX / R)
+          return false;
+        if (L > 0 && R < 0 && R < INT64_MIN / L)
+          return false;
+        if (L < 0 && R > 0 && L < INT64_MIN / R)
+          return false;
+      }
+      Out = L * R;
+      return true;
+    case ASTOpTypeDiv:
+      if (R == 0 || (L == INT64_MIN && R == -1))
+        return false;
+      Out = L / R;
+      return true;
+    case ASTOpTypeMod:
+      if (R == 0)
+        return false;
+      Out = L % R;
+      return true;
+    case ASTOpTypeLeftShift:
+      if (L < 0 || R < 0 || R >= 63)
+        return false;
+      Out = L << static_cast<unsigned>(R);
+      return true;
+    case ASTOpTypeRightShift:
+      if (L < 0 || R < 0 || R >= 63)
+        return false;
+      Out = L >> static_cast<unsigned>(R);
+      return true;
+    case ASTOpTypePow: {
+      if (R < 0)
+        return false;
+      int64_t P = 1;
+      for (int64_t I = 0; I < R; ++I) {
+        if (L != 0 && (L > 0 ? P > INT64_MAX / L : P < INT64_MIN / L))
+          return false;
+        P *= L;
+      }
+      Out = P;
+      return true;
+    }
+    default:
+      return false;
+    }
+  }
+
+  if (const ASTUnaryOpNode *U = dynamic_cast<const ASTUnaryOpNode *>(E)) {
+    int64_t R = 0;
+    if (!FoldSizeValue(U->GetExpression(), R))
+      return false;
+    if (U->GetOpType() == ASTOpTypeNegative) {
+      if (R == INT64_MIN)
+        return false;
+      Out = -R;
+      return true;
+    }
+    if (U->GetOpType() == ASTOpTypePositive) {
+      Out = R;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+} // namespace
+
+ASTIntNode *
+ASTProductionFactory::FoldRegisterSize(const ASTToken *TK,
+                                       const ASTExpressionNode *Expr) const {
+  assert(TK && "Invalid ASTToken argument!");
+
+  if (Expr) {
+    if (const ASTIntNode *I = dynamic_cast<const ASTIntNode *>(Expr)) {
+      if (Expr->GetASTType() == ASTTypeInt || Expr->GetASTType() == ASTTypeUInt)
+        return const_cast<ASTIntNode *>(I);
+    }
+
+    // `qubit[N]` already folds through the identifier's stored value,
+    // including a non-constant whose value is 0. QUIRGen rejects that width.
+    if (Expr->GetASTType() == ASTTypeIdentifier && Expr->GetIdentifier()) {
+      const unsigned Bits =
+          ASTUtils::Instance().GetUnsignedValue(Expr->GetIdentifier());
+      if (ASTIdentifierNode::InvalidBits(Bits))
+        return nullptr;
+      return ASTBuilder::Instance().CreateASTIntNode(Bits);
+    }
+  }
+
+  int64_t V = 0;
+  if (Expr && FoldSizeValue(Expr, V) && V >= 0 &&
+      V <= static_cast<int64_t>(std::numeric_limits<uint32_t>::max()))
+    return ASTBuilder::Instance().CreateASTIntNode(static_cast<uint32_t>(V));
+
+  std::stringstream M;
+  M << "Register size must be a non-negative compile-time constant.";
+  QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+  return nullptr;
 }
 
 ASTDeclarationNode *

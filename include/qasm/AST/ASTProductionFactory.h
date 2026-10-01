@@ -105,6 +105,13 @@ protected:
       const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &V);
 
 public:
+  // Fold a register-size expression (`N`, `4`, `N+1`) to an integer width.
+  // An expression that is not a non-negative compile-time constant is
+  // diagnosed here and returns nullptr.
+  ASTIntNode *FoldRegisterSize(const ASTToken *TK,
+                               const ASTExpressionNode *Expr) const;
+
+public:
   static const std::variant<const ASTIntNode *, const ASTIdentifierNode *> EVX;
 
 public:

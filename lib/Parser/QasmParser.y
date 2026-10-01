@@ -807,7 +807,7 @@ int readinput() {
                                     OpenPulseFrameTime
 %type <TimeUnitNode>                TimeUnit
 %type <BoolNode>                    BooleanConstant
-%type <IntegerNode>                 Integer IntScalarType
+%type <IntegerNode>                 Integer IntScalarType RegisterSize
 %type <FloatNode>                   FloatScalarType
 %type <RealNode>                    Real
 %type <EllipsisNode>                Ellipsis
@@ -1739,40 +1739,40 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_112(GET_TOKEN(3),
                                                              $2, $4);
   }
-  | TOK_BIT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_200(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_BIT '[' RegisterSize ']' Identifier ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_200(GET_TOKEN(5),
+                                                               $5, $3);
   }
-  | TOK_BIT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_201(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_BIT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_202(GET_TOKEN(7),
+                                                               $5, $3, $7);
   }
-  | TOK_BIT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_202(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_BIT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_203(GET_TOKEN(6),
-                                                             $5, $3, $7);
-  }
-  | TOK_BIT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_204(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_BIT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_205(GET_TOKEN(6),
-                                                             $5, $3, $7);
+  | TOK_BIT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_203(GET_TOKEN(6),
+                                                               $5, $3, $7);
   }
   | TOK_QUBIT Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1100(GET_TOKEN(2), $2);
   }
-  | TOK_QUBIT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1101(GET_TOKEN(5),
-                                                              $5, $3);
-  }
-  | TOK_QUBIT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1102(GET_TOKEN(5),
-                                                              $5, $3);
+  | TOK_QUBIT '[' RegisterSize ']' Identifier ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_1101(GET_TOKEN(5),
+                                                                $5, $3);
   }
   | TOK_QUBIT Identifier '=' Expr ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1103(GET_TOKEN(4),
@@ -1783,34 +1783,29 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(3),
                                                               $2, $4);
   }
-  | TOK_QUBIT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1105(GET_TOKEN(7),
-                                                              $5, $3, $7);
+  | TOK_QUBIT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_1105(GET_TOKEN(7),
+                                                                $5, $3, $7);
   }
-  | TOK_QUBIT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    // Functions cannot return Qubits.
-    $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(6),
-                                                              $5, $7);
-  }
-  | TOK_QUBIT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1106(GET_TOKEN(7),
-                                                              $5, $3, $7);
-  }
-  | TOK_QUBIT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    // Functions cannot return Qubits.
+  | TOK_QUBIT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    // Functions cannot return Qubits. The size is irrelevant.
     $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(6),
                                                               $5, $7);
   }
   | TOK_QUMODE Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_10000(GET_TOKEN(2), $2);
   }
-  | TOK_QUMODE '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_10001(GET_TOKEN(5),
-                                                               $5, $3);
-  }
-  | TOK_QUMODE '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_10002(GET_TOKEN(5),
-                                                               $5, $3);
+  | TOK_QUMODE '[' RegisterSize ']' Identifier ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_10001(GET_TOKEN(5),
+                                                                 $5, $3);
   }
   | TOK_UNITARY Identifier ';' {
   $$ = ASTProductionFactory::Instance() .ProductionRule_10003(GET_TOKEN(2), $2);
@@ -4672,11 +4667,12 @@ MPComplexType
   ;
 
 BitType
-  : TOK_BIT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(3), $3);
-  }
-  | TOK_BIT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(3), $3);
+  : TOK_BIT '[' RegisterSize ']' {
+    if (!$3)
+      $$ = ASTCBitNode::ExpressionError(
+          "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(3), $3);
   }
   | TOK_BIT {
     $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(0));
@@ -4699,11 +4695,12 @@ QubitType
   : TOK_QUBIT {
     $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(0));
   }
-  | TOK_QUBIT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(3), $3);
-  }
-  | TOK_QUBIT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(3), $3);
+  | TOK_QUBIT '[' RegisterSize ']' {
+    if (!$3)
+      $$ = ASTQubitContainerNode::ExpressionError(
+          "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(3), $3);
   }
   ;
 
@@ -5339,13 +5336,14 @@ CastExpr
     $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(3), $3,
                                                               ASTTypeBitset);
   }
-  | TOK_BIT '[' Integer ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeBitset);
-  }
-  | TOK_BIT '[' Identifier ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeBitset);
+  | TOK_BIT '[' RegisterSize ']' '(' Expr ')' {
+    if (!$3) {
+      $$ = ASTCastExpressionNode::ExpressionError(
+          "Register size must be a non-negative compile-time constant.");
+    } else {
+      $$ = ASTProductionFactory::Instance().ProductionRule_3600(
+          GET_TOKEN(6), $3, $6, ASTTypeBitset);
+    }
   }
   | TOK_ANGLE '(' Expr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(3), $3,
@@ -5553,23 +5551,21 @@ NamedTypeDecl
                                                              ASTTypeQubitContainer,
                                                              true);
   }
-  | TOK_QUBIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeQubitContainer);
+  | TOK_QUBIT '[' RegisterSize ']' Identifier {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $5, $3, ASTTypeQubitContainer);
   }
-  | TOK_CONST TOK_QUBIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeQubitContainer,
-                                                             true);
-  }
-  | TOK_QUBIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeQubitContainer);
-  }
-  | TOK_CONST TOK_QUBIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeQubitContainer,
-                                                             true);
+  | TOK_CONST TOK_QUBIT '[' RegisterSize ']' Identifier {
+    if (!$4)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $6, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $6, $4, ASTTypeQubitContainer, true);
   }
   | TOK_BIT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5579,23 +5575,21 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeBitset, true);
   }
-  | TOK_BIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeBitset);
+  | TOK_BIT '[' RegisterSize ']' Identifier {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $5, $3, ASTTypeBitset);
   }
-  | TOK_CONST TOK_BIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeBitset,
-                                                             true);
-  }
-  | TOK_BIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeBitset);
-  }
-  | TOK_CONST TOK_BIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeBitset,
-                                                             true);
+  | TOK_CONST TOK_BIT '[' RegisterSize ']' Identifier {
+    if (!$4)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $6, "Register size must be a non-negative compile-time constant.");
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $6, $4, ASTTypeBitset, true);
   }
   | TOK_ANGLE Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -6781,6 +6775,12 @@ ArithShift
     $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
                                                              $3,
                                                              ASTOpTypeRightShift);
+  }
+  ;
+
+RegisterSize
+  : ArithShift {
+    $$ = ASTProductionFactory::Instance().FoldRegisterSize(GET_TOKEN(0), $1);
   }
   ;
 
