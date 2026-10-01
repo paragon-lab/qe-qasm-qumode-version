@@ -15,4 +15,4 @@ ctest --output-on-failure
 
 Re-run `cmake` in that directory when tests were added or the tree was reconfigured. All tests must pass. A green `qumode-*` subset is not enough when the change touches `QasmParser.y`, `QasmScanner.l`, or a shared AST builder.
 
-After editing `lib/Parser/QasmParser.y`, regenerate the parser by hand and rebuild `QasmParser`. The CMake bison rule does not depend on the `.y` file.
+After editing `lib/Parser/QasmParser.y` or `QasmScanner.l`, rebuild `QasmParser`. Those sources are dependencies of the generated parser and scanner.

@@ -108,6 +108,9 @@ public:
   // Fold a register-size expression (`N`, `4`, `N+1`) to an integer width.
   // An expression that is not a non-negative compile-time constant is
   // diagnosed here and returns nullptr.
+  static constexpr const char RegisterSizeError[] =
+      "Register size must be a non-negative compile-time constant.";
+
   ASTIntNode *FoldRegisterSize(const ASTToken *TK,
                                const ASTExpressionNode *Expr) const;
 
@@ -178,10 +181,6 @@ public:
                                          const ASTIdentifierNode *DId,
                                          const ASTIntNode *I,
                                          bool Unsigned = false) const;
-  ASTDeclarationNode *ProductionRule_221(const ASTToken *TK,
-                                         const ASTIdentifierNode *DId,
-                                         const ASTIdentifierNode *IId,
-                                         bool Unsigned = false) const;
   ASTDeclarationNode *ProductionRule_222(const ASTToken *TK,
                                          const ASTIdentifierNode *DId,
                                          const ASTIntNode *I,
@@ -190,16 +189,6 @@ public:
   ASTDeclarationNode *ProductionRule_223(const ASTToken *TK,
                                          const ASTIdentifierNode *DId,
                                          const ASTIntNode *I,
-                                         const ASTFunctionCallStatementNode *FC,
-                                         bool Unsigned = false) const;
-  ASTDeclarationNode *ProductionRule_224(const ASTToken *TK,
-                                         const ASTIdentifierNode *DId,
-                                         const ASTIdentifierNode *BId,
-                                         const ASTExpressionNode *EN,
-                                         bool Unsigned = false) const;
-  ASTDeclarationNode *ProductionRule_225(const ASTToken *TK,
-                                         const ASTIdentifierNode *DId,
-                                         const ASTIdentifierNode *BId,
                                          const ASTFunctionCallStatementNode *FC,
                                          bool Unsigned = false) const;
 
@@ -228,21 +217,14 @@ public:
   // MPIntegerType
   ASTMPIntegerNode *ProductionRule_804(const ASTToken *TK, const ASTIntNode *II,
                                        ASTType ITy) const;
-  ASTMPIntegerNode *ProductionRule_805(const ASTToken *TK,
-                                       const ASTIdentifierNode *IId,
-                                       ASTType ITy) const;
 
   // MPDecimalType
   ASTMPDecimalNode *ProductionRule_806(const ASTToken *TK,
                                        const ASTIntNode *II) const;
-  ASTMPDecimalNode *ProductionRule_807(const ASTToken *TK,
-                                       const ASTIdentifierNode *IId) const;
 
   // MPComplexType
   ASTMPComplexNode *ProductionRule_808(const ASTToken *TK,
                                        const ASTIntNode *II) const;
-  ASTMPComplexNode *ProductionRule_809(const ASTToken *TK,
-                                       const ASTIdentifierNode *IId) const;
 
   // Ellipsis
   ASTEllipsisNode *ProductionRule_810(const ASTToken *TK) const;
@@ -496,9 +478,6 @@ public:
   ASTDeclarationNode *ProductionRule_143(const ASTToken *TK,
                                          const ASTIdentifierNode *Id,
                                          const ASTIntNode *II) const;
-  ASTDeclarationNode *ProductionRule_144(const ASTToken *TK,
-                                         const ASTIdentifierNode *Id,
-                                         const ASTIdentifierNode *IId) const;
   ASTDeclarationNode *ProductionRule_145(const ASTToken *TK,
                                          const ASTIdentifierNode *DId,
                                          const ASTIntNode *II,
@@ -506,14 +485,6 @@ public:
   ASTDeclarationNode *
   ProductionRule_146(const ASTToken *TK, const ASTIdentifierNode *DId,
                      const ASTIntNode *II,
-                     const ASTFunctionCallStatementNode *FC) const;
-  ASTDeclarationNode *ProductionRule_147(const ASTToken *TK,
-                                         const ASTIdentifierNode *DId,
-                                         const ASTIdentifierNode *IId,
-                                         const ASTExpressionNode *EN) const;
-  ASTDeclarationNode *
-  ProductionRule_148(const ASTToken *TK, const ASTIdentifierNode *DId,
-                     const ASTIdentifierNode *BId,
                      const ASTFunctionCallStatementNode *FC) const;
 
   // double
@@ -530,10 +501,6 @@ public:
   ASTDeclarationNode *ProductionRule_171(const ASTToken *TK,
                                          const std::string &SId,
                                          const ASTIntNode *II,
-                                         ASTExpressionNode *EN) const;
-  ASTDeclarationNode *ProductionRule_172(const ASTToken *TK,
-                                         const std::string &SId,
-                                         const ASTIdentifierNode *IId,
                                          ASTExpressionNode *EN) const;
 
   // angle
@@ -574,9 +541,6 @@ public:
   ASTDeclarationNode *ProductionRule_240(const ASTToken *TK,
                                          const ASTIdentifierNode *Id,
                                          const ASTIntNode *II) const;
-  ASTDeclarationNode *ProductionRule_241(const ASTToken *TK,
-                                         const ASTIdentifierNode *Id,
-                                         const ASTIdentifierNode *IId) const;
   ASTDeclarationNode *ProductionRule_242(const ASTToken *TK,
                                          const ASTIdentifierNode *Id,
                                          const ASTIntNode *II,
@@ -585,14 +549,6 @@ public:
   ProductionRule_243(const ASTToken *TK, const ASTIdentifierNode *Id,
                      const ASTIntNode *II,
                      const ASTFunctionCallStatementNode *FC) const;
-  ASTDeclarationNode *ProductionRule_244(const ASTToken *TK,
-                                         const ASTIdentifierNode *Id,
-                                         const ASTIdentifierNode *IId,
-                                         const ASTExpressionNode *EN) const;
-  ASTDeclarationNode *
-  ProductionRule_245(const ASTToken *TK, const ASTIdentifierNode *Id,
-                     const ASTIdentifierNode *IId,
-                     const ASTFunctionCallStatementNode *FC) const;
 
   // complex[n]
   ASTMPComplexNode *ProductionRule_250(const ASTToken *TK,
@@ -600,9 +556,6 @@ public:
   ASTMPComplexNode *ProductionRule_251(const ASTToken *TK,
                                        const ASTIdentifierNode *Id,
                                        const ASTIntNode *SI) const;
-  ASTMPComplexNode *ProductionRule_252(const ASTToken *TK,
-                                       const ASTIdentifierNode *Id,
-                                       const ASTIdentifierNode *SId) const;
   ASTMPComplexNode *
   ProductionRule_253(const ASTToken *TK, const ASTIdentifierNode *Id,
                      const ASTIntNode *SI,
@@ -615,33 +568,13 @@ public:
                                        const ASTIdentifierNode *Id,
                                        const ASTIntNode *SI,
                                        ASTUnaryOpNode *UOP) const;
-  ASTMPComplexNode *
-  ProductionRule_256(const ASTToken *TK, const ASTIdentifierNode *Id,
-                     const ASTIdentifierNode *SId,
-                     const ASTComplexExpressionNode *CEN) const;
-  ASTMPComplexNode *ProductionRule_257(const ASTToken *TK,
-                                       const ASTIdentifierNode *Id,
-                                       const ASTIdentifierNode *SId,
-                                       ASTBinaryOpNode *BOP) const;
-  ASTMPComplexNode *ProductionRule_258(const ASTToken *TK,
-                                       const ASTIdentifierNode *Id,
-                                       const ASTIdentifierNode *SId,
-                                       ASTUnaryOpNode *UOP) const;
   ASTMPComplexNode *ProductionRule_259(const ASTToken *TK,
                                        const ASTIdentifierNode *Id,
                                        const ASTIntNode *SI,
                                        const ASTIdentifierNode *RId) const;
-  ASTMPComplexNode *ProductionRule_260(const ASTToken *TK,
-                                       const ASTIdentifierNode *Id,
-                                       const ASTIdentifierNode *SId,
-                                       const ASTIdentifierNode *RId) const;
   ASTMPComplexNode *
   ProductionRule_261(const ASTToken *TK, const ASTIdentifierNode *Id,
                      const ASTIntNode *SI,
-                     const ASTFunctionCallStatementNode *FC) const;
-  ASTMPComplexNode *
-  ProductionRule_262(const ASTToken *TK, const ASTIdentifierNode *Id,
-                     const ASTIdentifierNode *SId,
                      const ASTFunctionCallStatementNode *FC) const;
 
   // Unary Ops
@@ -1104,15 +1037,11 @@ public:
 
   // Result
   ASTResultNode *ProductionRule_2100(const ASTToken *TK) const;
-  ASTResultNode *ProductionRule_2101(const ASTIdentifierNode *IId,
-                                     const ASTToken *TK) const;
   ASTResultNode *ProductionRule_2102(const ASTIntNode *II,
                                      const ASTToken *TK) const;
   ASTResultNode *ProductionRule_2103(const ASTBinaryOpNode *BOP,
                                      const ASTToken *TK) const;
   ASTResultNode *ProductionRule_2104(const ASTToken *TK) const;
-  ASTResultNode *ProductionRule_2105(const ASTIdentifierNode *IId,
-                                     const ASTToken *TK) const;
   ASTResultNode *ProductionRule_2106(const ASTBinaryOpNode *BOP,
                                      const ASTToken *TK) const;
   ASTResultNode *ProductionRule_2107(const std::string *IS,

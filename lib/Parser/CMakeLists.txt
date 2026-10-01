@@ -30,6 +30,7 @@ if (BISON_FOUND)
                               ${PARSER_OUTPUT}
                        COMMAND ${CMAKE_COMMAND} -E env "M4=${M4}" ${BISON_EXECUTABLE}
                        ARGS  ${BISON_FLAGS} ${BISON_ARGS}
+                       DEPENDS ${BISON_FILE}
                        BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
                                   ${PARSER_OUTPUT}
                        COMMAND ${OPENQASM_DIR}/utils/sed-bison-output.sh
@@ -41,6 +42,7 @@ if (BISON_FOUND)
                               ${PARSER_OUTPUT}
                        COMMAND ${CMAKE_COMMAND} -E env "M4=${M4}" ${BISON_EXECUTABLE}
                        ARGS  ${BISON_FLAGS} ${BISON_ARGS}
+                       DEPENDS ${BISON_FILE}
                        BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
                                   ${PARSER_OUTPUT}
                        VERBATIM
@@ -67,6 +69,7 @@ if (FLEX_FOUND)
     add_custom_command(OUTPUT ${FLEX_OUTPUT} ${FLEX_HEADER}
                        COMMAND ${FLEX_EXECUTABLE}
                        ARGS ${FLEX_FLAGS} ${FLEX_ARGS}
+                       DEPENDS ${FLEX_FILE}
                        BYPRODUCTS ${FLEX_OUTPUT} ${FLEX_HEADER}
                        COMMAND ${OPENQASM_DIR}/utils/sed-flex-output.sh
                        ARGS ${CMAKE_CURRENT_BINARY_DIR}
@@ -76,6 +79,7 @@ if (FLEX_FOUND)
     add_custom_command(OUTPUT ${FLEX_OUTPUT} ${FLEX_HEADER}
                        COMMAND ${FLEX_EXECUTABLE}
                        ARGS ${FLEX_FLAGS} ${FLEX_ARGS}
+                       DEPENDS ${FLEX_FILE}
                        BYPRODUCTS ${FLEX_OUTPUT} ${FLEX_HEADER}
                        VERBATIM
                        COMMENT "Generating QasmScanner.yy.cpp.")
