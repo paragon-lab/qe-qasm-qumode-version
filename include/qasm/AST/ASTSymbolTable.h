@@ -588,7 +588,6 @@ public:
 
       Id->SetBits(ASTAngleNode::AngleBits);
       ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, ASTTypeAngle);
-      assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STE->SetDoNotDelete();
       if (!ASTM.insert(std::make_pair(S, STE)).second) {
@@ -623,7 +622,6 @@ public:
       }
 
       ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id);
-      assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STM.insert(std::make_pair(S, STE));
       Id->SetSymbolTableEntry(STE);
@@ -649,7 +647,6 @@ public:
       }
 
       ASTSymbolTableEntry *GSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(GSTE && "Could not create a valid ASTSymbolTableEntry!");
 
       Id->SetGlobalScope();
       GSTE->SetGlobalScope();
@@ -678,7 +675,6 @@ public:
       }
 
       ASTSymbolTableEntry *FSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(FSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       Id->SetGlobalScope();
       FSTE->SetDoNotDelete();
@@ -707,7 +703,6 @@ public:
       }
 
       ASTSymbolTableEntry *DSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(DSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       Id->SetGlobalScope();
       DSTE->SetDoNotDelete();
@@ -770,7 +765,6 @@ public:
       }
 
       ASTSymbolTableEntry *QSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       QSTE->SetDoNotDelete();
 
@@ -796,7 +790,6 @@ public:
       }
 
       ASTSymbolTableEntry *GLSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(GLSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       if (!GLSTM.insert(std::make_pair(Id->GetName(), GLSTE)).second) {
         std::stringstream M;
@@ -820,7 +813,6 @@ public:
       }
 
       ASTSymbolTableEntry *LSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(LSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       if (!LSTM.insert(std::make_pair(Id->GetName(), LSTE)).second) {
         std::stringstream M;
@@ -857,7 +849,6 @@ public:
       Id->SetBits(ASTAngleNode::AngleBits);
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     multimap_const_iterator H = STM.lower_bound(S);
     STM.insert(H, std::make_pair(S, STE));
@@ -874,7 +865,6 @@ public:
       map_iterator AI = ASTM.find(Id->GetName());
       if (AI == ASTM.end()) {
         ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
-        assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetDoNotDelete();
         if (!ASTM.insert(std::make_pair(Id->GetName(), STE)).second) {
@@ -926,7 +916,6 @@ public:
       map_iterator AI = ASTM.find(Id->GetName());
       if (AI == ASTM.end()) {
         ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
-        assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetGlobalScope();
         STE->SetDoNotDelete();
@@ -987,7 +976,6 @@ public:
       }
 
       ASTSymbolTableEntry *GSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(GSTE && "Could not create a valid ASTSymbolTableEntry!");
 
       Id->SetGlobalScope();
       GSTE->SetGlobalScope();
@@ -1008,7 +996,6 @@ public:
       map_iterator FI = FSTM.find(Id->GetName());
       if (FI == FSTM.end()) {
         ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
-        assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         if (!FSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
           std::stringstream M;
@@ -1074,7 +1061,6 @@ public:
       map_iterator DI = DSTM.find(Id->GetName());
       if (DI == DSTM.end()) {
         ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
-        assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         if (!DSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
           std::stringstream M;
@@ -1182,7 +1168,6 @@ public:
       }
 
       ASTSymbolTableEntry *QSTE = new ASTSymbolTableEntry(Id, Ty);
-      assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       QSTE->SetDoNotDelete();
 
@@ -1220,7 +1205,6 @@ public:
     }
 
     ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     multimap_const_iterator H = STM.lower_bound(S);
 

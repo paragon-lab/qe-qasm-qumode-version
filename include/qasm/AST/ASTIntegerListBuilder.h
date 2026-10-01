@@ -53,7 +53,6 @@ public:
 
   static ASTIntegerList *NewList() {
     ASTIntegerList *IIL = new ASTIntegerList();
-    assert(IIL && "Could not create a valid ASTIntegerList!");
     ILP = IIL;
     ILV.push_back(ILP);
     return ILP;

@@ -45,7 +45,6 @@ public:
 
   static ASTInitializerList *NewList() {
     ASTInitializerList *IIL = new ASTInitializerList();
-    assert(IIL && "Could not create a valid ASTInitializerList!");
     ILP = IIL;
     ILV.push_back(ILP);
     return ILP;

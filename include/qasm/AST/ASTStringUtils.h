@@ -455,16 +455,28 @@ public:
   }
 
   unsigned GetIdentifierIndex(const std::string &IS) const {
+    auto Parse = [](const std::string &T) -> unsigned {
+      if (T.empty())
+        return static_cast<unsigned>(~0x0);
+      try {
+        std::size_t Pos = 0;
+        const int V = std::stoi(T, &Pos, 10);
+        if (Pos != T.size())
+          return static_cast<unsigned>(~0x0);
+        return static_cast<unsigned>(V);
+      } catch (...) {
+        return static_cast<unsigned>(~0x0);
+      }
+    };
+
     std::string::size_type X = IS.find_last_of(':');
     if (X != std::string::npos)
-      return static_cast<unsigned>(std::stoi(IS.substr(X + 1)));
+      return Parse(IS.substr(X + 1));
 
     X = IS.find_last_of('[');
-    std::string::size_type Y = IS.find_last_of('[');
-    if (X != std::string::npos && Y != std::string::npos) {
-      std::string IXS = IS.substr(X + 1, Y - X - 1);
-      return static_cast<unsigned>(std::stoi(IXS));
-    }
+    const std::string::size_type Y = IS.find_last_of(']');
+    if (X != std::string::npos && Y != std::string::npos && Y > X)
+      return Parse(IS.substr(X + 1, Y - X - 1));
 
     return static_cast<unsigned>(~0x0);
   }

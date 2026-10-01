@@ -112,7 +112,6 @@ void ASTDeclarationList::CreateBuiltinParameterSymbols(
           const_cast<ASTSymbolTableEntry *>(DId->GetSymbolTableEntry());
       if (!STE) {
         STE = new ASTSymbolTableEntry(DId, DId->GetSymbolType());
-        assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetLocalScope();
         STE->SetContext(DId->GetDeclarationContext());
@@ -235,10 +234,8 @@ Found:
         if (!STE) {
           ASTIdentifierNode *EId =
               new ASTIdentifierNode(DS, ASTTypeAngle, ASTIntNode::IntBits);
-          assert(EId && "Could not create a valid ASTIdentifierNode!");
 
           STE = new ASTSymbolTableEntry(EId, ASTTypeAngle);
-          assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
           EId->SetSymbolTableEntry(STE);
           assert(EId->HasSymbolTableEntry() &&

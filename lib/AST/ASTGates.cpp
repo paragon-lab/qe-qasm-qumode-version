@@ -223,12 +223,10 @@ ASTGateNode::MaterializeMPDecimalArrayFromAngles(unsigned Index,
   ASTIdentifierNode *ArrId =
       new ASTIdentifierNode(ArrName.str(), ASTTypeMPDecimalArray,
                             static_cast<unsigned>(Decimals.size()));
-  assert(ArrId && "Could not create an MPDecimal Array ASTIdentifierNode!");
   ArrId->SetPolymorphicName("gatearraympdecimal");
 
   ASTMPDecimalArrayNode *MDAN =
       new ASTMPDecimalArrayNode(ArrId, Decimals, Bits);
-  assert(MDAN && "Could not create a valid ASTMPDecimalArrayNode!");
   MDAN->Mangle();
   (void)Index;
   return MDAN;
@@ -342,10 +340,8 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
                                     unsigned Bits, unsigned QBits) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  if (!STE) {
+  if (!STE)
     STE = new ASTSymbolTableEntry(Id, Id->GetSymbolType());
-    assert(STE && "Could not create a valid ASTSymbolTableEntry!");
-  }
 
   if (Bits == 0U && QBits != 0U) {
     std::stringstream M;
@@ -363,7 +359,6 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
     ASTQubitNode *QN = nullptr;
     if (!STE->HasValue()) {
       QN = new ASTQubitNode(Id, IX, QNS.str());
-      assert(QN && "Could not create a valid ASTQubitNode!");
       STE->ResetValue();
       STE->SetValue(new ASTValue<>(QN, QTy), QTy);
       assert(STE->HasValue() && "Qubit SymbolTable Entry has no Value!");
@@ -378,7 +373,6 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
     ASTGateOperandParamNode *QPN = nullptr;
     if (!STE->HasValue()) {
       QPN = new ASTGateOperandParamNode(Id, IX, Bits, QNS.str());
-      assert(QPN && "Could not create a valid ASTGateOperandParamNode!");
       STE->ResetValue();
       STE->SetValue(new ASTValue<>(QPN, QTy), QTy);
       assert(STE->HasValue() && "Qubit SymbolTable Entry has no Value!");
@@ -389,7 +383,6 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
             GSTM.find(Id->GetName());
         if (QI == GSTM.end()) {
           QPN = new ASTGateOperandParamNode(Id, IX, Bits, QNS.str());
-          assert(QPN && "Could not create a valid ASTGateOperandParamNode!");
           STE->ResetValue();
           STE->SetValue(new ASTValue<>(QPN, QTy), QTy);
           assert(STE->HasValue() && "Qubit SymbolTable Entry has no Value!");
@@ -415,7 +408,6 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
     ASTQubitContainerNode *QCN = nullptr;
     if (!STE->HasValue()) {
       QCN = new ASTQubitContainerNode(Id, Bits, QBits, QNS.str());
-      assert(QCN && "Could not create a valid ASTQubitContainerNode!");
       STE->ResetValue();
       STE->SetValue(new ASTValue<>(QCN, QTy), QTy);
       assert(STE->HasValue() && "Qubit SymbolTable Entry has no Value!");
@@ -446,7 +438,6 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
     ASTQumodeNode *QN = nullptr;
     if (!STE->HasValue()) {
       QN = new ASTQumodeNode(Id, IX, QNS.str());
-      assert(QN && "Could not create a valid ASTQumodeNode!");
       STE->ResetValue();
       STE->SetValue(new ASTValue<>(QN, QTy), QTy);
       assert(STE->HasValue() && "Qumode SymbolTable Entry has no Value!");
@@ -461,7 +452,6 @@ ASTGateNode::MangleGateOperandParam(ASTIdentifierNode *Id,
     ASTQumodeContainerNode *QCN = nullptr;
     if (!STE->HasValue()) {
       QCN = new ASTQumodeContainerNode(Id, Bits == 0U ? 1U : Bits);
-      assert(QCN && "Could not create a valid ASTQumodeContainerNode!");
       STE->ResetValue();
       STE->SetValue(new ASTValue<>(QCN, QTy), QTy);
       assert(STE->HasValue() && "Qumode SymbolTable Entry has no Value!");
@@ -502,9 +492,7 @@ ASTGateNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
 
     XAN = new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), FN,
                            ASTAngleTypeGeneric, ConvertBits);
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(FN, ASTTypeAngle, ConvertBits);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeDouble: {
@@ -515,9 +503,7 @@ ASTGateNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
 
     XAN = new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), DN,
                            ASTAngleTypeGeneric, ConvertBits);
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(DN, ASTTypeAngle, ConvertBits);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeInt:
@@ -529,9 +515,7 @@ ASTGateNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
 
     XAN = new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), IN,
                            ASTAngleTypeGeneric, ConvertBits);
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(IN, ASTTypeAngle, ConvertBits);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeMPInteger:
@@ -544,9 +528,7 @@ ASTGateNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
 
     XAN = new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), MPI,
                            ASTAngleTypeGeneric, ConvertBits);
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(MPI, ASTTypeAngle, ConvertBits);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeMPDecimal: {
@@ -558,9 +540,7 @@ ASTGateNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
 
     XAN = new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), MPD,
                            ASTAngleTypeGeneric, ConvertBits);
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(MPD, ASTTypeAngle, ConvertBits);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   case ASTTypeBitset: {
@@ -591,9 +571,7 @@ ASTGateNode::CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const {
 
     XAN = new ASTAngleNode(ASTIdentifierNode::Angle.Clone(LC), D,
                            ASTAngleTypeGeneric, ConvertBits);
-    assert(XAN && "Could not create a valid ASTAngleNode!");
     ICE = new ASTImplicitConversionNode(CBN, ASTTypeAngle, SZ);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     XAN->SetImplicitConversion(ICE);
   } break;
   default: {
@@ -631,7 +609,6 @@ ASTGateNode::CreateAngleTemporary(const ASTSymbolTableEntry *XSTE) const {
   ASTAngleNode *XAN =
       new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), ASTAngleTypeGeneric,
                        XSTE->GetIdentifier()->GetBits());
-  assert(XAN && "Could not create a valid ASTAngleNode!");
 
   ASTObjectTracker::Instance().Unregister(XAN);
   return XAN;
@@ -644,7 +621,6 @@ ASTGateNode::CreateAngleSymbolTableEntry(ASTSymbolTableEntry *XSTE) const {
   ASTAngleNode *XAN =
       new ASTAngleNode(XSTE->GetIdentifier(), ASTAngleTypeGeneric,
                        XSTE->GetIdentifier()->GetBits());
-  assert(XAN && "Could not create a valid ASTAngleNode!");
 
   XSTE->ResetValue();
   XSTE->SetValue(new ASTValue<>(XAN, ASTTypeAngle), ASTTypeAngle);
@@ -2041,7 +2017,6 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
         if (!QSTE->HasValue()) {
           ASTGateOperandParamNode *QPN = new ASTGateOperandParamNode(
               QId, C, QId->GetBits(), QId->GetName());
-          assert(QPN && "Could not create a valid ASTGateOperandParamNode!");
           QPN->Mangle();
           QSTE->ResetValue();
           QSTE->SetValue(new ASTValue<>(QPN, ASTTypeGateOperandParam),
@@ -2494,10 +2469,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
     if (QI != GSTM.end())
       STE = const_cast<ASTSymbolTableEntry *>((*QI).second);
 
-    if (!STE) {
+    if (!STE)
       STE = new ASTSymbolTableEntry(QId, QId->GetSymbolType());
-      assert(STE && "Could not create a valid SymbolTable Entry!");
-    }
 
     if (STE && STE->GetValueType() == ASTTypeUndefined) {
       if (GateCall) {
@@ -2598,7 +2571,6 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
     ASTIdentifierNode *QBId =
         new ASTIdentifierNode(QS.str(), ASTTypeGateOperandParam, 0U);
-    assert(QBId && "Could not create a valid Qubit ASTIdentifierNode!");
 
     QBId->SetPolymorphicName(QId->GetName());
 
@@ -2608,7 +2580,6 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
       OpN = new ASTQumodeNode(QBId, C, QId->GetName());
     else
       OpN = new ASTQubitNode(QBId, C, QId->GetName());
-    assert(OpN && "Could not create a valid gate Operand node!");
 
     Operands.push_back(OpN);
     Operands.back()->Mangle();
@@ -2727,9 +2698,10 @@ void ASTGateNode::print() const {
       std::cout << "<OperandParam>" << std::endl;
       const std::string &QN = QId->GetName();
       MI = OperandParamIds.find(XC);
-      if (MI != OperandParamIds.end() &&
-          ASTStringUtils::Instance().IsIndexed(QN)) {
-        std::string BN = ASTStringUtils::Instance().GetIdentifierBase(QN);
+      if (MI != OperandParamIds.end()) {
+        std::string BN = ASTStringUtils::Instance().IsIndexed(QN)
+                             ? ASTStringUtils::Instance().GetIdentifierBase(QN)
+                             : QN;
         std::cout << "<Name>" << BN << '[' << (*MI).second->GetName() << ']'
                   << "</Name>" << std::endl;
       } else {
@@ -3555,7 +3527,6 @@ ASTIdentifierNode *ASTGateNode::GateCallIdentifier(const std::string &Name,
   assert(!Name.empty() && "Invalid Gate Name!");
 
   ASTIdentifierNode *GId = new ASTIdentifierNode(Name, GTy, Bits);
-  assert(GId && "Could not create a valid GateCall ASTIdentifierNode!");
 
   return GId;
 }
@@ -3573,7 +3544,6 @@ ASTGateNode *ASTGateNode::CloneCall(const ASTIdentifierNode *Id,
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTGateNode *RG = new ASTGateNode(
       GId, AL, QL, true, ASTGateQOpList::EmptyDefault, &FormalParamTypes);
-  assert(RG && "Could not create a valid ASTGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3602,7 +3572,6 @@ ASTUGateNode *ASTUGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTUGateNode *RG = new ASTUGateNode(GId, AL, QL, true);
-  assert(RG && "Could not create a valid ASTUGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3626,7 +3595,6 @@ ASTDispGateNode *ASTDispGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTDispGateNode *RG = new ASTDispGateNode(GId, AL, QL, true);
-  assert(RG && "Could not create a valid ASTDispGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3650,7 +3618,6 @@ ASTCXGateNode *ASTCXGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTCXGateNode *RG = new ASTCXGateNode(GId, AL, QL, true);
-  assert(RG && "Could not create a valid ASTCXGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3674,7 +3641,6 @@ ASTCXGateNode *ASTCXGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTCXGateNode *RG = new ASTCXGateNode(GId, PL, IL, true);
-  assert(RG && "Could not create a valid ASTCXGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3698,7 +3664,6 @@ ASTCCXGateNode *ASTCCXGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTCCXGateNode *RG = new ASTCCXGateNode(GId, AL, QL, true);
-  assert(RG && "Could not create a valid ASTCCXGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3722,7 +3687,6 @@ ASTCCXGateNode *ASTCCXGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTCCXGateNode *RG = new ASTCCXGateNode(GId, PL, IL, true);
-  assert(RG && "Could not create a valid ASTCXGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3747,7 +3711,6 @@ ASTHadamardGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTHadamardGateNode *RG = new ASTHadamardGateNode(GId, AL, QL, true);
-  assert(RG && "Could not create a valid ASTHadamardGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;
@@ -3771,7 +3734,6 @@ ASTCNotGateNode *ASTCNotGateNode::CloneCall(const ASTIdentifierNode *Id,
   GId->SetSymbolTableEntry(
       const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()));
   ASTCNotGateNode *RG = new ASTCNotGateNode(GId, AL, QL, true);
-  assert(RG && "Could not create a valid ASTCNotGateNode!");
 
   RG->OpList = OpList;
   RG->GDId = Id;

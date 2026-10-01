@@ -49,7 +49,6 @@ public:
 
   static ASTIdentifierList *NewList() {
     ASTIdentifierList *IIL = new ASTIdentifierList();
-    assert(IIL && "Could not create a valid ASTIdentifierList!");
     ILP = IIL;
     ILV.push_back(ILP);
     return ILP;

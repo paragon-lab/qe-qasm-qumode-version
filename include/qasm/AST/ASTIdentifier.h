@@ -506,7 +506,6 @@ public:
            "Invalid number of Bits for RValue ASTIdentifierNode!");
 
     ASTIdentifierNode *RId = new ASTIdentifierNode(Name, NumBits);
-    assert(RId && "Could not create a valid RValue ASTIdentifierNode!");
 
     RId->SetRValue();
     return RId;

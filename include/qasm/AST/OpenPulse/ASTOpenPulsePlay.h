@@ -68,7 +68,6 @@ public:
         FN(F) {
     assert(F && "Invalid ASTOpenPulseFrameNode argument!");
     WN = new ASTOpenPulseWaveformNode(&ASTIdentifierNode::Waveform, CXL);
-    assert(WN && "Could not create a valid OpenPulse WaveformNode!");
   }
 
   virtual ~ASTOpenPulsePlayNode() = default;

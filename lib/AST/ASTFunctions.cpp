@@ -250,7 +250,6 @@ bool ASTFunctionDefinitionNode::CheckMeasureReturnType(
   case ASTTypeBitset: {
     if (MN->GetResultType() == OP.second && MN->HasResult()) {
       ICE = new ASTImplicitConversionNode(MN->GetResult(), OP.first);
-      assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     } else {
       ICE = ASTImplicitConversionNode::InvalidConversion(OP.first, OP.second);
       assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
@@ -261,7 +260,6 @@ bool ASTFunctionDefinitionNode::CheckMeasureReturnType(
   case ASTTypeMPComplex: {
     if (MN->GetResultType() == OP.second && MN->HasComplexResult()) {
       ICE = new ASTImplicitConversionNode(MN->GetComplexResult(), OP.first);
-      assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     } else {
       ICE = ASTImplicitConversionNode::InvalidConversion(OP.first, OP.second);
       assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
@@ -272,7 +270,6 @@ bool ASTFunctionDefinitionNode::CheckMeasureReturnType(
   case ASTTypeAngle: {
     if (MN->GetResultType() == OP.second && MN->HasAngleResult()) {
       ICE = new ASTImplicitConversionNode(MN->GetAngleResult(), OP.first);
-      assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     } else {
       ICE = ASTImplicitConversionNode::InvalidConversion(OP.first, OP.second);
       assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
@@ -330,74 +327,60 @@ bool ASTFunctionDefinitionNode::CheckFunctionReturnType(
   switch (FRN->GetResultType()) {
   case ASTTypeVoid:
     ICE = new ASTImplicitConversionNode(FRN->GetVoidNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeBool:
     ICE = new ASTImplicitConversionNode(FRN->GetBoolNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeInt:
   case ASTTypeUInt:
     ICE = new ASTImplicitConversionNode(FRN->GetIntNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeFloat:
     ICE = new ASTImplicitConversionNode(FRN->GetFloatNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeDouble:
     ICE = new ASTImplicitConversionNode(FRN->GetDoubleNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeDuration:
     ICE = new ASTImplicitConversionNode(FRN->GetDurationNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeOpenPulseFrame:
     ICE = new ASTImplicitConversionNode(FRN->GetFrame(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeOpenPulseWaveform:
     ICE = new ASTImplicitConversionNode(FRN->GetWaveform(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeOpenPulsePort:
     ICE = new ASTImplicitConversionNode(FRN->GetPort(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeAngle:
     ICE = new ASTImplicitConversionNode(FRN->GetAngleNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeMPInteger:
   case ASTTypeMPUInteger:
     ICE = new ASTImplicitConversionNode(FRN->GetMPInteger(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeMPDecimal:
     ICE = new ASTImplicitConversionNode(FRN->GetMPDecimal(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeMPComplex:
     ICE = new ASTImplicitConversionNode(FRN->GetMPComplex(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeBitset:
     ICE = new ASTImplicitConversionNode(FRN->GetCBitNode(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
     break;
   case ASTTypeMeasure:
@@ -432,65 +415,53 @@ bool ASTFunctionDefinitionNode::CheckReturnType(
   switch (OP.second) {
   case ASTTypeBinaryOp: {
     ICE = new ASTImplicitConversionNode(RSN->GetBinaryOp(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeUnaryOp: {
     ICE = new ASTImplicitConversionNode(RSN->GetUnaryOp(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeBool: {
     ICE = new ASTImplicitConversionNode(RSN->GetBool(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeInt:
   case ASTTypeUInt: {
     ICE = new ASTImplicitConversionNode(RSN->GetInt(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeFloat: {
     ICE = new ASTImplicitConversionNode(RSN->GetFloat(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeDouble: {
     ICE = new ASTImplicitConversionNode(RSN->GetDouble(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeMPInteger:
   case ASTTypeMPUInteger: {
     ICE = new ASTImplicitConversionNode(RSN->GetMPInteger(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeMPDecimal: {
     ICE = new ASTImplicitConversionNode(RSN->GetMPDecimal(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeMPComplex: {
     ICE = new ASTImplicitConversionNode(RSN->GetMPComplex(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeAngle: {
     ICE = new ASTImplicitConversionNode(RSN->GetAngle(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeBitset: {
     ICE = new ASTImplicitConversionNode(RSN->GetCBit(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeIdentifier: {
     ASTScopeController::Instance().CheckIdentifier(RSN->GetIdent());
     ICE = new ASTImplicitConversionNode(RSN->GetIdent(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeFunctionCallStatement:
@@ -501,12 +472,10 @@ bool ASTFunctionDefinitionNode::CheckReturnType(
     break;
   case ASTTypeStatement: {
     ICE = new ASTImplicitConversionNode(RSN->GetStatement(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   case ASTTypeExpression: {
     ICE = new ASTImplicitConversionNode(RSN->GetExpression(), OP.first);
-    assert(ICE && "Could not create a valid ASTImplicitConversionNode!");
     RSN->AddImplicitConversion(ICE);
   } break;
   default:

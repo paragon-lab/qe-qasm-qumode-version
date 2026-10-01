@@ -48,14 +48,12 @@ public:
   static void Init() {
     if (!BLP) {
       BLP = new ASTParameterList();
-      assert(BLP && "Could not create a valid ASTParameterList!");
       BLV.push_back(BLP);
     }
   }
 
   static ASTParameterList *NewList() {
     BLP = new ASTParameterList();
-    assert(BLP && "Could not create a valid ASTParameterList!");
     BLV.push_back(BLP);
     return BLP;
   }

@@ -127,7 +127,6 @@ public:
 
     ASTAnnotationStatementNode *SR = new ASTAnnotationStatementNode(
         Id, ASTAnnotationNode::ExpressionError(Id, ERM));
-    assert(SR && "Could not create a valid ASTStatementNode!");
     return SR;
   }
 

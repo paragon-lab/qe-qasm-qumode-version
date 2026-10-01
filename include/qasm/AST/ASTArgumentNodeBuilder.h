@@ -49,7 +49,6 @@ public:
 
   static ASTArgumentNodeList *NewList() {
     ASTArgumentNodeList *ANL = new ASTArgumentNodeList();
-    assert(ANL && "Could not create a valid ASTArgumentNodeList!");
     ALP = ANL;
     ALV.push_back(ALP);
     return ALP;

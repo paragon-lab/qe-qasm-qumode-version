@@ -52,7 +52,6 @@ public:
 
   static ASTStatementList *NewList() {
     ASTStatementList *SSL = new ASTStatementList();
-    assert(SSL && "Could not create a valid ASTStatementList!");
     SLP = SSL;
     SLV.push_back(SLP);
     return SLP;
@@ -135,7 +134,6 @@ public:
 
   static ASTStatementList *NewList() {
     ASTStatementList *SSL = new ASTStatementList();
-    assert(SSL && "Could not create a valid ASTStatementList!");
     SLP = SSL;
     SLV.push_back(SLP);
     return SLP;
@@ -218,7 +216,6 @@ public:
 
   static ASTStatementList *NewList() {
     ASTStatementList *SSL = new ASTStatementList();
-    assert(SSL && "Could not create a valid ASTStatementList!");
     SLP = SSL;
     SLV.push_back(SLP);
     return SLP;

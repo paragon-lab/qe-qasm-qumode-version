@@ -409,7 +409,6 @@ protected:
       S.str("");
       S << QS.c_str() << ':' << I;
       ASTIdentifierNode *QId = new ASTIdentifierNode(S.str(), 1);
-      assert(QId && "Could not create a valid ASTIdentifierNode!");
       List.push_back(new ASTQubitNode(QId, I, Id->GetName()));
     }
   }
