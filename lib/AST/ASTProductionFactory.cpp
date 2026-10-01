@@ -9437,12 +9437,16 @@ ASTProductionFactory::ProductionRule_850(const ASTToken *TK,
 }
 
 ASTForLoopRangeExpressionNode *ASTProductionFactory::ProductionRule_860(
-    const ASTToken *TK, const ASTIdentifierNode *Id, const ASTIntegerList *IL,
+    const ASTToken *TK, const ASTIdentifierNode *Id,
+    const ASTForRangePrefix *Prefix,
     const std::variant<const ASTIntNode *, const ASTIdentifierNode *> &II,
     ASTOpType OTy) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIntegerList argument!");
+  assert(Prefix && "Invalid ASTForRangePrefix argument!");
+
+  const ASTIntegerList *IL = Prefix->ToIntegerList();
+  assert(IL && "Could not create a valid ASTIntegerList!");
 
   ASTScopeController::Instance().CheckIdentifier(Id);
 
@@ -9504,6 +9508,10 @@ ASTForLoopRangeExpressionNode *ASTProductionFactory::ProductionRule_860(
       new ASTForLoopRangeExpressionNode(*IL, BOP);
   assert(LRE && "Could not create a valid ASTForLoopRangeExpressionNode!");
 
+  LRE->ApplyPrefix(Prefix);
+  std::vector<const ASTExpression *> Bounds = Prefix->ToExpressions();
+  Bounds.push_back(BOP);
+  LRE->SetBounds(std::move(Bounds));
   LRE->SetLocation(TK->GetLocation());
   LRE->Mangle();
   return LRE;
@@ -27900,12 +27908,39 @@ ASTProductionFactory::ProductionRule_3106(const ASTToken *TK,
   return ASTSwitchStatementNode::StatementError(M.str());
 }
 
+namespace {
+
+const ASTExpression *IndexBoundOf(ASTExpression *E) {
+  if (!E)
+    return nullptr;
+  if (const ASTExpressionNode *EN =
+          dynamic_cast<const ASTExpressionNode *>(E)) {
+    if (EN->GetASTType() == ASTTypeIdentifier && EN->GetIdentifier())
+      return EN->GetIdentifier();
+  }
+  return E;
+}
+
+std::vector<const ASTExpression *>
+IndexBoundsFromExprs(const ASTExpressionList *EL) {
+  std::vector<const ASTExpression *> Out;
+  if (!EL)
+    return Out;
+  Out.reserve(EL->Size());
+  for (ASTExpression *E : *EL)
+    if (const ASTExpression *B = IndexBoundOf(E))
+      Out.push_back(B);
+  return Out;
+}
+
+} // namespace
+
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3200(
-    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    const ASTToken *TK, ASTIdentifierNode *LId, const ASTExpressionList *EL,
     ASTStatementList *SL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(SL && "Invalid ASTStatementList argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -27967,7 +28002,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3200(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL = new ASTForLoopNode(Id, *IL, *SL, LIV);
+  ASTForLoopNode *FL = new ASTForLoopNode(
+      Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
   assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -27997,11 +28033,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3200(
 }
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3201(
-    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    const ASTToken *TK, ASTIdentifierNode *LId, const ASTExpressionList *EL,
     ASTStatement *ST) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(ST && "Invalid ASTStatement argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28070,7 +28106,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3201(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL = new ASTForLoopNode(Id, *IL, *SL, LIV);
+  ASTForLoopNode *FL = new ASTForLoopNode(
+      Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
   assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -28100,11 +28137,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3201(
 }
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
-    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    const ASTToken *TK, ASTIdentifierNode *LId, const ASTExpressionList *EL,
     ASTStatement *ST) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(ST && "Invalid ASTStatement argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28172,8 +28209,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL =
-      new ASTForLoopNode(Id, *IL, *SL, LIV, ASTForLoopNode::IVDiscrete);
+  ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
+                                          *SL, LIV, ASTForLoopNode::IVDiscrete);
   assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -28203,11 +28240,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3202(
 }
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3203(
-    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    const ASTToken *TK, ASTIdentifierNode *LId, const ASTExpressionList *EL,
     ASTStatementList *SL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(SL && "Invalid ASTStatementList argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28268,8 +28305,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3203(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL =
-      new ASTForLoopNode(Id, *IL, *SL, LIV, ASTForLoopNode::IVDiscrete);
+  ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
+                                          *SL, LIV, ASTForLoopNode::IVDiscrete);
   assert(FL && "Could not create a valid ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -28493,11 +28530,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3205(
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3206(
     const ASTToken *TK, ASTIntNode *IVT, ASTIdentifierNode *LId,
-    ASTIntegerList *IL, ASTStatementList *SL) const {
+    const ASTExpressionList *EL, ASTStatementList *SL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(IVT && "Invalid ASTIntNode argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(SL && "Invalid ASTStatementList argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28555,7 +28592,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3206(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL = new ASTForLoopNode(Id, *IL, *SL, LIV);
+  ASTForLoopNode *FL = new ASTForLoopNode(
+      Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
   assert(FL && "Could not create an ASTForLoopNode!");
 
   SL->TransferDeclarations(FL->GetSymbolTable());
@@ -28586,11 +28624,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3206(
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3207(
     const ASTToken *TK, ASTIntNode *IVT, ASTIdentifierNode *LId,
-    ASTIntegerList *IL, ASTStatement *ST) const {
+    const ASTExpressionList *EL, ASTStatement *ST) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(IVT && "Invalid ASTIntNode argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(ST && "Invalid ASTStatement argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28652,7 +28690,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3207(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL = new ASTForLoopNode(Id, *IL, *SL, LIV);
+  ASTForLoopNode *FL = new ASTForLoopNode(
+      Id, IndexBoundsFromExprs(EL), ':', *SL, LIV, ASTForLoopNode::IVMonotonic);
   assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -28683,11 +28722,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3207(
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3208(
     const ASTToken *TK, ASTIntNode *IVT, ASTIdentifierNode *LId,
-    ASTIntegerList *IL, ASTStatementList *SL) const {
+    const ASTExpressionList *EL, ASTStatementList *SL) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(IVT && "Invalid ASTIntNode argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(SL && "Invalid ASTStatementList argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28746,8 +28785,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3208(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL =
-      new ASTForLoopNode(Id, *IL, *SL, LIV, ASTForLoopNode::IVDiscrete);
+  ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
+                                          *SL, LIV, ASTForLoopNode::IVDiscrete);
   assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -28778,11 +28817,11 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3208(
 
 ASTForStatementNode *ASTProductionFactory::ProductionRule_3209(
     const ASTToken *TK, ASTIntNode *IVT, ASTIdentifierNode *LId,
-    ASTIntegerList *IL, ASTStatement *ST) const {
+    const ASTExpressionList *EL, ASTStatement *ST) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(IVT && "Invalid ASTIntNode argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIdentifierList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(ST && "Invalid ASTStatement argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("for");
@@ -28845,8 +28884,8 @@ ASTForStatementNode *ASTProductionFactory::ProductionRule_3209(
   assert(LIV && "Loop Induction Variable has a SymbolTable Entry with "
                 "an invalid Type!");
 
-  ASTForLoopNode *FL =
-      new ASTForLoopNode(Id, *IL, *SL, LIV, ASTForLoopNode::IVDiscrete);
+  ASTForLoopNode *FL = new ASTForLoopNode(Id, IndexBoundsFromExprs(EL), ',',
+                                          *SL, LIV, ASTForLoopNode::IVDiscrete);
   assert(FL && "Could not create an ASTForLoopNode!");
 
   FL->SetLocation(TK->GetLocation());
@@ -29102,15 +29141,15 @@ ASTGateQOpNode *ASTProductionFactory::ProductionRule_3220(
 }
 
 ASTGateQOpNode *ASTProductionFactory::ProductionRule_3221(
-    const ASTToken *TK, ASTIdentifierNode *LId, ASTIntegerList *IL,
+    const ASTToken *TK, ASTIdentifierNode *LId, const ASTExpressionList *EL,
     ASTGateQOpList *Body) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(LId && "Invalid ASTIdentifierNode argument!");
-  assert(IL && "Invalid ASTIntegerList argument!");
+  assert(EL && "Invalid ASTExpressionList argument!");
   assert(Body && "Invalid ASTGateQOpList argument!");
 
   ASTStatementList *SL = GateQOpListToStatementList(Body);
-  ASTForStatementNode *FSN = ProductionRule_3200(TK, LId, IL, SL);
+  ASTForStatementNode *FSN = ProductionRule_3200(TK, LId, EL, SL);
   if (!FSN || FSN->IsError()) {
     std::stringstream M;
     M << (FSN ? FSN->GetError() : "Could not create gate-body for statement.");

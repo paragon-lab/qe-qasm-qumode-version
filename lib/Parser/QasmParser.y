@@ -548,6 +548,7 @@ int readinput() {
     QASM::ASTStatementList* ElseIfStatementList;
     QASM::ASTStatementList* ElseStatementList;
     QASM::ASTIntegerList*   IntegerList;
+    QASM::ASTForRangePrefix* ForRangePrefixNode;
     QASM::ASTDeclarationList* DeclarationList;
     QASM::ASTDeclarationList* NamedTypeDeclarationList;
     QASM::ASTDeclarationList* TypeDeclarationList;
@@ -743,7 +744,8 @@ int readinput() {
 %type <GateNegControlStmtNode>      GateNegCtrlExprStmt
 %type <GateInverseStmtNode>         GateInvExprStmt
 %type <GatePowerStmtNode>           GatePowExprStmt
-%type <LoopRangeExpressionNode>     ForLoopRangeExpr
+%type <ExpressionNode>              ForIndexExpr
+%type <ExpressionList>              ForBracketRange
 
 %type <GateQOpNode>                 GateQOp GateCtrlStmt GateNegCtrlStmt
                                     GateInvStmt GatePowStmt GateGPhaseStmt
@@ -3251,52 +3253,36 @@ ElseStmt
   ;
 
 ForStmt
-  : TOK_FOR Identifier TOK_IN '[' IntegerList ']' '{' ForStmtList '}' {
+  : TOK_FOR Identifier TOK_IN '[' ForBracketRange ']' '{' ForStmtList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3200(GET_TOKEN(8),
                                                               $2, $5, $8);
   }
-  | TOK_FOR Identifier TOK_IN '[' IntegerList ']' Statement  {
+  | TOK_FOR Identifier TOK_IN '[' ForBracketRange ']' Statement  {
     $$ = ASTProductionFactory::Instance().ProductionRule_3201(GET_TOKEN(6),
                                                               $2, $5, $7);
   }
-  | TOK_FOR Identifier TOK_IN '{' IntegerList '}' Statement {
+  | TOK_FOR Identifier TOK_IN '{' ExprList '}' Statement {
     $$ = ASTProductionFactory::Instance().ProductionRule_3202(GET_TOKEN(6),
                                                               $2, $5, $7);
   }
-  | TOK_FOR Identifier TOK_IN '{' IntegerList '}' '{' ForStmtList '}' {
+  | TOK_FOR Identifier TOK_IN '{' ExprList '}' '{' ForStmtList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3203(GET_TOKEN(8),
                                                               $2, $5, $8);
   }
-  | TOK_FOR Identifier TOK_IN '[' ForLoopRangeExpr ']' '{' ForStmtList '}' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3204(GET_TOKEN(8),
-                                                              $2, $5, $8);
-  }
-  | TOK_FOR Identifier TOK_IN '[' ForLoopRangeExpr ']' Statement {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3205(GET_TOKEN(6),
-                                                              $2, $5, $7);
-  }
-  | TOK_FOR IntScalarType Identifier TOK_IN '[' IntegerList ']' '{' ForStmtList '}' {
+  | TOK_FOR IntScalarType Identifier TOK_IN '[' ForBracketRange ']' '{' ForStmtList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3206(GET_TOKEN(9),
                                                               $2, $3, $6, $9);
   }
-  | TOK_FOR IntScalarType Identifier TOK_IN '[' IntegerList ']' Statement  {
+  | TOK_FOR IntScalarType Identifier TOK_IN '[' ForBracketRange ']' Statement  {
     $$ = ASTProductionFactory::Instance().ProductionRule_3207(GET_TOKEN(7),
                                                               $2, $3, $6, $8);
   }
-  | TOK_FOR IntScalarType Identifier TOK_IN '{' IntegerList '}' '{' ForStmtList '}' {
+  | TOK_FOR IntScalarType Identifier TOK_IN '{' ExprList '}' '{' ForStmtList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3208(GET_TOKEN(9),
                                                               $2, $3, $6, $9);
   }
-  | TOK_FOR IntScalarType Identifier TOK_IN '{' IntegerList '}' Statement  {
+  | TOK_FOR IntScalarType Identifier TOK_IN '{' ExprList '}' Statement  {
     $$ = ASTProductionFactory::Instance().ProductionRule_3209(GET_TOKEN(7),
-                                                              $2, $3, $6, $8);
-  }
-  | TOK_FOR IntScalarType Identifier TOK_IN '[' ForLoopRangeExpr ']' '{' ForStmtList '}' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3210(GET_TOKEN(9),
-                                                              $2, $3, $6, $9);
-  }
-  | TOK_FOR IntScalarType Identifier TOK_IN '[' ForLoopRangeExpr ']' Statement {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3211(GET_TOKEN(7),
                                                               $2, $3, $6, $8);
   }
   ;
@@ -3743,11 +3729,7 @@ GateForBody
   ;
 
 GateForStmt
-  : TOK_FOR Identifier TOK_IN '[' ForLoopRangeExpr ']' GateForBody {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3220(GET_TOKEN(6), $2,
-                                                              $5, $7);
-  }
-  | TOK_FOR Identifier TOK_IN '[' IntegerList ']' GateForBody {
+  : TOK_FOR Identifier TOK_IN '[' ForBracketRange ']' GateForBody {
     $$ = ASTProductionFactory::Instance().ProductionRule_3221(GET_TOKEN(6), $2,
                                                               $5, $7);
   }
@@ -6950,95 +6932,49 @@ InitArrayExpr
   }
   ;
 
-ForLoopRangeExpr
-  : IntegerList Identifier '+' Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeAdd);
+ForIndexExpr
+  : Expr {
+    $$ = $1;
   }
-  | IntegerList Identifier '+' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeAdd);
-  }
-  | IntegerList Identifier '-' Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeSub);
-  }
-  | IntegerList Identifier '-' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeSub);
-  }
-  | IntegerList Identifier '*' Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeMul);
-  }
-  | IntegerList Identifier '*' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeMul);
-  }
-  | IntegerList Identifier '/' Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeDiv);
-  }
-  | IntegerList Identifier '/' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeDiv);
-  }
-  | IntegerList Identifier '%' Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeMod);
-  }
-  | IntegerList Identifier '%' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4, ASTOpTypeMod);
-  }
-  | IntegerList Identifier TOK_LEFT_SHIFT_OP Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeLeftShift);
-  }
-  | IntegerList Identifier TOK_LEFT_SHIFT_OP Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeLeftShift);
-  }
-  | IntegerList Identifier TOK_RIGHT_SHIFT_OP Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeRightShift);
-  }
-  | IntegerList Identifier TOK_RIGHT_SHIFT_OP Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeRightShift);
-  }
-  | IntegerList Identifier TOK_LEFT_SHIFT_ASSIGN Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeLeftShiftAssign);
-  }
-  | IntegerList Identifier TOK_LEFT_SHIFT_ASSIGN Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeLeftShiftAssign);
-  }
-  | IntegerList Identifier TOK_RIGHT_SHIFT_ASSIGN Integer {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeRightShiftAssign);
-  }
-  | IntegerList Identifier TOK_RIGHT_SHIFT_ASSIGN Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(3), $2,
-                                                             $1, $4,
-                                                             ASTOpTypeRightShiftAssign);
-  }
-  // Bare end bound: `for i in [0:N]` (desugar end as N+0).
-  | IntegerList Identifier {
-    ASTIntNode *Zero = new ASTIntNode(static_cast<int32_t>(0));
-    $$ = ASTProductionFactory::Instance().ProductionRule_860(GET_TOKEN(1), $2,
-                                                             $1, Zero,
-                                                             ASTOpTypeAdd);
+  // `N-1` is an identifier plus a negative integer token. The same form is
+  // accepted in the start, the step, and the end.
+  | Identifier TOK_INTEGER_CONSTANT {
+    ASTIntNode *Raw = ASTProductionFactory::Instance().ProductionRule_800(
+        GET_TOKEN(0), *$2);
+    int32_t V = Raw->IsSigned() ? Raw->GetSignedValue()
+                                : static_cast<int32_t>(Raw->GetUnsignedValue());
+    if (V >= 0) {
+      std::stringstream M;
+      M << "syntax error, unexpected integer constant in for-loop range.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Raw), M.str(),
+          DiagLevel::Error);
+      $$ = ASTExpressionNode::ExpressionError($1, M.str());
+    } else {
+      Raw->SetValue(static_cast<int32_t>(-V));
+      ASTExpressionNode *Left =
+          ASTProductionFactory::Instance().ProductionRule_8001(GET_TOKEN(1), $1);
+      $$ = ASTProductionFactory::Instance().ProductionRule_580(
+          GET_TOKEN(0), Left, Raw, ASTOpTypeSub);
+    }
   }
   ;
+
+// [start:end] or [start:step:end]. Each field is the same expression.
+ForBracketRange
+  : ForIndexExpr ':' ForIndexExpr {
+    $$ = new ASTExpressionList();
+    $$->Append($1);
+    $$->Append($3);
+  }
+  | ForIndexExpr ':' ForIndexExpr ':' ForIndexExpr {
+    $$ = new ASTExpressionList();
+    $$->Append($1);
+    $$->Append($3);
+    $$->Append($5);
+  }
+  ;
+
 
 GPhaseExpr
   : TOK_GPHASE '(' Identifier ')' {
