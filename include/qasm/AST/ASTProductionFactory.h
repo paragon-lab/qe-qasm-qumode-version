@@ -78,6 +78,7 @@
 #include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTTypeSpecifier.h>
 #include <qasm/AST/ASTTypes.h>
+#include <qasm/AST/ASTUnitaryAttribute.h>
 #include <qasm/AST/ASTValue.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
 #include <type_traits>
@@ -176,6 +177,12 @@ public:
   // const declaration
   ASTDeclarationNode *ProductionRule_170(ASTDeclarationNode *DN) const;
 
+  // Unitary attribute
+  ASTUnitaryAttributeNode *
+  ProductionRule_1465(const ASTToken *TK, const ASTIdentifierNode *Target,
+                      ASTUnitaryAttributeKind AttributeKind,
+                      const ASTExpressionNode *Value, ASTOpType OpType) const;
+
   // int[n]
   ASTDeclarationNode *ProductionRule_220(const ASTToken *TK,
                                          const ASTIdentifierNode *DId,
@@ -251,6 +258,10 @@ public:
   // Aggregate Types suffix.
   ASTStringNode *ProductionRule_816(const ASTToken *ITK, const ASTToken *STK,
                                     bool D = true) const;
+
+  // Identifier-based Aggregate Types suffix.
+  ASTStringNode *ProductionRule_816(const ASTIdentifierNode *Id,
+                                    const ASTToken *STK, bool D = true) const;
 
   // Bitset
   ASTCBitNode *ProductionRule_817(const ASTToken *TK,
@@ -1510,6 +1521,10 @@ public:
   // unitary
   ASTDeclarationNode *ProductionRule_10003(const ASTToken *TK,
                                            const ASTIdentifierNode *DId) const;
+
+  ASTDeclarationNode *ProductionRule_10004(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTInitializerList *IL) const;
 
   // Gate array literal parameter: [e0, ..., ek] as angle or complex array.
   ASTExpressionNode *ProductionRule_10010(const ASTExpressionList *EL) const;

@@ -1005,6 +1005,9 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeULong:
     return "ASTTypeULong";
     break;
+  case ASTTypeUnitaryAttribute:
+    return "ASTTypeUnitaryAttribute";
+    break;
   case ASTTypeUTF8:
     return "ASTTypeUTF8";
     break;
@@ -1818,9 +1821,15 @@ const char *PrintParserToken(unsigned Token) {
   case token::TOK_DISP:
     return "TOK_DISP";
     break;
-  case token::TOK_UNITARY: // adding a data type Unitary KH
-    return "TOK_UNITARY";
-    break;
+  case token::TOK_BUMPER:
+  return "TOK_BUMPER";
+
+  case token::TOK_BUMPER_MAX:
+  return "TOK_BUMPER_MAX";
+
+  case token::TOK_UNITARY: //adding a data type Unitary KH
+  return "TOK_UNITARY";
+  break;
   case token::TOK_ANGLE:
     return "TOK_ANGLE";
     break;

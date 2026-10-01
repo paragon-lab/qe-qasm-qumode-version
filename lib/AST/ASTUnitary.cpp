@@ -6,11 +6,12 @@
  * you may not use this file except in compliance with the License.
  */
 
+#include <qasm/AST/ASTInitializerNode.h>
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTUnitary.h>
 
 #include <cassert>
 #include <iostream>
-#include <qasm/AST/ASTMangler.h>
 
 namespace QASM {
 
@@ -56,6 +57,10 @@ void ASTUnitaryNode::print() const {
   std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
   std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
             << std::endl;
+
+  if (INL)
+    INL->print();
+
   std::cout << "</Unitary>" << std::endl;
 }
 

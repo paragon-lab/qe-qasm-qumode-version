@@ -340,7 +340,8 @@ enum ASTType : unsigned {
   ASTTypeTypeExpression,
   ASTTypeTypeQualifier,
   ASTTypeUGate,
-  ASTTypeUnitary, // adding a data type Unitary KH
+  ASTTypeUnitary, //adding a data type Unitary KH
+  ASTTypeUnitaryAttribute,
   ASTTypeUInt,
   ASTTypeULong,
   ASTTypeUnaryOp,

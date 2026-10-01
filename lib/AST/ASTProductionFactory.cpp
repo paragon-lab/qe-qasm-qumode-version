@@ -63,6 +63,7 @@
 #include <qasm/AST/ASTTypeDiscovery.h>
 #include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTUnitary.h>
+#include <qasm/AST/ASTUnitaryAttribute.h>
 #include <qasm/AST/ASTUtils.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -5849,6 +5850,40 @@ ASTStringNode *ASTProductionFactory::ProductionRule_816(const ASTToken *ITK,
 
   SN->SetLocation(STK->GetLocation());
   SN->Mangle();
+  return SN;
+}
+
+ASTStringNode *
+ASTProductionFactory::ProductionRule_816(const ASTIdentifierNode *Id,
+                                         const ASTToken *STK, bool D) const {
+
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+  assert(STK && "Invalid ASTToken argument!");
+
+  if (STK->GetString().find(u8' ') != std::string::npos) {
+    std::stringstream M;
+    M << "Malformed aggregate type element suffix.";
+
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(STK), M.str(),
+        DiagLevel::Error);
+
+    return ASTStringNode::ExpressionError(M.str());
+  }
+
+  std::stringstream S;
+
+  if (D)
+    S << Id->GetName() << '.' << STK->GetString();
+  else
+    S << Id->GetName() << STK->GetString();
+
+  ASTStringNode *SN = new ASTStringNode(S.str());
+  assert(SN && "Could not create a valid ASTStringNode!");
+
+  SN->SetLocation(STK->GetLocation());
+  SN->Mangle();
+
   return SN;
 }
 
@@ -12645,6 +12680,33 @@ ASTProductionFactory::ProductionRule_450(const ASTToken *TK,
   return BOP;
 }
 
+ASTUnitaryAttributeNode *ASTProductionFactory::ProductionRule_1465(
+    const ASTToken *TK, const ASTIdentifierNode *Target,
+    ASTUnitaryAttributeKind AttributeKind, const ASTExpressionNode *Value,
+    ASTOpType OpType) const {
+
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Target && "Invalid unitary attribute target!");
+  assert((AttributeKind == ASTUnitaryAttributeBumper ||
+          AttributeKind == ASTUnitaryAttributeBumperMax) &&
+         "Invalid unitary attribute identifier!");
+  assert(Value && "Invalid unitary attribute value!");
+
+  assert((OpType == ASTOpTypeAssign || OpType == ASTOpTypeAddAssign) &&
+         "Invalid unitary attribute assignment operator!");
+
+  ASTUnitaryAttributeNode *UAN =
+      new ASTUnitaryAttributeNode(Target, AttributeKind, Value, OpType);
+
+  assert(UAN && "Could not create a valid ASTUnitaryAttributeNode!");
+
+  UAN->SetLocation(TK->GetLocation());
+
+  ASTStatementBuilder::Instance().Append(UAN);
+
+  return UAN;
+}
+
 ASTBinaryOpNode *
 ASTProductionFactory::ProductionRule_451(const ASTToken *TK,
                                          const ASTIdentifierNode *Id,
@@ -15232,6 +15294,61 @@ ASTProductionFactory::ProductionRule_10003(const ASTToken *TK,
       new ASTDeclarationNode(DId, UN, ASTTypeUnitary, false);
 
   DN->SetLocation(TK->GetLocation());
+  ASTStatementBuilder::Instance().Append(DN);
+  ASTDeclarationBuilder::Instance().Append(DN);
+
+  return DN;
+}
+
+ASTDeclarationNode *
+ASTProductionFactory::ProductionRule_10004(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTInitializerList *IL) const {
+
+  assert(TK && "Invalid ASTToken argument!");
+  assert(DId && "Invalid ASTIdentifierNode argument!");
+  assert(IL && "Invalid ASTInitializerList argument!");
+
+  unsigned Bits = DId->GetBits() == 0 ? 1 : DId->GetBits();
+  DId->SetBits(Bits);
+
+  if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(DId, Bits,
+                                                          ASTTypeUnitary)) {
+
+    std::stringstream M;
+    M << "Could not transfer Symbol Table Entry for ASTTypeUnitary.";
+
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::ICE);
+
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  if (ASTDeclarationBuilder::Instance().DeclAlreadyExists(DId)) {
+    std::stringstream M;
+    M << "Declaration " << DId->GetName() << " shadows a previous declaration.";
+
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(DId), M.str(),
+        DiagLevel::Error);
+
+    return ASTDeclarationNode::DeclarationError(DId, M.str());
+  }
+
+  ASTUnitaryNode *UN = ASTBuilder::Instance().CreateASTUnitaryNode(DId, IL);
+
+  assert(UN && "Could not create a valid ASTUnitaryNode!");
+
+  UN->SetLocation(DId->GetLocation());
+  UN->Mangle();
+
+  ASTDeclarationNode *DN =
+      new ASTDeclarationNode(DId, UN, ASTTypeUnitary, false);
+
+  assert(DN && "Could not create a valid ASTDeclarationNode!");
+
+  DN->SetLocation(TK->GetLocation());
+
   ASTStatementBuilder::Instance().Append(DN);
   ASTDeclarationBuilder::Instance().Append(DN);
 

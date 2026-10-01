@@ -3016,6 +3016,43 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
+"bumper_max" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_BUMPER_MAX);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  return yylval->Tok->GetInt();
+}
+
+"bumper" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_BUMPER);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  return yylval->Tok->GetInt();
+}
 
 
 {L}{A}* {
@@ -3179,8 +3216,6 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
-
-
 {HP}{H}+{IS}? {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
