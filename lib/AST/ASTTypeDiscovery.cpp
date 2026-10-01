@@ -2282,6 +2282,169 @@ ValidateRegisterIndex(unsigned IX, unsigned Size,
   return ASTIdentifierRefNode::IdentifierError(M.str());
 }
 
+static unsigned RegisterRefBits(unsigned IX) {
+  return ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
+}
+
+/// An existing indexed reference is returned as-is. A symbolic index on that
+/// reference builds a new ref whose width is 1 when the index is not a
+/// constant. Returns false when STE is not an identifier reference.
+static bool ReuseIndexedRef(const std::string &US, const std::string &IS,
+                            unsigned IX, ASTType ContainerTy,
+                            ASTSymbolTableEntry *STE,
+                            const ASTArraySubscriptNode *ASN,
+                            const ASTArraySubscriptList *ASL,
+                            ASTIdentifierRefNode *&Out) {
+  Out = nullptr;
+  if (!STE || !STE->GetIdentifier()->IsReference())
+    return false;
+
+  if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+    ASTIdentifierRefNode *IdR =
+        new ASTIdentifierRefNode(US, IS, ContainerTy, STE->GetIdentifier(),
+                                 RegisterRefBits(IX), true, STE, ASN, ASL);
+    assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+    IdR->SetSymbolTableEntry(STE);
+    Out = IdR;
+    return true;
+  }
+
+  Out = dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+  return true;
+}
+
+/// register[index] for a qubit or qumode container. Symbolic brackets are
+/// recorded on the reference; they are not parsed as an integer width.
+/// BindDeclaredElement binds a concrete index to the `%name:index` element
+/// published at declaration (qumodes).
+template <typename ContainerT, typename ElementT>
+static ASTIdentifierRefNode *
+ResolveQuantumRegisterRef(const std::string &US, const std::string &IS,
+                          unsigned IX, ASTType ContainerTy, ASTType ElementTy,
+                          const char *BoundsWhat, bool BindDeclaredElement,
+                          const ASTArraySubscriptNode *ASN,
+                          const ASTArraySubscriptList *ASL) {
+  ASTSymbolTableEntry *BaseSTE =
+      ASTSymbolTable::Instance().Lookup(US, ContainerTy);
+  if (BaseSTE && BaseSTE->HasValue()) {
+    if (ContainerT *QCN = BaseSTE->GetValue()->GetValue<ContainerT *>()) {
+      if (ASTIdentifierRefNode *OOB =
+              ValidateRegisterIndex(IX, QCN->Size(), ASN, BoundsWhat))
+        return OOB;
+    }
+  }
+
+  ASTIdentifierRefNode *Reused = nullptr;
+  ASTSymbolTableEntry *STE =
+      ASTSymbolTable::Instance().Lookup(IS, 1U, ContainerTy);
+  if (ReuseIndexedRef(US, IS, IX, ContainerTy, STE, ASN, ASL, Reused))
+    return Reused;
+  STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ElementTy);
+  if (ReuseIndexedRef(US, IS, IX, ContainerTy, STE, ASN, ASL, Reused))
+    return Reused;
+
+  const bool Symbolic =
+      ASN && (ASN->IsInductionVariable() || ASN->IsIndexIdentifier());
+
+  if (BaseSTE && Symbolic) {
+    ASTIdentifierRefNode *XIdR =
+        new ASTIdentifierRefNode(US, IS, ContainerTy, BaseSTE->GetIdentifier(),
+                                 RegisterRefBits(IX), true, BaseSTE, ASN, ASL);
+    assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
+
+    ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(XIdR, ElementTy);
+    assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
+    XSTE->SetContext(
+        ASTDeclarationContextTracker::Instance().GetCurrentContext());
+    XSTE->SetLocalScope();
+    if (BaseSTE->HasValue()) {
+      if (ContainerT *QCN = BaseSTE->GetValue()->GetValue<ContainerT *>()) {
+        if (QCN->Size() > 0) {
+          if (ElementT *EN = dynamic_cast<ElementT *>(QCN->GetQubit(0)))
+            XSTE->SetValue(new ASTValue<>(EN, ElementTy), ElementTy, true);
+        }
+      }
+    }
+    XIdR->SetSymbolTableEntry(XSTE);
+    XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
+    if (!ASTSymbolTable::Instance().Insert(XIdR, XSTE)) {
+      std::stringstream M;
+      M << "Failure inserting identifier reference into the "
+        << "Local SymbolTable.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(BaseSTE->GetIdentifier()),
+          M.str(), DiagLevel::Error);
+      return ASTIdentifierRefNode::IdentifierError(M.str());
+    }
+    return XIdR;
+  }
+
+  if (BindDeclaredElement) {
+    if (ASTSymbolTableEntry *CSTE =
+            ASTSymbolTable::Instance().Lookup(US, ContainerTy)) {
+      ContainerT *QCN = CSTE->GetValue()->GetValue<ContainerT *>();
+      assert(QCN && "Could not obtain a valid quantum register!");
+
+      std::string QIS = "%";
+      QIS += ASTStringUtils::Instance().IndexedIdentifierToQCElement(IS);
+      ASTSymbolTableEntry *XSTE =
+          ASTSymbolTable::Instance().Lookup(QIS, 1U, ElementTy);
+      if (XSTE) {
+        if (XSTE->GetIdentifier()->IsReference())
+          return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+
+        if (ASTSymbolTableEntry *RSTE =
+                ASTSymbolTable::Instance().Lookup(IS, 1U, ElementTy))
+          return dynamic_cast<ASTIdentifierRefNode *>(RSTE->GetIdentifier());
+
+        ASTIdentifierRefNode *IdR =
+            new ASTIdentifierRefNode(IS, XSTE->GetIdentifier(), 1U);
+        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+
+        IdR->SetBits(1U);
+        IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+        IdR->SetArraySubscriptList(ASL);
+        IdR->SetSymbolTableEntry(XSTE);
+
+        if (!ASTSymbolTable::Instance().Insert(IdR, XSTE)) {
+          std::stringstream M;
+          M << "Failure inserting into the SymbolTable.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(XSTE->GetIdentifier()),
+              M.str(), DiagLevel::Error);
+          return ASTIdentifierRefNode::IdentifierError(M.str());
+        }
+
+        return IdR;
+      }
+    }
+  }
+
+  const unsigned CreateBits =
+      (Symbolic && ASTIdentifierNode::InvalidBits(IX)) ? 1U : IX;
+  ASTIdentifierNode *Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      US, CreateBits, ContainerTy);
+  assert(Id && "Could not create a valid ASTIdentifierNode!");
+  assert(Id->GetSymbolTableEntry() &&
+         "ASTIdentifierNode without an ASTSymbolTableEntry!");
+
+  ASTIdentifierRefNode *XIdR =
+      new ASTIdentifierRefNode(US, IS, ContainerTy, Id, CreateBits, true,
+                               Id->GetSymbolTableEntry(), ASN, ASL);
+  assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
+
+  XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
+  if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
+    std::stringstream M;
+    M << "Failure inserting into the SymbolTable.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    return ASTIdentifierRefNode::IdentifierError(M.str());
+  }
+
+  return XIdR;
+}
+
 template <typename __AT, typename __ET>
 ASTIdentifierRefNode *ResolveASTIdentifierRef(
     const ASTToken *TK, const std::string &S, const std::string &US,
@@ -2841,331 +3004,15 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
 
     return IdR;
   } break;
-  case ASTTypeQubitContainer: {
-    ASTSymbolTableEntry *BaseSTE =
-        ASTSymbolTable::Instance().Lookup(US, ASTTypeQubitContainer);
-    if (BaseSTE && BaseSTE->HasValue()) {
-      if (ASTQubitContainerNode *QCN =
-              BaseSTE->GetValue()->GetValue<ASTQubitContainerNode *>()) {
-        if (ASTIdentifierRefNode *OOB =
-                ValidateRegisterIndex(IX, QCN->Size(), ASN, "QubitContainer"))
-          return OOB;
-      }
-    }
-    ASTSymbolTableEntry *STE = BaseSTE;
-    if (!STE) {
-      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
-      if (STE && STE->GetIdentifier()->IsReference()) {
-        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-          const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
-          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-              US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
-              true, STE, ASN, ASL);
-          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-          IdR->SetSymbolTableEntry(STE);
-          return IdR;
-        }
-
-        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-      } else {
-        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubit);
-        if (STE && STE->GetIdentifier()->IsReference()) {
-          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-            const unsigned RefBits =
-                ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
-            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-                US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
-                true, STE, ASN, ASL);
-            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-            IdR->SetSymbolTableEntry(STE);
-            return IdR;
-          }
-
-          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-        }
-      }
-    } else {
-      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
-      if (STE && STE->GetIdentifier()->IsReference()) {
-        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-          const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
-          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-              US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
-              true, STE, ASN, ASL);
-          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-          IdR->SetSymbolTableEntry(STE);
-          return IdR;
-        }
-
-        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-      } else {
-        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubit);
-        if (STE && STE->GetIdentifier()->IsReference()) {
-          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-            const unsigned RefBits =
-                ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
-            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-                US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
-                true, STE, ASN, ASL);
-            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-            IdR->SetSymbolTableEntry(STE);
-            return IdR;
-          }
-
-          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-        }
-      }
-    }
-
-    // Symbolic / induction index: do not CreateASTIdentifierNode(US, …) —
-    // US is already the container. Build a reference named `US[i]` with its
-    // own SymbolTable entry (do not reuse the container's STE).
-    if (BaseSTE && ASN &&
-        (ASN->IsInductionVariable() || ASN->IsIndexIdentifier())) {
-      const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
-      ASTIdentifierRefNode *XIdR = new ASTIdentifierRefNode(
-          US, IS, ASTTypeQubitContainer, BaseSTE->GetIdentifier(), RefBits,
-          true, BaseSTE, ASN, ASL);
-      assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
-
-      ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(XIdR, ASTTypeQubit);
-      assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
-      XSTE->SetContext(
-          ASTDeclarationContextTracker::Instance().GetCurrentContext());
-      XSTE->SetLocalScope();
-      if (BaseSTE->HasValue()) {
-        if (ASTQubitContainerNode *QCN =
-                BaseSTE->GetValue()->GetValue<ASTQubitContainerNode *>()) {
-          if (QCN->Size() > 0) {
-            XSTE->SetValue(new ASTValue<>(QCN->GetQubit(0), ASTTypeQubit),
-                           ASTTypeQubit, true);
-          }
-        }
-      }
-      XIdR->SetSymbolTableEntry(XSTE);
-      XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
-      if (!ASTSymbolTable::Instance().Insert(XIdR, XSTE)) {
-        std::stringstream M;
-        M << "Failure inserting identifier reference into the "
-          << "Local SymbolTable.";
-        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(BaseSTE->GetIdentifier()),
-            M.str(), DiagLevel::Error);
-        return ASTIdentifierRefNode::IdentifierError(M.str());
-      }
-      return XIdR;
-    }
-
-    // Induction / symbolic indices leave IX as ~0; Create rejects InvalidBits.
-    // Use a 1-bit stand-in for the synthetic element identifier only — the
-    // reference name stays `base[i]` via IS / ASN.
-    const unsigned CreateBits =
-        (ASN && (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) &&
-         ASTIdentifierNode::InvalidBits(IX))
-            ? 1U
-            : IX;
-
-    Id = ASTBuilder::Instance().CreateASTIdentifierNode(US, CreateBits,
-                                                        ASTTypeQubitContainer);
-    assert(Id && "Could not create a valid ASTIdentifierNode!");
-    assert(Id->GetSymbolTableEntry() &&
-           "ASTIdentifierNode without an ASTSymbolTableEntry!");
-
-    ASTIdentifierRefNode *XIdR =
-        new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer, Id, CreateBits,
-                                 true, Id->GetSymbolTableEntry(), ASN, ASL);
-    assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
-
-    XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
-    if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
-      std::stringstream M;
-      M << "Failure inserting into the SymbolTable.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-          DiagLevel::Error);
-      return ASTIdentifierRefNode::IdentifierError(M.str());
-    }
-
-    return XIdR;
-  } break;
+  case ASTTypeQubitContainer:
+    return ResolveQuantumRegisterRef<ASTQubitContainerNode, ASTQubitNode>(
+        US, IS, IX, ASTTypeQubitContainer, ASTTypeQubit, "QubitContainer",
+        false, ASN, ASL);
   case ASTTypeQumode:
-  case ASTTypeQumodeContainer: {
-    ASTSymbolTableEntry *BaseSTE =
-        ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer);
-    ASTSymbolTableEntry *STE = BaseSTE;
-    if (STE && STE->HasValue()) {
-      if (ASTQumodeContainerNode *QCN =
-              STE->GetValue()->GetValue<ASTQumodeContainerNode *>()) {
-        if (ASTIdentifierRefNode *OOB =
-                ValidateRegisterIndex(IX, QCN->Size(), ASN, "QumodeContainer"))
-          return OOB;
-      }
-    }
-    if (!STE) {
-      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
-      if (STE && STE->GetIdentifier()->IsReference()) {
-        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-              US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
-              STE, ASN, ASL);
-          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-          IdR->SetSymbolTableEntry(STE);
-          return IdR;
-        }
-
-        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-      } else {
-        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode);
-        if (STE && STE->GetIdentifier()->IsReference()) {
-          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-                US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
-                STE, ASN, ASL);
-            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-            IdR->SetSymbolTableEntry(STE);
-            return IdR;
-          }
-
-          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-        }
-      }
-    } else {
-      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
-      if (STE && STE->GetIdentifier()->IsReference()) {
-        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-              US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
-              STE, ASN, ASL);
-          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-          IdR->SetSymbolTableEntry(STE);
-          return IdR;
-        }
-
-        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-      } else {
-        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode);
-        if (STE && STE->GetIdentifier()->IsReference()) {
-          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
-            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-                US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
-                STE, ASN, ASL);
-            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-            IdR->SetSymbolTableEntry(STE);
-            return IdR;
-          }
-
-          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
-        }
-      }
-    }
-
-    // Symbolic / induction index: the bracket text is a name (`qm[k]`), not
-    // an integer. Do not parse it with GetIdentifierIndex, and do not
-    // CreateASTIdentifierNode on the container name.
-    if (BaseSTE && ASN &&
-        (ASN->IsInductionVariable() || ASN->IsIndexIdentifier())) {
-      const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
-      ASTIdentifierRefNode *XIdR = new ASTIdentifierRefNode(
-          US, IS, ASTTypeQumodeContainer, BaseSTE->GetIdentifier(), RefBits,
-          true, BaseSTE, ASN, ASL);
-      assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
-
-      ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(XIdR, ASTTypeQumode);
-      assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
-      XSTE->SetContext(
-          ASTDeclarationContextTracker::Instance().GetCurrentContext());
-      XSTE->SetLocalScope();
-      if (BaseSTE->HasValue()) {
-        if (ASTQumodeContainerNode *QCN =
-                BaseSTE->GetValue()->GetValue<ASTQumodeContainerNode *>()) {
-          if (QCN->Size() > 0) {
-            if (ASTQumodeNode *QN =
-                    dynamic_cast<ASTQumodeNode *>(QCN->GetQubit(0))) {
-              XSTE->SetValue(new ASTValue<>(QN, ASTTypeQumode), ASTTypeQumode,
-                             true);
-            }
-          }
-        }
-      }
-      XIdR->SetSymbolTableEntry(XSTE);
-      XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
-      if (!ASTSymbolTable::Instance().Insert(XIdR, XSTE)) {
-        std::stringstream M;
-        M << "Failure inserting identifier reference into the "
-          << "Local SymbolTable.";
-        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(BaseSTE->GetIdentifier()),
-            M.str(), DiagLevel::Error);
-        return ASTIdentifierRefNode::IdentifierError(M.str());
-      }
-      return XIdR;
-    }
-
-    // Fall back: resolve via %name:index element created at declaration.
-    if (ASTSymbolTableEntry *CSTE =
-            ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer)) {
-      ASTQumodeContainerNode *QCN =
-          CSTE->GetValue()->GetValue<ASTQumodeContainerNode *>();
-      assert(QCN && "Could not obtain a valid ASTQumodeContainerNode!");
-
-      std::string QIS = "%";
-      QIS += ASTStringUtils::Instance().IndexedIdentifierToQCElement(IS);
-      ASTSymbolTableEntry *XSTE =
-          ASTSymbolTable::Instance().Lookup(QIS, 1U, ASTTypeQumode);
-      if (XSTE) {
-        if (XSTE->GetIdentifier()->IsReference())
-          return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
-
-        if (ASTSymbolTableEntry *RSTE =
-                ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode)) {
-          return dynamic_cast<ASTIdentifierRefNode *>(RSTE->GetIdentifier());
-        }
-
-        ASTIdentifierRefNode *IdR =
-            new ASTIdentifierRefNode(IS, XSTE->GetIdentifier(), 1U);
-        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-
-        IdR->SetBits(1U);
-        IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
-        IdR->SetArraySubscriptList(ASL);
-        IdR->SetSymbolTableEntry(XSTE);
-
-        if (!ASTSymbolTable::Instance().Insert(IdR, XSTE)) {
-          std::stringstream M;
-          M << "Failure inserting into the SymbolTable.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(XSTE->GetIdentifier()),
-              M.str(), DiagLevel::Error);
-          return ASTIdentifierRefNode::IdentifierError(M.str());
-        }
-
-        return IdR;
-      }
-    }
-
-    Id = ASTBuilder::Instance().CreateASTIdentifierNode(US, IX,
-                                                        ASTTypeQumodeContainer);
-    assert(Id && "Could not create a valid ASTIdentifierNode!");
-    assert(Id->GetSymbolTableEntry() &&
-           "ASTIdentifierNode without an ASTSymbolTableEntry!");
-
-    ASTIdentifierRefNode *XIdR =
-        new ASTIdentifierRefNode(US, IS, ASTTypeQumodeContainer, Id, IX, true,
-                                 Id->GetSymbolTableEntry(), ASN, ASL);
-    assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
-
-    XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
-    if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
-      std::stringstream M;
-      M << "Failure inserting into the SymbolTable.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-          DiagLevel::Error);
-      return ASTIdentifierRefNode::IdentifierError(M.str());
-    }
-
-    return XIdR;
-  } break;
+  case ASTTypeQumodeContainer:
+    return ResolveQuantumRegisterRef<ASTQumodeContainerNode, ASTQumodeNode>(
+        US, IS, IX, ASTTypeQumodeContainer, ASTTypeQumode, "QumodeContainer",
+        true, ASN, ASL);
   case ASTTypeQubitContainerAlias: {
     ASTSymbolTableEntry *STE =
         ASTSymbolTable::Instance().Lookup(US, ASTTypeQubitContainerAlias);
