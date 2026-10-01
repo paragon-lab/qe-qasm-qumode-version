@@ -734,7 +734,8 @@ int readinput() {
 %type <GateNegControlNode>          GateNegCtrlExpr
 %type <GateFockControlNode>         GateFockCtrlExpr GateFockGPhaseExpr
 %type <GateFockNegControlNode>      GateFockNegCtrlExpr
-%type <ExpressionNode>              FockLevelExpr FockLevelPrimary FockLevelTerm
+%type <ExpressionNode>              ArithPrimary ArithFactor ArithTerm ArithExpr ArithShift
+%type <ExpressionNode>              FockLevelExpr
 %type <GateInverseNode>             GateInvExpr
 %type <GatePowerNode>               GatePowExpr
 %type <IntegerNode>                 CtrlNAt NegCtrlNAt
@@ -744,8 +745,7 @@ int readinput() {
 %type <GateNegControlStmtNode>      GateNegCtrlExprStmt
 %type <GateInverseStmtNode>         GateInvExprStmt
 %type <GatePowerStmtNode>           GatePowExprStmt
-%type <ExpressionNode>              ForIndexExpr
-%type <ExpressionList>              ForBracketRange
+%type <ExpressionList>              ForBracketRange ForIndexList
 
 %type <GateQOpNode>                 GateQOp GateCtrlStmt GateNegCtrlStmt
                                     GateInvStmt GatePowStmt GateGPhaseStmt
@@ -847,7 +847,7 @@ int readinput() {
 %left '<' '>' TOK_LE_OP TOK_GE_OP
 %left TOK_ADD_OP TOK_SUB_OP '-'
 %left TOK_MUL_OP TOK_DIV_OP TOK_MOD_OP
-%right TOK_BANG TOK_TILDE
+%right TOK_BANG TOK_TILDE '~'
 %left TOK_INC_OP TOK_DEC_OP TOK_RIGHT_ARROW TOK_LEFT_ARROW
 %left '@' TOK_ASSOCIATION_OP
 %left ';' TOK_SEMICOLON
@@ -2555,154 +2555,18 @@ BinaryOpPrePost
     $$ = ASTProductionFactory::Instance().ProductionRule_603(GET_TOKEN(3), $2,
                                                              ASTOpTypePostInc);
   }
+  | '(' BinaryOp ')' TOK_DEC_OP {
+    $$ = ASTProductionFactory::Instance().ProductionRule_603(GET_TOKEN(3), $2,
+                                                             ASTOpTypePostDec);
+  }
+  | '(' BinaryOp ')' TOK_INC_OP {
+    $$ = ASTProductionFactory::Instance().ProductionRule_603(GET_TOKEN(3), $2,
+                                                             ASTOpTypePostInc);
+  }
   ;
 
 BinaryOp
-  : Expr TOK_ADD_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeAdd);
-  }
-  | Expr TOK_ADD_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeAdd);
-  }
-  | Expr TOK_ADD_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeAdd);
-  }
-  | Expr TOK_ADD_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeAdd);
-  }
-  | BinaryOpPrePost TOK_ADD_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeAdd);
-  }
-  | BinaryOpSelfAssign TOK_ADD_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeAdd);
-  }
-  | Expr '-' Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeSub);
-  }
-  | Expr '-' ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeSub);
-  }
-  | Expr '-' BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeSub);
-  }
-  | Expr '-' BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeSub);
-  }
-  | BinaryOpPrePost '-' Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeSub);
-  }
-  | BinaryOpSelfAssign '-' Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeSub);
-  }
-  | Expr TOK_MUL_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMul);
-  }
-  | Expr TOK_MUL_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMul);
-  }
-  | Expr TOK_MUL_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMul);
-  }
-  | Expr TOK_MUL_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMul);
-  }
-  | BinaryOpPrePost TOK_MUL_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMul);
-  }
-  | BinaryOpSelfAssign TOK_MUL_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMul);
-  }
-  | Expr TOK_MUL_OP TOK_MUL_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(3), $1,
-                                                             $4, ASTOpTypePow);
-  }
-  | Expr TOK_MUL_OP TOK_MUL_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(3), $1,
-                                                             $4, ASTOpTypeMul);
-  }
-  | Expr TOK_MUL_OP TOK_MUL_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(3), $1,
-                                                             $4, ASTOpTypePow);
-  }
-  | Expr TOK_MUL_OP TOK_MUL_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(3), $1,
-                                                             $4, ASTOpTypePow);
-  }
-  | BinaryOpPrePost TOK_MUL_OP TOK_MUL_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(3), $1,
-                                                             $4, ASTOpTypePow);
-  }
-  | BinaryOpSelfAssign TOK_MUL_OP TOK_MUL_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(3), $1,
-                                                             $4, ASTOpTypePow);
-  }
-  | Expr TOK_DIV_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeDiv);
-  }
-  | Expr TOK_DIV_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeDiv);
-  }
-  | Expr TOK_DIV_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeDiv);
-  }
-  | Expr TOK_DIV_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeDiv);
-  }
-  | BinaryOpPrePost TOK_DIV_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeDiv);
-  }
-  | BinaryOpSelfAssign TOK_DIV_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeDiv);
-  }
-  | Expr TOK_MOD_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMod);
-  }
-  | Expr TOK_MOD_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMod);
-  }
-  | Expr TOK_MOD_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMod);
-  }
-  | Expr TOK_MOD_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMod);
-  }
-  | BinaryOpPrePost TOK_MOD_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMod);
-  }
-  | BinaryOpSelfAssign TOK_MOD_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeMod);
-  }
-  | Expr '^' Expr {
+  : Expr '^' Expr {
     $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
                                                              $3, ASTOpTypeXor);
   }
@@ -2966,54 +2830,6 @@ BinaryOp
     $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
                                                              $3, ASTOpTypeCompNeq);
   }
-  | Expr TOK_LEFT_SHIFT_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeLeftShift);
-  }
-  | Expr TOK_LEFT_SHIFT_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeLeftShift);
-  }
-  | Expr TOK_LEFT_SHIFT_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeLeftShift);
-  }
-  | BinaryOpPrePost TOK_LEFT_SHIFT_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeLeftShift);
-  }
-  | Expr TOK_LEFT_SHIFT_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeLeftShift);
-  }
-  | BinaryOpSelfAssign TOK_LEFT_SHIFT_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeLeftShift);
-  }
-  | Expr TOK_RIGHT_SHIFT_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeRightShift);
-  }
-  | Expr TOK_RIGHT_SHIFT_OP ParenFunctionCallExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_584(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeRightShift);
-  }
-  | Expr TOK_RIGHT_SHIFT_OP BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeRightShift);
-  }
-  | BinaryOpPrePost TOK_RIGHT_SHIFT_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeRightShift);
-  }
-  | Expr TOK_RIGHT_SHIFT_OP BinaryOpSelfAssign {
-    $$ = ASTProductionFactory::Instance().ProductionRule_588(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeRightShift);
-  }
-  | BinaryOpSelfAssign TOK_RIGHT_SHIFT_OP Expr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_594(GET_TOKEN(2), $1,
-                                                             $3, ASTOpTypeRightShift);
-  }
   | Expr TOK_ASSOCIATION_OP Expr {
     $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
                                                              $3, ASTOpTypeAssociate);
@@ -3035,9 +2851,6 @@ BinaryOpExpr
     $$ = $1;
   }
   | BinaryOpPrePost {
-    $$ = $1;
-  }
-  | ArithPowExpr {
     $$ = $1;
   }
   ;
@@ -3200,13 +3013,20 @@ DurationDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_1202(GET_TOKEN(6),
                                                               $5, $7, $3);
   }
-  | TOK_DURATION Identifier '=' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1203(GET_TOKEN(3),
-                                                              $2, $4);
-  }
-  | TOK_DURATION Identifier '=' BinaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1204(GET_TOKEN(3),
-                                                              $2, $4);
+  | TOK_DURATION Identifier '=' ArithShift {
+    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($4)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1204(GET_TOKEN(3),
+                                                                $2, BOP);
+    } else if ($4->GetIdentifier()) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1203(
+          GET_TOKEN(3), $2, const_cast<ASTIdentifierNode *>($4->GetIdentifier()));
+    } else {
+      std::stringstream M;
+      M << "Duration expression must be arithmetic.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($4), M.str(), DiagLevel::Error);
+      $$ = ASTDurationNode::ExpressionError($2, M.str());
+    }
   }
   | TOK_DURATION Identifier '=' FunctionCallStmt {
     $$ = ASTProductionFactory::Instance().ProductionRule_1205(GET_TOKEN(3),
@@ -3261,11 +3081,11 @@ ForStmt
     $$ = ASTProductionFactory::Instance().ProductionRule_3201(GET_TOKEN(6),
                                                               $2, $5, $7);
   }
-  | TOK_FOR Identifier TOK_IN '{' ExprList '}' Statement {
+  | TOK_FOR Identifier TOK_IN '{' ForIndexList '}' Statement {
     $$ = ASTProductionFactory::Instance().ProductionRule_3202(GET_TOKEN(6),
                                                               $2, $5, $7);
   }
-  | TOK_FOR Identifier TOK_IN '{' ExprList '}' '{' ForStmtList '}' {
+  | TOK_FOR Identifier TOK_IN '{' ForIndexList '}' '{' ForStmtList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3203(GET_TOKEN(8),
                                                               $2, $5, $8);
   }
@@ -3277,11 +3097,11 @@ ForStmt
     $$ = ASTProductionFactory::Instance().ProductionRule_3207(GET_TOKEN(7),
                                                               $2, $3, $6, $8);
   }
-  | TOK_FOR IntScalarType Identifier TOK_IN '{' ExprList '}' '{' ForStmtList '}' {
+  | TOK_FOR IntScalarType Identifier TOK_IN '{' ForIndexList '}' '{' ForStmtList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3208(GET_TOKEN(9),
                                                               $2, $3, $6, $9);
   }
-  | TOK_FOR IntScalarType Identifier TOK_IN '{' ExprList '}' Statement  {
+  | TOK_FOR IntScalarType Identifier TOK_IN '{' ForIndexList '}' Statement  {
     $$ = ASTProductionFactory::Instance().ProductionRule_3209(GET_TOKEN(7),
                                                               $2, $3, $6, $8);
   }
@@ -4205,45 +4025,20 @@ ExprListImpl
   ;
 
 Expr
-  : Real {
-    $$ = $1;
-  }
-  | Integer  {
+  : ArithShift {
     $$ = $1;
   }
   | String {
     $$ = $1;
   }
-  | Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_8001(GET_TOKEN(0), $1);
-  }
-  | UnaryOp {
-    $$ = $1;
-  }
   | BinaryOp {
     $$ = $1;
-  }
-  | ArithPowExpr {
-    $$ = $1;
-  }
-  | '(' Expr ')'         {
-    $$ = ASTProductionFactory::Instance().ProductionRule_8000(GET_TOKEN(1), $2);
   }
   | LogicalNotExpr {
     $$ = $1;
   }
   | CastExpr {
     $$ = $1;
-  }
-  | '-' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
-                                                             ASTOpTypeNegative,
-                                                             false);
-  }
-  | '+' Identifier       {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
-                                                             ASTOpTypePositive,
-                                                             false);
   }
   | '-' '(' BinaryOpSelfAssign ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(3), $3,
@@ -4271,26 +4066,6 @@ Expr
                                                              true);
   }
   | '+' '(' BinaryOpPrePost ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(3), $3,
-                                                             ASTOpTypePositive,
-                                                             true);
-  }
-  | '-' UnaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
-                                                             ASTOpTypeNegative,
-                                                             false);
-  }
-  | '+' UnaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
-                                                             ASTOpTypePositive,
-                                                             false);
-  }
-  | '-' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(3), $3,
-                                                             ASTOpTypeNegative,
-                                                             true);
-  }
-  | '+' '(' Expr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(3), $3,
                                                              ASTOpTypePositive,
                                                              true);
@@ -4390,8 +4165,29 @@ LogicalNotExpr
   | TOK_BANG UnaryOp {
     $$ = ASTProductionFactory::Instance().ProductionRule_340(GET_TOKEN(1), $2);
   }
-  | TOK_BANG BinaryOpPrePost {
-    $$ = ASTProductionFactory::Instance().ProductionRule_340(GET_TOKEN(1), $2);
+  | TOK_BANG Identifier TOK_INC_OP {
+    $$ = ASTProductionFactory::Instance().ProductionRule_340(
+        GET_TOKEN(2),
+        ASTProductionFactory::Instance().ProductionRule_602(GET_TOKEN(1), $2,
+                                                            ASTOpTypePostInc));
+  }
+  | TOK_BANG Identifier TOK_DEC_OP {
+    $$ = ASTProductionFactory::Instance().ProductionRule_340(
+        GET_TOKEN(2),
+        ASTProductionFactory::Instance().ProductionRule_602(GET_TOKEN(1), $2,
+                                                            ASTOpTypePostDec));
+  }
+  | TOK_BANG TOK_INC_OP Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_340(
+        GET_TOKEN(2),
+        ASTProductionFactory::Instance().ProductionRule_600(GET_TOKEN(1), $3,
+                                                            ASTOpTypePreInc));
+  }
+  | TOK_BANG TOK_DEC_OP Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_340(
+        GET_TOKEN(2),
+        ASTProductionFactory::Instance().ProductionRule_600(GET_TOKEN(1), $3,
+                                                            ASTOpTypePreDec));
   }
   | TOK_BANG '(' BinaryOpPrePost ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_340(GET_TOKEN(3), $3);
@@ -4461,183 +4257,39 @@ RotateOpStmt
   ;
 
 UnaryOp
-  : TOK_SIN '(' Identifier ')' {
+  : TOK_SIN '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeSin);
   }
-  | TOK_SIN '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSin);
-  }
-  | TOK_SIN '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSin);
-  }
-  | TOK_SIN '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSin);
-  }
-  | TOK_SIN '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSin);
-  }
-  | TOK_COS '(' Identifier ')' {
+  | TOK_COS '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeCos);
   }
-  | TOK_COS '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeCos);
-  }
-  | TOK_COS '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeCos);
-  }
-  | TOK_COS '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeCos);
-  }
-  | TOK_COS '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeCos);
-  }
-  | TOK_TAN '(' Identifier ')' {
+  | TOK_TAN '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeTan);
   }
-  | TOK_TAN '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeTan);
-  }
-  | TOK_TAN '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeTan);
-  }
-  | TOK_TAN '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeTan);
-  }
-  | TOK_TAN '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeTan);
-  }
-  | TOK_ARCSIN '(' Identifier ')' {
+  | TOK_ARCSIN '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeArcSin);
   }
-  | TOK_ARCSIN '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcSin);
-  }
-  | TOK_ARCSIN '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcSin);
-  }
-  | TOK_ARCSIN '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcSin);
-  }
-  | TOK_ARCSIN '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcSin);
-  }
-  | TOK_ARCCOS '(' Identifier ')' {
+  | TOK_ARCCOS '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeArcCos);
   }
-  | TOK_ARCCOS '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcCos);
-  }
-  | TOK_ARCCOS '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcCos);
-  }
-  | TOK_ARCCOS '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcCos);
-  }
-  | TOK_ARCCOS '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcCos);
-  }
-  | TOK_ARCTAN '(' Identifier ')' {
+  | TOK_ARCTAN '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeArcTan);
   }
-  | TOK_ARCTAN '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcTan);
-  }
-  | TOK_ARCTAN '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcTan);
-  }
-  | TOK_ARCTAN '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcTan);
-  }
-  | TOK_ARCTAN '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeArcTan);
-  }
-  | TOK_EXP '(' Identifier ')' {
+  | TOK_EXP '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeExp);
   }
-  | TOK_EXP '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeExp);
-  }
-  | TOK_EXP '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeExp);
-  }
-  | TOK_EXP '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeExp);
-  }
-  | TOK_EXP '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeExp);
-  }
-  | TOK_LN '(' Identifier ')' {
+  | TOK_LN '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeLn);
   }
-  | TOK_LN '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeLn);
-  }
-  | TOK_LN '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeLn);
-  }
-  | TOK_LN '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeLn);
-  }
-  | TOK_LN '(' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeLn);
-  }
-  | TOK_SQRT '(' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSqrt);
-  }
-  | TOK_SQRT '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSqrt);
-  }
-  | TOK_SQRT '(' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSqrt);
-  }
-  | TOK_SQRT '(' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
-                                                             ASTOpTypeSqrt);
-  }
-  | TOK_SQRT '(' Real ')' {
+  | TOK_SQRT '(' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeSqrt);
   }
@@ -4645,110 +4297,11 @@ UnaryOp
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(2), $2,
                                                              ASTOpTypeBitNot);
   }
-  ;
-
 ArithPowExpr
-  : TOK_POW '(' Integer ',' Integer ')' {
+  : TOK_POW '(' ArithExpr ',' ArithExpr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
                                                              $3, $5);
   }
-  | TOK_POW '(' Integer ',' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Real ',' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Real ',' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Identifier ',' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Identifier ',' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Integer ',' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Real ',' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Identifier ',' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Integer ',' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Real ',' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Identifier ',' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Integer ',' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Real ',' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' Identifier ',' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' BinaryOpExpr ',' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' BinaryOpExpr ',' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' BinaryOpExpr ',' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' UnaryOp ',' Integer ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' UnaryOp ',' Real ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' UnaryOp ',' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' BinaryOpExpr ',' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' UnaryOp ',' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' BinaryOpExpr ',' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  | TOK_POW '(' UnaryOp ',' UnaryOp ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_310(GET_TOKEN(5),
-                                                             $3, $5);
-  }
-  ;
 
 Identifier
   : TOK_IDENTIFIER {
@@ -5048,9 +4601,25 @@ MPComplexDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
                                                              $8, $5, $10);
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' UnaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(9),
-                                                             $8, $5, $10);
+  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' ArithShift {
+    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($10)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
+                                                               $8, $5, BOP);
+    } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($10)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(9),
+                                                               $8, $5, UOP);
+    } else if ($10->GetIdentifier()) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_259(
+          GET_TOKEN(9), $8, $5,
+          const_cast<ASTIdentifierNode *>($10->GetIdentifier()));
+    } else {
+      std::stringstream M;
+      M << "Invalid complex initializer.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($10), M.str(),
+          DiagLevel::Error);
+      $$ = ASTMPComplexNode::ExpressionError($8, M.str());
+    }
   }
   | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' ComplexInitializerExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_256(GET_TOKEN(9),
@@ -5060,18 +4629,25 @@ MPComplexDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_257(GET_TOKEN(9),
                                                              $8, $5, $10);
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' UnaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_258(GET_TOKEN(9),
-                                                             $8, $5, $10);
-
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_259(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_260(GET_TOKEN(9),
-                                                             $8, $5, $10);
+  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' ArithShift {
+    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($10)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_257(GET_TOKEN(9),
+                                                               $8, $5, BOP);
+    } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($10)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_258(GET_TOKEN(9),
+                                                               $8, $5, UOP);
+    } else if ($10->GetIdentifier()) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_260(
+          GET_TOKEN(9), $8, $5,
+          const_cast<ASTIdentifierNode *>($10->GetIdentifier()));
+    } else {
+      std::stringstream M;
+      M << "Invalid complex initializer.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($10), M.str(),
+          DiagLevel::Error);
+      $$ = ASTMPComplexNode::ExpressionError($8, M.str());
+    }
   }
   ;
 
@@ -6932,42 +6508,14 @@ InitArrayExpr
   }
   ;
 
-ForIndexExpr
-  : Expr {
-    $$ = $1;
-  }
-  // `N-1` is an identifier plus a negative integer token. The same form is
-  // accepted in the start, the step, and the end.
-  | Identifier TOK_INTEGER_CONSTANT {
-    ASTIntNode *Raw = ASTProductionFactory::Instance().ProductionRule_800(
-        GET_TOKEN(0), *$2);
-    int32_t V = Raw->IsSigned() ? Raw->GetSignedValue()
-                                : static_cast<int32_t>(Raw->GetUnsignedValue());
-    if (V >= 0) {
-      std::stringstream M;
-      M << "syntax error, unexpected integer constant in for-loop range.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Raw), M.str(),
-          DiagLevel::Error);
-      $$ = ASTExpressionNode::ExpressionError($1, M.str());
-    } else {
-      Raw->SetValue(static_cast<int32_t>(-V));
-      ASTExpressionNode *Left =
-          ASTProductionFactory::Instance().ProductionRule_8001(GET_TOKEN(1), $1);
-      $$ = ASTProductionFactory::Instance().ProductionRule_580(
-          GET_TOKEN(0), Left, Raw, ASTOpTypeSub);
-    }
-  }
-  ;
-
-// [start:end] or [start:step:end]. Each field is the same expression.
+// [start:end] or [start:step:end]. Each field is the shared arithmetic expression.
 ForBracketRange
-  : ForIndexExpr ':' ForIndexExpr {
+  : ArithShift ':' ArithShift {
     $$ = new ASTExpressionList();
     $$->Append($1);
     $$->Append($3);
   }
-  | ForIndexExpr ':' ForIndexExpr ':' ForIndexExpr {
+  | ArithShift ':' ArithShift ':' ArithShift {
     $$ = new ASTExpressionList();
     $$->Append($1);
     $$->Append($3);
@@ -6975,15 +6523,40 @@ ForBracketRange
   }
   ;
 
+// Brace-set index values. Assignments and comparisons stay out of this list.
+ForIndexList
+  : ArithShift {
+    $$ = new ASTExpressionList();
+    $$->Append($1);
+  }
+  | ForIndexList ',' ArithShift {
+    $1->Append($3);
+    $$ = $1;
+  }
+  ;
 
 GPhaseExpr
-  : TOK_GPHASE '(' Identifier ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_870(GET_TOKEN(3), $3);
+  : TOK_GPHASE '(' ArithShift ')' {
+    if (const ASTBinaryOpNode *BOP =
+            dynamic_cast<const ASTBinaryOpNode *>($3)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_870(GET_TOKEN(3),
+                                                               BOP);
+    } else if (const ASTUnaryOpNode *UOP =
+                   dynamic_cast<const ASTUnaryOpNode *>($3)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_870(GET_TOKEN(3),
+                                                               UOP);
+    } else if ($3 && $3->GetIdentifier()) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_870(
+          GET_TOKEN(3), $3->GetIdentifier());
+    } else {
+      std::stringstream M;
+      M << "Invalid gphase expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($3), M.str(), DiagLevel::Error);
+      $$ = ASTGPhaseExpressionNode::ExpressionError(M.str());
+    }
   }
   | TOK_GPHASE '(' BinaryOpExpr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_870(GET_TOKEN(3), $3);
-  }
-  | TOK_GPHASE '(' UnaryOp ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_870(GET_TOKEN(3), $3);
   }
   ;
@@ -7070,62 +6643,150 @@ CtrlNAt
   }
   ;
 
-// Dedicated Fock level grammar — do not reuse BinaryOpExpr/Expr (those merge
-// with assignment / comparison and refuse `N-1` inside brackets).
-FockLevelPrimary
+// One arithmetic stack. Comparisons and assignments stay above it.
+// Flex longest-match glues "-" onto a following numeral (`N-1` → id, int -1).
+// That token is subtraction of its magnitude, the same node as spaced `N - 1`.
+ArithPrimary
   : Integer {
+    $$ = $1;
+  }
+  | Real {
     $$ = $1;
   }
   | Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_8001(GET_TOKEN(0), $1);
   }
-  | '(' FockLevelExpr ')' {
-    $$ = $2;
+  | '(' ArithExpr ')' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_8000(GET_TOKEN(1), $2);
   }
-  | '-' FockLevelPrimary {
-    $$ = ASTBuilder::Instance().CreateASTUnaryOpNode(
-        "ast-fock-level", $2, ASTOpTypeNegative);
+  | '(' BinaryOp ')' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_8000(GET_TOKEN(1), $2);
+  }
+  | '(' LogicalNotExpr ')' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_8000(GET_TOKEN(1), $2);
+  }
+  | '(' CastExpr ')' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_8000(GET_TOKEN(1), $2);
+  }
+  | '-' ArithPrimary {
+    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
+                                                             ASTOpTypeNegative,
+                                                             false);
+  }
+  | '+' ArithPrimary {
+    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
+                                                             ASTOpTypePositive,
+                                                             false);
+  }
+  | UnaryOp {
+    $$ = $1;
+  }
+  | ArithPowExpr {
+    $$ = $1;
   }
   ;
 
-FockLevelTerm
-  : FockLevelPrimary {
+// `**` is two multiply tokens and shares ArithTerm with `*` so one token of
+// lookahead can choose power versus multiply.
+ArithFactor
+  : ArithPrimary {
     $$ = $1;
   }
-  | FockLevelTerm TOK_MUL_OP FockLevelPrimary {
-    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
-        "ast-fock-level", $1, $3, ASTOpTypeMul);
+  ;
+
+ArithTerm
+  : ArithFactor {
+    $$ = $1;
   }
-  | FockLevelTerm TOK_DIV_OP FockLevelPrimary {
-    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
-        "ast-fock-level", $1, $3, ASTOpTypeDiv);
+  | ArithTerm TOK_MUL_OP TOK_MUL_OP ArithFactor {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(3), $1,
+                                                             $4, ASTOpTypePow);
+  }
+  | ArithTerm TOK_MUL_OP ArithFactor {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeMul);
+  }
+  | ArithTerm TOK_DIV_OP ArithFactor {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeDiv);
+  }
+  | ArithTerm TOK_MOD_OP ArithFactor {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeMod);
+  }
+  | ArithTerm TOK_MUL_OP BinaryOpPrePost {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeMul);
+  }
+  | ArithTerm TOK_MUL_OP FunctionCallExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeMul);
+  }
+  ;
+
+ArithExpr
+  : ArithTerm {
+    $$ = $1;
+  }
+  | ArithExpr TOK_ADD_OP ArithTerm {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeAdd);
+  }
+  | ArithExpr '-' ArithTerm {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeSub);
+  }
+  | ArithExpr TOK_ADD_OP BinaryOpPrePost {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeAdd);
+  }
+  | ArithExpr '-' BinaryOpPrePost {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeSub);
+  }
+  | ArithExpr TOK_ADD_OP FunctionCallExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeAdd);
+  }
+  | ArithExpr '-' FunctionCallExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3, ASTOpTypeSub);
+  }
+  | ArithExpr Integer {
+    if (!$2 || !$2->IsSigned() || $2->GetSignedValue() >= 0) {
+      std::stringstream M;
+      M << "syntax error, unexpected integer constant in expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($2), M.str(), DiagLevel::Error);
+      YYERROR;
+    } else {
+      int32_t V = $2->GetSignedValue();
+      $2->SetValue(static_cast<int32_t>(-V));
+      $$ = ASTProductionFactory::Instance().ProductionRule_580(
+          GET_TOKEN(0), $1, $2, ASTOpTypeSub);
+    }
+  }
+  ;
+
+ArithShift
+  : ArithExpr {
+    $$ = $1;
+  }
+  | ArithShift TOK_LEFT_SHIFT_OP ArithExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3,
+                                                             ASTOpTypeLeftShift);
+  }
+  | ArithShift TOK_RIGHT_SHIFT_OP ArithExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
+                                                             $3,
+                                                             ASTOpTypeRightShift);
   }
   ;
 
 FockLevelExpr
-  : FockLevelTerm {
+  : ArithExpr {
     $$ = $1;
-  }
-  | FockLevelExpr TOK_ADD_OP FockLevelTerm {
-    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
-        "ast-fock-level", $1, $3, ASTOpTypeAdd);
-  }
-  | FockLevelExpr '-' FockLevelTerm {
-    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
-        "ast-fock-level", $1, $3, ASTOpTypeSub);
-  }
-  // Flex longest-match glues "-" onto a following numeral (`N-1` → id, int -1).
-  // Treat that as addition of the already-signed literal (i.e. subtraction).
-  | FockLevelExpr Integer {
-    if (!$2 || !$2->IsSigned() || $2->GetSignedValue() >= 0) {
-      std::stringstream M;
-      M << "Expected a binary operator in Fock level expression.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation($2), M.str(), DiagLevel::Error);
-      YYERROR;
-    }
-    $$ = ASTBuilder::Instance().CreateASTBinaryOpNode(
-        "ast-fock-level", $1, $2, ASTOpTypeAdd);
   }
   ;
 
@@ -7296,79 +6957,27 @@ GateInvExprStmt
   ;
 
 GatePowExpr
-  : TOK_POW '(' Integer ')' TOK_ASSOCIATION_OP GateEOp {
+  : TOK_POW '(' ArithShift ')' TOK_ASSOCIATION_OP GateEOp {
     $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
                                                               $6, $3);
   }
-  | TOK_POW '(' Identifier ')' TOK_ASSOCIATION_OP GateEOp {
+  | TOK_POW '(' ArithShift ')' TOK_ASSOCIATION_OP GateCtrlExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
                                                               $6, $3);
   }
-  | TOK_POW '(' BinaryOpExpr ')' TOK_ASSOCIATION_OP GateEOp {
+  | TOK_POW '(' ArithShift ')' TOK_ASSOCIATION_OP GateNegCtrlExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
                                                               $6, $3);
   }
-  | TOK_POW '(' UnaryOp ')' TOK_ASSOCIATION_OP GateEOp {
+  | TOK_POW '(' ArithShift ')' TOK_ASSOCIATION_OP GateGPhaseExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
                                                               $6, $3);
   }
-  | TOK_POW '(' Integer ')' TOK_ASSOCIATION_OP GateCtrlExpr {
+  | TOK_POW '(' ArithShift ')' TOK_ASSOCIATION_OP GateInvExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
                                                               $6, $3);
   }
-  | TOK_POW '(' BinaryOpExpr ')' TOK_ASSOCIATION_OP GateCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' UnaryOp ')' TOK_ASSOCIATION_OP GateCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' Integer ')' TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' BinaryOpExpr ')' TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' UnaryOp ')' TOK_ASSOCIATION_OP GateNegCtrlExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' Integer ')' TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' BinaryOpExpr ')' TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' UnaryOp ')' TOK_ASSOCIATION_OP GateGPhaseExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' Integer ')' TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' BinaryOpExpr ')' TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' UnaryOp ')' TOK_ASSOCIATION_OP GateInvExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' Integer ')' TOK_ASSOCIATION_OP GatePowExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' BinaryOpExpr ')' TOK_ASSOCIATION_OP GatePowExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
-                                                              $6, $3);
-  }
-  | TOK_POW '(' UnaryOp ')' TOK_ASSOCIATION_OP GatePowExpr {
+  | TOK_POW '(' ArithShift ')' TOK_ASSOCIATION_OP GatePowExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_3852(GET_TOKEN(5),
                                                               $6, $3);
   }
@@ -7470,13 +7079,24 @@ ComplexInitializerExpr
   : BinaryOp TOK_IMAGINARY {
     $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1), $1);
   }
+  | ArithShift TOK_IMAGINARY {
+    if (const ASTBinaryOpNode *BOP =
+            dynamic_cast<const ASTBinaryOpNode *>($1)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1),
+                                                               BOP);
+    } else if (const ASTUnaryOpNode *UOP =
+                   dynamic_cast<const ASTUnaryOpNode *>($1)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1),
+                                                               UOP);
+    } else {
+      std::stringstream M;
+      M << "Invalid complex initializer.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($1), M.str(), DiagLevel::Error);
+      YYERROR;
+    }
+  }
   | BinaryOpSelfAssign TOK_IMAGINARY {
-    $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1), $1);
-  }
-  | BinaryOpPrePost TOK_IMAGINARY {
-    $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1), $1);
-  }
-  | UnaryOp TOK_IMAGINARY {
     $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1), $1);
   }
   ;

@@ -50,3 +50,7 @@ for i in [0:N+1:N*2] {
 for i in [BEGIN+1:STEP:N+STEP] {
   h q[i];
 }
+
+for i in [0:N-1-2] {
+  h q[i];
+}

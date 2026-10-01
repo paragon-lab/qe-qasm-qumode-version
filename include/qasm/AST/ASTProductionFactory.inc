@@ -102,13 +102,18 @@ ASTProductionFactory::ProductionRule_310(const ASTToken* TK,
 
   ASTType BTy = ASTTypeUndefined;
   ASTType ETy = ASTTypeUndefined;
+  const ASTIdentifierNode *BId = nullptr;
+  const ASTIdentifierNode *EId = nullptr;
 
   if (B->GetASTType() == ASTTypeIdentifier ||
       B->GetASTType() == ASTTypeIdentifierRef) {
-    if (const ASTIdentifierNode* TId = dynamic_cast<const ASTIdentifierNode*>(B)) {
-      BTy = TId->GetSymbolType();
-      ASTScopeController::Instance().CheckOutOfScope(TId);
-      ASTIdentifierTypeController::Instance().CheckUndefinedType(TId);
+    BId = dynamic_cast<const ASTIdentifierNode *>(B);
+    if (!BId)
+      BId = B->GetIdentifier();
+    if (BId) {
+      BTy = BId->GetSymbolType();
+      ASTScopeController::Instance().CheckOutOfScope(BId);
+      ASTIdentifierTypeController::Instance().CheckUndefinedType(BId);
     } else {
       std::stringstream M;
       M << "Could not dynamic_cast to an ASTIdentifierNode.";
@@ -120,10 +125,13 @@ ASTProductionFactory::ProductionRule_310(const ASTToken* TK,
 
   if (E->GetASTType() == ASTTypeIdentifier ||
       E->GetASTType() == ASTTypeIdentifierRef) {
-    if (const ASTIdentifierNode* TId = dynamic_cast<const ASTIdentifierNode*>(E)) {
-      ETy = TId->GetSymbolType();
-      ASTScopeController::Instance().CheckOutOfScope(TId);
-      ASTIdentifierTypeController::Instance().CheckUndefinedType(TId);
+    EId = dynamic_cast<const ASTIdentifierNode *>(E);
+    if (!EId)
+      EId = E->GetIdentifier();
+    if (EId) {
+      ETy = EId->GetSymbolType();
+      ASTScopeController::Instance().CheckOutOfScope(EId);
+      ASTIdentifierTypeController::Instance().CheckUndefinedType(EId);
     } else {
       std::stringstream M;
       M << "Could not dynamic_cast to an ASTIdentifierNode.";
@@ -238,8 +246,35 @@ ASTProductionFactory::ProductionRule_310(const ASTToken* TK,
   const ASTImplicitConversionNode* BCIX = nullptr;
   const ASTImplicitConversionNode* ECIX = nullptr;
 
+  // The arithmetic stack types every operand as ASTExpressionNode. Pick the
+  // concrete conversion constructor so an int or a wrapped identifier does not
+  // collapse to ASTTypeExpression.
+  auto MakePowConv = [](const auto *Node) -> const ASTImplicitConversionNode * {
+    if (const ASTIntNode *I = dynamic_cast<const ASTIntNode *>(Node))
+      return new ASTImplicitConversionNode(I, ASTTypeMPDecimal);
+    if (const ASTFloatNode *F = dynamic_cast<const ASTFloatNode *>(Node))
+      return new ASTImplicitConversionNode(F, ASTTypeMPDecimal);
+    if (const ASTDoubleNode *D = dynamic_cast<const ASTDoubleNode *>(Node))
+      return new ASTImplicitConversionNode(D, ASTTypeMPDecimal);
+    if (const ASTBinaryOpNode *BOP = dynamic_cast<const ASTBinaryOpNode *>(Node))
+      return new ASTImplicitConversionNode(BOP, ASTTypeMPDecimal);
+    if (const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(Node))
+      return new ASTImplicitConversionNode(UOP, ASTTypeMPDecimal);
+    if (const ASTMPIntegerNode *MPI = dynamic_cast<const ASTMPIntegerNode *>(Node))
+      return new ASTImplicitConversionNode(MPI, ASTTypeMPDecimal);
+    if (const ASTMPDecimalNode *MPD = dynamic_cast<const ASTMPDecimalNode *>(Node))
+      return new ASTImplicitConversionNode(MPD, ASTTypeMPDecimal);
+    if (const ASTIdentifierNode *Id = dynamic_cast<const ASTIdentifierNode *>(Node))
+      return new ASTImplicitConversionNode(Id, ASTTypeMPDecimal);
+    if (const ASTExpressionNode *EN = dynamic_cast<const ASTExpressionNode *>(Node)) {
+      if (const ASTIdentifierNode *Id = EN->GetIdentifier())
+        return new ASTImplicitConversionNode(Id, ASTTypeMPDecimal);
+    }
+    return nullptr;
+  };
+
   if (BTy != ASTTypeMPDecimal) {
-    BCIX = new ASTImplicitConversionNode(B, ASTTypeMPDecimal);
+    BCIX = MakePowConv(B);
     assert(BCIX && "Could not create a valid ASTImplicitConversionNode!");
     if (!BCIX) {
       std::stringstream M;
@@ -254,7 +289,7 @@ ASTProductionFactory::ProductionRule_310(const ASTToken* TK,
   }
 
   if (ETy != ASTTypeMPDecimal) {
-    ECIX = new ASTImplicitConversionNode(E, ASTTypeMPDecimal);
+    ECIX = MakePowConv(E);
     assert(ECIX && "Could not create a valid ASTImplicitConversionNode!");
     if (!ECIX) {
       std::stringstream M;
@@ -395,7 +430,10 @@ ASTProductionFactory::ProductionRule_350(const ASTToken *TK, const __Type* TP,
 
   switch (TP->GetASTType()) {
   case ASTTypeIdentifier: {
-    if (const ASTIdentifierNode* Id = dynamic_cast<const ASTIdentifierNode*>(TP))
+    const ASTIdentifierNode* Id = dynamic_cast<const ASTIdentifierNode*>(TP);
+    if (!Id)
+      Id = TP->GetIdentifier();
+    if (Id)
       ETy = Id->GetSymbolType();
     else
       ETy = ASTTypeUndefined;
@@ -461,7 +499,14 @@ ASTProductionFactory::ProductionRule_350(const ASTToken *TK, const __Type* TP,
     return ASTUnaryOpNode::ExpressionError(M.str(), OTy);
   }
 
-  ASTOperandNode* OPN = new ASTOperandNode(TP);
+  const ASTIdentifierNode *ArithId = nullptr;
+  if ((TP->GetASTType() == ASTTypeIdentifier ||
+       TP->GetASTType() == ASTTypeIdentifierRef) &&
+      !dynamic_cast<const ASTIdentifierNode *>(TP))
+    ArithId = TP->GetIdentifier();
+
+  ASTOperandNode* OPN =
+      ArithId ? new ASTOperandNode(ArithId) : new ASTOperandNode(TP);
   assert(OPN && "Could not create a valid ASTOperandNode!");
   if (!OPN) {
     std::stringstream M;
@@ -727,6 +772,21 @@ ASTProductionFactory::ProductionRule_3852(const ASTToken* TK,
   assert(TP && "Invalid template parameter argument!");
   assert(OTP && "Invalid template parameter argument!");
 
+  if constexpr (std::is_same_v<__OpType, ASTExpressionNode>) {
+    if (const ASTIntNode *I = dynamic_cast<const ASTIntNode *>(OTP))
+      return ProductionRule_3852(TK, TP, I);
+    if (const ASTBinaryOpNode *B = dynamic_cast<const ASTBinaryOpNode *>(OTP))
+      return ProductionRule_3852(TK, TP, B);
+    if (const ASTUnaryOpNode *U = dynamic_cast<const ASTUnaryOpNode *>(OTP))
+      return ProductionRule_3852(TK, TP, U);
+    if (const ASTIdentifierNode *Id = OTP->GetIdentifier())
+      return ProductionRule_3852(TK, TP, Id);
+    std::stringstream M;
+    M << "Invalid gate power expression.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGatePowerNode::ExpressionError(M.str());
+  } else {
   ASTGatePowerNode* GPN = new ASTGatePowerNode(TP, OTP);
   assert(GPN && "Could not create a valid ASTGatePowerNode!");
 
@@ -742,6 +802,7 @@ ASTProductionFactory::ProductionRule_3852(const ASTToken* TK,
   GPN->Mangle();
   PopWrappedGateEOp(TP);
   return GPN;
+  }
 }
 
 template<typename __OpType>
@@ -753,6 +814,21 @@ ASTProductionFactory::ProductionRule_3852(const ASTToken* TK,
   assert(GQN && "Invalid ASTGateQOpNode argument!");
   assert(OTP && "Invalid template parameter argument!");
 
+  if constexpr (std::is_same_v<__OpType, ASTExpressionNode>) {
+    if (const ASTIntNode *I = dynamic_cast<const ASTIntNode *>(OTP))
+      return ProductionRule_3852(TK, GQN, I);
+    if (const ASTBinaryOpNode *B = dynamic_cast<const ASTBinaryOpNode *>(OTP))
+      return ProductionRule_3852(TK, GQN, B);
+    if (const ASTUnaryOpNode *U = dynamic_cast<const ASTUnaryOpNode *>(OTP))
+      return ProductionRule_3852(TK, GQN, U);
+    if (const ASTIdentifierNode *Id = OTP->GetIdentifier())
+      return ProductionRule_3852(TK, GQN, Id);
+    std::stringstream M;
+    M << "Invalid gate power expression.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGatePowerNode::ExpressionError(M.str());
+  } else {
   ASTGatePowerNode* GPN = new ASTGatePowerNode(GQN->GetGateNode(), OTP);
   assert(GPN && "Could not create a valid ASTGatePowerNode!");
 
@@ -769,6 +845,7 @@ ASTProductionFactory::ProductionRule_3852(const ASTToken* TK,
   const_cast<ASTGateQOpNode*>(GQN)->SetModifier(GPN);
   ASTGateOpBuilder::Instance().PopIfBack(const_cast<ASTGateQOpNode*>(GQN));
   return GPN;
+  }
 }
 
 template<typename __Type>
