@@ -781,3 +781,6 @@ add_test(NAME qumode-t00028
 
 add_test(NAME qumode-t00029
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/index-oob-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out 2>&1; rc=\$?; test \$rc -eq 1 && grep -q 'QumodeContainer indexed element access is out-of-bounds' ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out && ! grep -q Assertion ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out")
+
+add_test(NAME qumode-t00030
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/symbolic-index.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '<Name>qm\\[k\\]</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out && grep -q '<Name>qm\\[i\\]</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out && ! grep -q stoi ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out")

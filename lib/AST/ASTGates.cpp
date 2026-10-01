@@ -2727,9 +2727,10 @@ void ASTGateNode::print() const {
       std::cout << "<OperandParam>" << std::endl;
       const std::string &QN = QId->GetName();
       MI = OperandParamIds.find(XC);
-      if (MI != OperandParamIds.end() &&
-          ASTStringUtils::Instance().IsIndexed(QN)) {
-        std::string BN = ASTStringUtils::Instance().GetIdentifierBase(QN);
+      if (MI != OperandParamIds.end()) {
+        std::string BN = ASTStringUtils::Instance().IsIndexed(QN)
+                             ? ASTStringUtils::Instance().GetIdentifierBase(QN)
+                             : QN;
         std::cout << "<Name>" << BN << '[' << (*MI).second->GetName() << ']'
                   << "</Name>" << std::endl;
       } else {
