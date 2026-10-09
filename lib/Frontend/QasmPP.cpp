@@ -345,7 +345,6 @@ bool QasmPreprocessor::Preprocess(std::istream *InStream) {
 
   Openmode = std::ifstream::in;
   std::ifstream *IFS = new std::ifstream(StreamFilename.c_str(), Openmode);
-  assert(IFS && "Could not create a valid std::ifstream Input Stream!");
 
   if (!CheckFile(*IFS)) {
     CleanupTemporaryFiles();

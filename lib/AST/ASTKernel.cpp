@@ -155,7 +155,6 @@ ASTKernelNode::ASTKernelNode(const ASTIdentifierNode *Id,
 
         if (!ASTE)
           ASTE = new ASTSymbolTableEntry(DId, DId->GetSymbolType());
-        assert(ASTE && "Could not create/obtain a valid ASTSymbolTable Entry!");
 
         if (!STM.insert(std::make_pair(AS.str(), ASTE)).second) {
           std::stringstream M;

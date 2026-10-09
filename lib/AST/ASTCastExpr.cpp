@@ -581,20 +581,16 @@ ASTMPComplexNode *ASTCastExpressionNode::CastToMPComplex() const {
   case ASTTypeInt: {
     ASTMPIntegerNode *RI = new ASTMPIntegerNode(
         ASTIdentifierNode::MPInt.Clone(), Int, Int->GetBits());
-    assert(RI && "Could not create a valid ASTMPIntegerNode!");
     ASTMPIntegerNode *II = new ASTMPIntegerNode(
         ASTIdentifierNode::MPInt.Clone(), Signed, ASTIntNode::IntBits, "1");
-    assert(II && "Could not create a valid ASTMPIntegerNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), RI, II,
                                 ASTOpTypeMul, ASTIntNode::IntBits);
   } break;
   case ASTTypeFloat: {
     ASTMPDecimalNode *RD = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), Float->GetBits(), Float->GetValue());
-    assert(RD && "Could not create a valid ASTMPDecimalNode!");
     ASTMPDecimalNode *ID = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), Float->GetBits(), double(1.0));
-    assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), RD, ID,
                                 ASTOpTypeMul, Float->GetBits());
   } break;
@@ -602,24 +598,20 @@ ASTMPComplexNode *ASTCastExpressionNode::CastToMPComplex() const {
     ASTMPDecimalNode *RD =
         new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
                              Double->GetBits(), Double->GetValue());
-    assert(RD && "Could not create a valid ASTMPDecimalNode!");
     ASTMPDecimalNode *ID = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), Double->GetBits(), double(1.0));
-    assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), RD, ID,
                                 ASTOpTypeMul, Double->GetBits());
   } break;
   case ASTTypeMPInteger: {
     ASTMPIntegerNode *II = new ASTMPIntegerNode(
         ASTIdentifierNode::MPInt.Clone(), Signed, MPI->GetBits(), "1");
-    assert(II && "Could not create a valid ASTMPIntegerNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), MPI, II,
                                 ASTOpTypeMul, MPI->GetBits());
   } break;
   case ASTTypeMPDecimal: {
     ASTMPDecimalNode *ID = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), MPD->GetBits(), double(1.0));
-    assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), MPD, ID,
                                 ASTOpTypeMul, MPD->GetBits());
   } break;
@@ -629,7 +621,6 @@ ASTMPComplexNode *ASTCastExpressionNode::CastToMPComplex() const {
   case ASTTypeAngle: {
     ASTMPDecimalNode *ID = new ASTMPDecimalNode(
         ASTIdentifierNode::MPDec.Clone(), Angle->GetBits(), double(1.0));
-    assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(),
                                 Angle->AsMPDecimal(), ID, ASTOpTypeMul,
                                 Angle->GetBits());
@@ -637,14 +628,12 @@ ASTMPComplexNode *ASTCastExpressionNode::CastToMPComplex() const {
   case ASTTypeBinaryOp: {
     ASTComplexExpressionNode *CEX =
         new ASTComplexExpressionNode(ASTIdentifierNode::MPComplex.Clone(), BOP);
-    assert(CEX && "Could not create a valid ASTComplexExpressionNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), CEX,
                                 ASTMPComplexNode::DefaultBits);
   } break;
   case ASTTypeUnaryOp: {
     ASTComplexExpressionNode *CEX =
         new ASTComplexExpressionNode(ASTIdentifierNode::MPComplex.Clone(), UOP);
-    assert(CEX && "Could not create a valid ASTComplexExpressionNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), CEX,
                                 ASTMPComplexNode::DefaultBits);
   } break;

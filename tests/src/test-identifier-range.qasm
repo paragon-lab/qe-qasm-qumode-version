@@ -13,8 +13,17 @@ int STEP = 2;
 int BEGIN = 0;
 
 qubit[N] q;
+qubit[N+1] qe;
+qubit[(N+1)*2] qw;
 qumode[N] qm;
+qumode[N-1] qme;
 bit[N] c;
+bit[N+1] ce;
+int[N+1] ni;
+uint[N] ui;
+float[(N+1)*16] fl;
+angle[N] ang;
+array[int[N+1], N] xs;
 
 for i in [0:N] {
   h q[i];

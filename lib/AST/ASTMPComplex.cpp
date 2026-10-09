@@ -748,7 +748,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPDecimalNode *R,
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVI);
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(R, MPDI, OT, NumBits);
@@ -768,7 +767,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPIntegerNode *R,
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPD, I, OT, NumBits);
@@ -788,7 +786,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPIntegerNode *R,
 
   ASTMPDecimalNode *MPDR =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPDR && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPDR, I, OT, NumBits);
@@ -807,7 +804,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPIntegerNode *R,
 
   ASTMPDecimalNode *MPDR =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPDR && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPDR, I, OT, NumBits);
@@ -825,14 +821,12 @@ void ASTMPComplexNode::Evaluate(const ASTMPIntegerNode *R, const ASTIntNode *I,
 
   ASTMPDecimalNode *MPDR =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPDR && "Could not create a valid ASTMPDecimalNode!");
 
   double ID = I->IsSigned() ? static_cast<double>(I->GetSignedValue())
                             : static_cast<double>(I->GetUnsignedValue());
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, ID);
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPDR, MPDI, OT, NumBits);
@@ -845,7 +839,6 @@ void ASTMPComplexNode::Evaluate(const ASTFloatNode *R,
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, R->GetValue());
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPD, I, OT, NumBits);
@@ -858,7 +851,6 @@ void ASTMPComplexNode::Evaluate(const ASTDoubleNode *R,
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, R->GetValue());
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPD, I, OT, NumBits);
@@ -872,7 +864,6 @@ void ASTMPComplexNode::Evaluate(const ASTIntNode *R, const ASTMPDecimalNode *I,
                             : static_cast<double>(R->GetUnsignedValue());
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, RD);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPD, I, OT, NumBits);
@@ -885,7 +876,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPDecimalNode *R,
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, I->GetValue());
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(R, MPDI, OT, NumBits);
@@ -898,7 +888,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPDecimalNode *R,
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, I->GetValue());
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(R, MPDI, OT, NumBits);
@@ -912,7 +901,6 @@ void ASTMPComplexNode::Evaluate(const ASTMPDecimalNode *R, const ASTIntNode *I,
                             : static_cast<double>(I->GetUnsignedValue());
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, ID);
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(R, MPDI, OT, NumBits);
@@ -925,7 +913,6 @@ void ASTMPComplexNode::Evaluate(const ASTFloatNode *R,
 
   ASTMPDecimalNode *MPDR =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, R->GetValue());
-  assert(MPDR && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_t MPVR;
   mpfr_init2(MPVR, NumBits);
@@ -934,7 +921,6 @@ void ASTMPComplexNode::Evaluate(const ASTFloatNode *R,
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPDR, MPDI, OT, NumBits);
@@ -948,7 +934,6 @@ void ASTMPComplexNode::Evaluate(const ASTDoubleNode *R,
 
   ASTMPDecimalNode *MPDR =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, R->GetValue());
-  assert(MPDR && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_t MPVR;
   mpfr_init2(MPVR, NumBits);
@@ -957,7 +942,6 @@ void ASTMPComplexNode::Evaluate(const ASTDoubleNode *R,
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPDR, MPDI, OT, NumBits);
@@ -972,7 +956,6 @@ void ASTMPComplexNode::Evaluate(const ASTIntNode *R, const ASTMPIntegerNode *I,
                             : static_cast<double>(R->GetUnsignedValue());
   ASTMPDecimalNode *MPDR =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, RD);
-  assert(MPDR && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_t MPVR;
   mpfr_init2(MPVR, NumBits);
@@ -981,7 +964,6 @@ void ASTMPComplexNode::Evaluate(const ASTIntNode *R, const ASTMPIntegerNode *I,
 
   ASTMPDecimalNode *MPDI =
       new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, MPVR);
-  assert(MPDI && "Could not create a valid ASTMPDecimalNode!");
 
   NE = false;
   Evaluate(MPDR, MPDI, OT, NumBits);
@@ -1225,11 +1207,9 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
       ASTMPDecimalNode *LDV =
           new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-      assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
       ASTMPDecimalNode *RDV =
           new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-      assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
       Evaluate(LDV, RDV, E->GetBinaryOp()->GetOpType(), 128U);
       NE = true;
@@ -1243,11 +1223,9 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
       ASTMPDecimalNode *LDV =
           new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-      assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
       ASTMPDecimalNode *RDV =
           new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-      assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
       Evaluate(LDV, RDV, E->GetBinaryOp()->GetOpType(), 128U);
       NE = true;
@@ -1313,11 +1291,9 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV, RDV, E->GetBinaryOp()->GetOpType(), 128U);
     NE = true;
@@ -1330,11 +1306,9 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV, RDV, E->GetBinaryOp()->GetOpType(), 128U);
     NE = true;
@@ -1345,7 +1319,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(dynamic_cast<const ASTIntNode *>(E->GetBinaryOp()->GetLeft()), RDV,
              E->GetBinaryOp()->GetOpType(), 128U);
@@ -1355,7 +1328,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
         dynamic_cast<const ASTBinaryOpNode *>(E->GetBinaryOp()->GetLeft());
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV,
              dynamic_cast<const ASTIntNode *>(E->GetBinaryOp()->GetRight()),
@@ -1368,7 +1340,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(dynamic_cast<const ASTIntNode *>(E->GetBinaryOp()->GetLeft()), RDV,
              E->GetBinaryOp()->GetOpType(), 128U);
@@ -1380,7 +1351,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV,
              dynamic_cast<const ASTIntNode *>(E->GetBinaryOp()->GetRight()),
@@ -1392,7 +1362,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(dynamic_cast<const ASTFloatNode *>(E->GetBinaryOp()->GetLeft()),
              RDV, E->GetBinaryOp()->GetOpType(), 128U);
@@ -1402,7 +1371,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
         dynamic_cast<const ASTBinaryOpNode *>(E->GetBinaryOp()->GetLeft());
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV,
              dynamic_cast<const ASTFloatNode *>(E->GetBinaryOp()->GetRight()),
@@ -1415,7 +1383,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(dynamic_cast<const ASTFloatNode *>(E->GetBinaryOp()->GetLeft()),
              RDV, E->GetBinaryOp()->GetOpType(), 128U);
@@ -1427,7 +1394,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV,
              dynamic_cast<const ASTFloatNode *>(E->GetBinaryOp()->GetRight()),
@@ -1439,7 +1405,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(dynamic_cast<const ASTDoubleNode *>(E->GetBinaryOp()->GetLeft()),
              RDV, E->GetBinaryOp()->GetOpType(), 128U);
@@ -1449,7 +1414,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
         dynamic_cast<const ASTBinaryOpNode *>(E->GetBinaryOp()->GetLeft());
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV,
              dynamic_cast<const ASTDoubleNode *>(E->GetBinaryOp()->GetRight()),
@@ -1462,7 +1426,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(dynamic_cast<const ASTDoubleNode *>(E->GetBinaryOp()->GetLeft()),
              RDV, E->GetBinaryOp()->GetOpType(), 128U);
@@ -1474,7 +1437,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(LDV,
              dynamic_cast<const ASTDoubleNode *>(E->GetBinaryOp()->GetRight()),
@@ -1486,7 +1448,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         dynamic_cast<const ASTMPIntegerNode *>(E->GetBinaryOp()->GetLeft()),
@@ -1497,7 +1458,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
         dynamic_cast<const ASTBinaryOpNode *>(E->GetBinaryOp()->GetLeft());
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         LDV,
@@ -1511,7 +1471,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         dynamic_cast<const ASTMPIntegerNode *>(E->GetBinaryOp()->GetLeft()),
@@ -1524,7 +1483,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         LDV,
@@ -1537,7 +1495,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         dynamic_cast<const ASTMPDecimalNode *>(E->GetBinaryOp()->GetLeft()),
@@ -1548,7 +1505,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
         dynamic_cast<const ASTBinaryOpNode *>(E->GetBinaryOp()->GetLeft());
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         LDV,
@@ -1562,7 +1518,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *RDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, ROp);
-    assert(RDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         dynamic_cast<const ASTMPDecimalNode *>(E->GetBinaryOp()->GetLeft()),
@@ -1575,7 +1530,6 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
 
     ASTMPDecimalNode *LDV =
         new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128, LOp);
-    assert(LDV && "Could not create a valid ASTMPDecimalNode!");
 
     Evaluate(
         LDV,

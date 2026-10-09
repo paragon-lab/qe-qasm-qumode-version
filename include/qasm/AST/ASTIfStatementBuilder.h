@@ -52,7 +52,6 @@ public:
 
   ASTStatementList *NewList() const {
     ASTStatementList *SL = new ASTStatementList(ISC);
-    assert(SL && "Could not create an ASTStatementList!");
 
     if (!IfMap.insert(std::make_pair(ISC, SL)).second) {
       ASTObjectTracker::Instance().Unregister(SL);
@@ -137,7 +136,6 @@ public:
 
   ASTStatementList *NewList() const {
     ASTStatementList *SL = new ASTStatementList(ISC);
-    assert(SL && "Could not create an ASTStatementList!");
 
     if (!ElseIfMap.insert(std::make_pair(ISC, SL)).second) {
       ASTObjectTracker::Instance().Unregister(SL);
@@ -199,7 +197,6 @@ public:
 
   ASTStatementList *NewList() {
     ASTStatementList *SL = new ASTStatementList(ISC);
-    assert(SL && "Could not create an ASTStatementList!");
 
     if (!ElseMap.insert(std::make_pair(ISC, SL)).second) {
       ASTObjectTracker::Instance().Unregister(SL);

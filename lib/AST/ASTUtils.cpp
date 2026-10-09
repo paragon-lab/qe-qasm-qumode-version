@@ -238,7 +238,6 @@ bool ASTUtils::GetVariantIntegerValue(
         ASTIntNode *II = new ASTIntNode(IId, IId->GetSymbolType() == ASTTypeInt
                                                  ? int32_t(0)
                                                  : uint32_t(0U));
-        assert(II && "Could not create a valid ASTIntNode!");
         const_cast<ASTSymbolTableEntry *>(STE)->SetValue(
             new ASTValue<>(II, ASTTypeInt), ASTTypeInt);
         IIV = II;
@@ -262,7 +261,6 @@ bool ASTUtils::GetVariantIntegerValue(
                             ? ASTSignbit::Signed
                             : ASTSignbit::Unsigned;
         ASTMPIntegerNode *MPI = new ASTMPIntegerNode(IId, SB, IId->GetBits());
-        assert(MPI && "Could not create a valid ASTMPIntegerNode!");
         const_cast<ASTSymbolTableEntry *>(STE)->SetValue(
             new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
         IIV = MPI;
@@ -282,7 +280,6 @@ bool ASTUtils::GetVariantIntegerValue(
         IIV = CBN;
       } else {
         ASTCBitNode *CBN = new ASTCBitNode(IId, IId->GetBits());
-        assert(CBN && "Could not create a valid ASTCBitNode!");
         const_cast<ASTSymbolTableEntry *>(STE)->SetValue(
             new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
         IIV = CBN;

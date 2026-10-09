@@ -811,7 +811,7 @@ int readinput() {
                                     OpenPulseFrameTime
 %type <TimeUnitNode>                TimeUnit
 %type <BoolNode>                    BooleanConstant
-%type <IntegerNode>                 Integer IntScalarType
+%type <IntegerNode>                 Integer IntScalarType RegisterSize
 %type <FloatNode>                   FloatScalarType
 %type <RealNode>                    Real
 %type <EllipsisNode>                Ellipsis
@@ -1514,17 +1514,32 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_1002(GET_TOKEN(4),
                                                               $2, $4);
   }
-  | TOK_CREG '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1003(GET_TOKEN(5),
-                                                              $5, $3);
+  | TOK_CREG '[' RegisterSize ']' Identifier ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_1003(GET_TOKEN(5),
+                                                                  $5, $3);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CREG '[' Integer ']' Identifier '=' Integer ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1004(GET_TOKEN(7),
-                                                              $5, $3, $7);
+  | TOK_CREG '[' RegisterSize ']' Identifier '=' Integer ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_1004(GET_TOKEN(7),
+                                                                  $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CREG '[' Integer ']' Identifier '=' TOK_STRING_LITERAL ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1005(GET_TOKEN(7),
-                                                              $5, $3, *$7);
+  | TOK_CREG '[' RegisterSize ']' Identifier '=' TOK_STRING_LITERAL ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_1005(GET_TOKEN(7),
+                                                                  $5, $3, *$7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_BOOL Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_100(GET_TOKEN(2), $2);
@@ -1568,29 +1583,32 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_122(GET_TOKEN(3),
                                                              $2, $4);
   }
-  | TOK_INT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_220(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_INT '[' RegisterSize ']' Identifier ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_220(GET_TOKEN(5),
+                                                                 $5, $3);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_INT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_221(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_INT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_222(GET_TOKEN(7),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_INT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_222(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_INT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_223(GET_TOKEN(6),
-                                                             $5, $3, $7);
-  }
-  | TOK_INT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_224(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_INT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_225(GET_TOKEN(6),
-                                                             $5, $3, $7);
+  | TOK_INT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_223(GET_TOKEN(6),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_UINT Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_120(GET_TOKEN(2),
@@ -1604,29 +1622,32 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_227(GET_TOKEN(3),
                                                              $2, $4);
   }
-  | TOK_UINT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_220(GET_TOKEN(5),
-                                                             $5, $3, true);
+  | TOK_UINT '[' RegisterSize ']' Identifier ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_220(GET_TOKEN(5),
+                                                                 $5, $3, true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_UINT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_221(GET_TOKEN(5),
-                                                             $5, $3, true);
+  | TOK_UINT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_222(GET_TOKEN(5),
+                                                                 $5, $3, $7, true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_UINT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_222(GET_TOKEN(5),
-                                                             $5, $3, $7, true);
-  }
-  | TOK_UINT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_223(GET_TOKEN(6),
-                                                             $5, $3, $7, true);
-  }
-  | TOK_UINT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_224(GET_TOKEN(7),
-                                                             $5, $3, $7, true);
-  }
-  | TOK_UINT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_225(GET_TOKEN(6),
-                                                             $5, $3, $7, true);
+  | TOK_UINT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_223(GET_TOKEN(6),
+                                                                 $5, $3, $7, true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_DOUBLE Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_150(GET_TOKEN(2), $2);
@@ -1646,57 +1667,72 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_142(GET_TOKEN(3),
                                                              $2, $4);
   }
-  | TOK_FLOAT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_143(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_FLOAT '[' RegisterSize ']' Identifier ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_143(GET_TOKEN(5),
+                                                                 $5, $3);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_FLOAT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_144(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_FLOAT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_145(GET_TOKEN(7),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_FLOAT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_145(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_FLOAT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_146(GET_TOKEN(6),
-                                                             $5, $3, $7);
-  }
-  | TOK_FLOAT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_147(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_FLOAT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_148(GET_TOKEN(6),
-                                                             $5, $3, $7);
+  | TOK_FLOAT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_146(GET_TOKEN(6),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_CONST TOK_IDENTIFIER '=' Expr ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_170(GET_TOKEN(3),
                                                              *$2, $4);
   }
-  | TOK_CONST TOK_IDENTIFIER '[' Integer ']' '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_171(GET_TOKEN(6),
-                                                             *$2, $4, $7);
+  | TOK_CONST TOK_IDENTIFIER '[' RegisterSize ']' '=' Expr ';' {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_171(GET_TOKEN(6),
+                                                                 *$2, $4, $7);
+
+    } else {
+      YYERROR;
+    }
   }
-  | TOK_CONST TOK_IDENTIFIER '[' Identifier ']' '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_172(GET_TOKEN(6),
-                                                             *$2, $4, $7);
+  | TOK_ANGLE '[' RegisterSize ']' Identifier ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_240(GET_TOKEN(5),
+                                                                 $5, $3);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_ANGLE '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_240(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_ANGLE '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_242(GET_TOKEN(7),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_ANGLE '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_241(GET_TOKEN(5),
-                                                             $5, $3);
-  }
-  | TOK_ANGLE '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_242(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_ANGLE '[' Integer ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_243(GET_TOKEN(6),
-                                                             $5, $3, $7);
+  | TOK_ANGLE '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_243(GET_TOKEN(6),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_ANGLE Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_180(GET_TOKEN(2), $2);
@@ -1708,14 +1744,6 @@ Decl
   | TOK_ANGLE Identifier '=' FunctionCallStmt {
     $$ = ASTProductionFactory::Instance().ProductionRule_182(GET_TOKEN(3),
                                                              $2, $4);
-  }
-  | TOK_ANGLE '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_244(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_ANGLE '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_245(GET_TOKEN(6),
-                                                             $5, $3, $7);
   }
   | DurationOfDecl ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1207(GET_TOKEN(1), $1);
@@ -1746,40 +1774,40 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_112(GET_TOKEN(3),
                                                              $2, $4);
   }
-  | TOK_BIT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_200(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_BIT '[' RegisterSize ']' Identifier ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_200(GET_TOKEN(5),
+                                                               $5, $3);
   }
-  | TOK_BIT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_201(GET_TOKEN(5),
-                                                             $5, $3);
+  | TOK_BIT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_202(GET_TOKEN(7),
+                                                               $5, $3, $7);
   }
-  | TOK_BIT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_202(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_BIT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_203(GET_TOKEN(6),
-                                                             $5, $3, $7);
-  }
-  | TOK_BIT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_204(GET_TOKEN(7),
-                                                             $5, $3, $7);
-  }
-  | TOK_BIT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    $$ = ASTProductionFactory::Instance().ProductionRule_205(GET_TOKEN(6),
-                                                             $5, $3, $7);
+  | TOK_BIT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_203(GET_TOKEN(6),
+                                                               $5, $3, $7);
   }
   | TOK_QUBIT Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1100(GET_TOKEN(2), $2);
   }
-  | TOK_QUBIT '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1101(GET_TOKEN(5),
-                                                              $5, $3);
-  }
-  | TOK_QUBIT '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1102(GET_TOKEN(5),
-                                                              $5, $3);
+  | TOK_QUBIT '[' RegisterSize ']' Identifier ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_1101(GET_TOKEN(5),
+                                                                $5, $3);
   }
   | TOK_QUBIT Identifier '=' Expr ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1103(GET_TOKEN(4),
@@ -1790,34 +1818,29 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(3),
                                                               $2, $4);
   }
-  | TOK_QUBIT '[' Integer ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1105(GET_TOKEN(7),
-                                                              $5, $3, $7);
+  | TOK_QUBIT '[' RegisterSize ']' Identifier '=' Expr ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_1105(GET_TOKEN(7),
+                                                                $5, $3, $7);
   }
-  | TOK_QUBIT '[' Integer ']' Identifier '=' FunctionCallStmt {
-    // Functions cannot return Qubits.
-    $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(6),
-                                                              $5, $7);
-  }
-  | TOK_QUBIT '[' Identifier ']' Identifier '=' Expr ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1106(GET_TOKEN(7),
-                                                              $5, $3, $7);
-  }
-  | TOK_QUBIT '[' Identifier ']' Identifier '=' FunctionCallStmt {
-    // Functions cannot return Qubits.
+  | TOK_QUBIT '[' RegisterSize ']' Identifier '=' FunctionCallStmt {
+    // Functions cannot return Qubits. The size is irrelevant.
     $$ = ASTProductionFactory::Instance().ProductionRule_1104(GET_TOKEN(6),
                                                               $5, $7);
   }
   | TOK_QUMODE Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_10000(GET_TOKEN(2), $2);
   }
-  | TOK_QUMODE '[' Integer ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_10001(GET_TOKEN(5),
-                                                               $5, $3);
-  }
-  | TOK_QUMODE '[' Identifier ']' Identifier ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_10002(GET_TOKEN(5),
-                                                               $5, $3);
+  | TOK_QUMODE '[' RegisterSize ']' Identifier ';' {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_10001(GET_TOKEN(5),
+                                                                 $5, $3);
   }
   | TOK_UNITARY Identifier ';' {
   $$ = ASTProductionFactory::Instance() .ProductionRule_10003(GET_TOKEN(2), $2);
@@ -2038,11 +2061,13 @@ FuncResult
   : TOK_RIGHT_ARROW TOK_ANGLE {
     $$ = ASTProductionFactory::Instance().ProductionRule_2100(GET_TOKEN(1));
   }
-  | TOK_RIGHT_ARROW TOK_ANGLE '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_2101($4, GET_TOKEN(3));
-  }
-  | TOK_RIGHT_ARROW TOK_ANGLE '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_2102($4, GET_TOKEN(3));
+  | TOK_RIGHT_ARROW TOK_ANGLE '[' RegisterSize ']' {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_2102($4, GET_TOKEN(3));
+
+    } else {
+      $$ = ASTResultNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_RIGHT_ARROW TOK_ANGLE '[' BinaryOpExpr ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_2103($4, GET_TOKEN(3));
@@ -2050,14 +2075,18 @@ FuncResult
   | TOK_RIGHT_ARROW TOK_BIT {
     $$ = ASTProductionFactory::Instance().ProductionRule_2104(GET_TOKEN(1));
   }
-  | TOK_RIGHT_ARROW TOK_BIT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_2105($4, GET_TOKEN(3));
+  | TOK_RIGHT_ARROW TOK_BIT '[' RegisterSize ']' {
+    if (!$4)
+      $$ = ASTResultNode::ExpressionError(
+          ASTProductionFactory::RegisterSizeError);
+    else {
+      std::string Bits = std::to_string($4->GetUnsignedValue());
+      $$ = ASTProductionFactory::Instance().ProductionRule_2107(&Bits,
+                                                                GET_TOKEN(3));
+    }
   }
   | TOK_RIGHT_ARROW TOK_BIT '[' BinaryOpExpr ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_2106($4, GET_TOKEN(3));
-  }
-  | TOK_RIGHT_ARROW TOK_BIT '[' TOK_INTEGER_CONSTANT ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_2107($4, GET_TOKEN(3));
   }
   | TOK_RIGHT_ARROW TOK_QUBIT {
     $$ = ASTProductionFactory::Instance().ProductionRule_2108(GET_TOKEN(0));
@@ -4574,24 +4603,26 @@ FloatScalarType
   ;
 
 MPIntegerType
-  : TOK_INT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_804(GET_TOKEN(3),
-                                                             $3, ASTTypeMPInteger);
-  }
-  | TOK_INT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_805(GET_TOKEN(3),
-                                                             $3, ASTTypeMPInteger);
+  : TOK_INT '[' RegisterSize ']' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_804(GET_TOKEN(3),
+                                                                 $3, ASTTypeMPInteger);
+
+    } else {
+      $$ = ASTMPIntegerNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_INT '[' BinaryOpExpr ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_7004(GET_TOKEN(3));
   }
-  | TOK_UINT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_804(GET_TOKEN(3),
-                                                             $3, ASTTypeMPUInteger);
-  }
-  | TOK_UINT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_805(GET_TOKEN(3),
-                                                             $3, ASTTypeMPUInteger);
+  | TOK_UINT '[' RegisterSize ']' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_804(GET_TOKEN(3),
+                                                                 $3, ASTTypeMPUInteger);
+
+    } else {
+      $$ = ASTMPIntegerNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_UINT '[' BinaryOpExpr ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_7004(GET_TOKEN(3));
@@ -4599,11 +4630,13 @@ MPIntegerType
   ;
 
 MPDecimalType
-  : TOK_FLOAT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_806(GET_TOKEN(3), $3);
-  }
-  | TOK_FLOAT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_807(GET_TOKEN(3), $3);
+  : TOK_FLOAT '[' RegisterSize ']' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_806(GET_TOKEN(3), $3);
+
+    } else {
+      $$ = ASTMPDecimalNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_FLOAT '[' BinaryOpExpr ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_7005(GET_TOKEN(3));
@@ -4614,106 +4647,102 @@ MPComplexDecl
   : TOK_COMPLEX Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_250(GET_TOKEN(1), $2);
   }
-  | TOK_COMPLEX '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(4),
-                                                             $5, $3);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(7),
-                                                             $8, $5);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_252(GET_TOKEN(7),
-                                                             $8, $5);
-  }
-  | TOK_COMPLEX '[' Integer ']' Identifier '=' ComplexInitializerExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(6),
-                                                             $5, $3, $7);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' ComplexInitializerExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' BinaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' ArithShift {
-    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($10)) {
-      $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
-                                                               $8, $5, BOP);
-    } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($10)) {
-      $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(9),
-                                                               $8, $5, UOP);
-    } else if ($10->GetIdentifier()) {
-      $$ = ASTProductionFactory::Instance().ProductionRule_259(
-          GET_TOKEN(9), $8, $5,
-          const_cast<ASTIdentifierNode *>($10->GetIdentifier()));
-    } else {
-      std::stringstream M;
-      M << "Invalid complex initializer.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation($10), M.str(),
-          DiagLevel::Error);
-      $$ = ASTMPComplexNode::ExpressionError($8, M.str());
-    }
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' ComplexInitializerExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_256(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' BinaryOp {
-    $$ = ASTProductionFactory::Instance().ProductionRule_257(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' ArithShift {
-    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($10)) {
-      $$ = ASTProductionFactory::Instance().ProductionRule_257(GET_TOKEN(9),
-                                                               $8, $5, BOP);
-    } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($10)) {
-      $$ = ASTProductionFactory::Instance().ProductionRule_258(GET_TOKEN(9),
-                                                               $8, $5, UOP);
-    } else if ($10->GetIdentifier()) {
-      $$ = ASTProductionFactory::Instance().ProductionRule_260(
-          GET_TOKEN(9), $8, $5,
-          const_cast<ASTIdentifierNode *>($10->GetIdentifier()));
-    } else {
-      std::stringstream M;
-      M << "Invalid complex initializer.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation($10), M.str(),
-          DiagLevel::Error);
-      $$ = ASTMPComplexNode::ExpressionError($8, M.str());
-    }
-  }
-  ;
+  | TOK_COMPLEX '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(4),
+                                                                 $5, $3);
 
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(7),
+                                                                 $8, $5);
+
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_COMPLEX '[' RegisterSize ']' Identifier '=' ComplexInitializerExpr {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(6),
+                                                                 $5, $3, $7);
+
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' ComplexInitializerExpr {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(9),
+                                                                 $8, $5, $10);
+
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' BinaryOp {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
+                                                                 $8, $5, $10);
+
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' ArithShift {
+    if ($5) {
+        if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($10)) {
+          $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
+                                                                   $8, $5, BOP);
+        } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($10)) {
+          $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(9),
+                                                                   $8, $5, UOP);
+        } else if ($10->GetIdentifier()) {
+          $$ = ASTProductionFactory::Instance().ProductionRule_259(
+              GET_TOKEN(9), $8, $5,
+              const_cast<ASTIdentifierNode *>($10->GetIdentifier()));
+        } else {
+          std::stringstream M;
+          M << "Invalid complex initializer.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation($10), M.str(),
+              DiagLevel::Error);
+          $$ = ASTMPComplexNode::ExpressionError($8, M.str());
+        }
+
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
 MPComplexFunctionCallDecl
-  : TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier '=' FunctionCallStmtExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_261(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier '=' FunctionCallStmtExpr {
-    $$ = ASTProductionFactory::Instance().ProductionRule_262(GET_TOKEN(9),
-                                                             $8, $5, $10);
-  }
-  ;
+  : TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' FunctionCallStmtExpr {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_261(GET_TOKEN(9),
+                                                                 $8, $5, $10);
 
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
 MPComplexType
-  : TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_808(GET_TOKEN(6), $5);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_809(GET_TOKEN(6), $5);
-  }
-  ;
+  : TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_808(GET_TOKEN(6), $5);
 
-BitType
-  : TOK_BIT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(3), $3);
+    } else {
+      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_BIT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(3), $3);
+BitType
+  : TOK_BIT '[' RegisterSize ']' {
+    if (!$3)
+      $$ = ASTCBitNode::ExpressionError(
+          ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(3), $3);
   }
   | TOK_BIT {
     $$ = ASTProductionFactory::Instance().ProductionRule_817(GET_TOKEN(0));
@@ -4724,23 +4753,24 @@ AngleType
   : TOK_ANGLE {
     $$ = ASTProductionFactory::Instance().ProductionRule_818(GET_TOKEN(0));
   }
-  | TOK_ANGLE '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_818(GET_TOKEN(3), $3);
-  }
-  | TOK_ANGLE '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_818(GET_TOKEN(3), $3);
-  }
-  ;
+  | TOK_ANGLE '[' RegisterSize ']' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_818(GET_TOKEN(3), $3);
 
+    } else {
+      $$ = ASTAngleNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
 QubitType
   : TOK_QUBIT {
     $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(0));
   }
-  | TOK_QUBIT '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(3), $3);
-  }
-  | TOK_QUBIT '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(3), $3);
+  | TOK_QUBIT '[' RegisterSize ']' {
+    if (!$3)
+      $$ = ASTQubitContainerNode::ExpressionError(
+          ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_819(GET_TOKEN(3), $3);
   }
   ;
 
@@ -4764,15 +4794,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeCBitArray);
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Integer ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Integer ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_QUBIT ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4784,15 +4824,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeQubitArray);
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Integer ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Integer ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_ANGLE ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4804,15 +4854,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeAngleArray);
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Integer ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Integer ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BOOL ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4828,15 +4888,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeIntArray);
   }
-  | TOK_ARRAY '[' TOK_INT '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_INT '[' Integer ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Integer ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_UINT ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4848,17 +4918,27 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeIntArray, true);
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Integer ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Integer ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_FLOAT ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4870,15 +4950,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeFloatArray);
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Integer ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DURATION ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4903,15 +4993,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeCBitArray);
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Identifier ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_QUBIT ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4923,15 +5023,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeQubitArray);
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Identifier ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_ANGLE ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4943,15 +5053,25 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeAngleArray);
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
-                                                             $8, $5,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8),
+                                                                 $8, $5,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Identifier ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Identifier ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BOOL ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4966,14 +5086,24 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeIntArray);
   }
-  | TOK_ARRAY '[' TOK_INT '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8), $8, $5,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8), $8, $5,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_INT '[' Identifier ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_UINT ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -4984,16 +5114,26 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeIntArray, true);
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8), $8, $5,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8), $8, $5,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Identifier ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_FLOAT ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -5004,14 +5144,24 @@ ArrayType
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeFloatArray);
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8), $8, $5,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(8), $8, $5,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Identifier ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
-                                                             $8, $5, $10,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(10),
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DURATION ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
@@ -5026,61 +5176,66 @@ ArrayType
                                                              $8, $10, $5,
                                                              ASTTypeDurationArray);
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(11),
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ']' {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(11),
+                                                                 $11, $7,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(11),
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ']' {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(11),
+                                                                 $11, $7,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(11),
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(11),
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ',' Integer ']' {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
 
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ',' Integer ']' {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ',' Identifier ']' {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ',' Identifier ']' {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(13),
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' DurationOfDecl ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5),
@@ -5200,61 +5355,91 @@ ArrayType
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
                                                              ASTTypeGate);
   }
-  | TOK_ARRAY '[' TOK_GATE '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
-                                                             $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeGate);
+  | TOK_ARRAY '[' TOK_GATE '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
+                                                                 $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeGate);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_GATE ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
                                                              ASTTypeGate);
   }
-  | TOK_ARRAY '[' TOK_GATE '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
-                                                             $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeGate);
+  | TOK_ARRAY '[' TOK_GATE '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
+                                                                 $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeGate);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DEFCAL ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
                                                              ASTTypeDefcal);
   }
-  | TOK_ARRAY '[' TOK_DEFCAL '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
-                                                             $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeDefcal);
+  | TOK_ARRAY '[' TOK_DEFCAL '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
+                                                                 $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeDefcal);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DEFCAL ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
                                                              ASTTypeDefcal);
   }
-  | TOK_ARRAY '[' TOK_DEFCAL '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
-                                                             $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeDefcal);
+  | TOK_ARRAY '[' TOK_DEFCAL '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
+                                                                 $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeDefcal);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BARRIER ',' Integer ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
                                                              ASTTypeBarrier);
   }
-  | TOK_ARRAY '[' TOK_BARRIER '[' Integer ']' ',' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
-                                                             $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeBarrier);
+  | TOK_ARRAY '[' TOK_BARRIER '[' RegisterSize ']' ',' Integer ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
+                                                                 $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeBarrier);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BARRIER ',' Identifier ']' {
     $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(5), $5,
                                                              ASTTypeBarrier);
   }
-  | TOK_ARRAY '[' TOK_BARRIER '[' Identifier ']' ',' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
-                                                             $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeBarrier);
+  | TOK_ARRAY '[' TOK_BARRIER '[' RegisterSize ']' ',' Identifier ']' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_821(GET_TOKEN(7),
+                                                                 $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeBarrier);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   ;
 
@@ -5376,60 +5561,64 @@ CastExpr
     $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(3), $3,
                                                               ASTTypeBitset);
   }
-  | TOK_BIT '[' Integer ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeBitset);
-  }
-  | TOK_BIT '[' Identifier ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeBitset);
+  | TOK_BIT '[' RegisterSize ']' '(' Expr ')' {
+    if (!$3) {
+      $$ = ASTCastExpressionNode::ExpressionError(
+          ASTProductionFactory::RegisterSizeError);
+    } else {
+      $$ = ASTProductionFactory::Instance().ProductionRule_3600(
+          GET_TOKEN(6), $3, $6, ASTTypeBitset);
+    }
   }
   | TOK_ANGLE '(' Expr ')' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(3), $3,
                                                               ASTTypeAngle);
   }
-  | TOK_ANGLE '[' Integer ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeAngle);
-  }
-  | TOK_ANGLE '[' Identifier ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeAngle);
-  }
-  | TOK_INT '[' Integer ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeMPInteger);
-  }
-  | TOK_INT '[' Identifier ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeMPInteger);
-  }
-  | TOK_UINT '[' Integer ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeMPUInteger);
-  }
-  | TOK_UINT '[' Identifier ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeMPUInteger);
-  }
-  | TOK_FLOAT '[' Integer ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeMPDecimal);
-  }
-  | TOK_FLOAT '[' Identifier ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
-                                                              $6, ASTTypeMPDecimal);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(9), $5,
-                                                              $9, ASTTypeMPComplex);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' '(' Expr ')' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(9), $5,
-                                                              $9, ASTTypeMPComplex);
-  }
-  ;
+  | TOK_ANGLE '[' RegisterSize ']' '(' Expr ')' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
+                                                                  $6, ASTTypeAngle);
 
+    } else {
+      $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_INT '[' RegisterSize ']' '(' Expr ')' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
+                                                                  $6, ASTTypeMPInteger);
+
+    } else {
+      $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_UINT '[' RegisterSize ']' '(' Expr ')' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
+                                                                  $6, ASTTypeMPUInteger);
+
+    } else {
+      $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_FLOAT '[' RegisterSize ']' '(' Expr ')' {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(6), $3,
+                                                                  $6, ASTTypeMPDecimal);
+
+    } else {
+      $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
+  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' '(' Expr ')' {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(9), $5,
+                                                                  $9, ASTTypeMPComplex);
+
+    } else {
+      $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+    }
+  }
 NamedTypeDecl
   : TOK_INT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5439,23 +5628,24 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeInt, true);
   }
-  | TOK_INT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPInteger);
+  | TOK_INT '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
+                                                                 $3, ASTTypeMPInteger);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CONST TOK_INT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPInteger,
-                                                             true);
-  }
-  | TOK_INT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPInteger);
-  }
-  | TOK_CONST TOK_INT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPInteger,
-                                                             true);
+  | TOK_CONST TOK_INT '[' RegisterSize ']' Identifier {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                                 $4, ASTTypeMPInteger,
+                                                                 true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($6, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_UINT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5465,23 +5655,24 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeUInt, true);
   }
-  | TOK_UINT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPUInteger);
+  | TOK_UINT '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
+                                                                 $3, ASTTypeMPUInteger);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CONST TOK_UINT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPUInteger,
-                                                             true);
-  }
-  | TOK_UINT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPUInteger);
-  }
-  | TOK_CONST TOK_UINT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPUInteger,
-                                                             true);
+  | TOK_CONST TOK_UINT '[' RegisterSize ']' Identifier {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                                 $4, ASTTypeMPUInteger,
+                                                                 true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($6, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_FLOAT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5492,23 +5683,24 @@ NamedTypeDecl
                                                              ASTTypeFloat,
                                                              true);
   }
-  | TOK_FLOAT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPDecimal);
+  | TOK_FLOAT '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
+                                                                 $3, ASTTypeMPDecimal);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CONST TOK_FLOAT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPDecimal,
-                                                             true);
-  }
-  | TOK_FLOAT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPDecimal);
-  }
-  | TOK_CONST TOK_FLOAT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPDecimal,
-                                                             true);
+  | TOK_CONST TOK_FLOAT '[' RegisterSize ']' Identifier {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                                 $4, ASTTypeMPDecimal,
+                                                                 true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($6, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_DOUBLE Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5518,41 +5710,43 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeDouble, true);
   }
-  | TOK_DOUBLE '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPDecimal);
+  | TOK_DOUBLE '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
+                                                                 $3, ASTTypeMPDecimal);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CONST TOK_DOUBLE '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPDecimal,
-                                                             true);
+  | TOK_CONST TOK_DOUBLE '[' RegisterSize ']' Identifier {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                                 $4, ASTTypeMPDecimal,
+                                                                 true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($6, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_DOUBLE '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeMPDecimal);
+  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $8,
+                                                                 $5, ASTTypeMPComplex);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($8, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CONST TOK_DOUBLE '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeMPDecimal,
-                                                             true);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $8,
-                                                             $5, ASTTypeMPComplex);
-  }
-  | TOK_CONST TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $9,
-                                                             $6, ASTTypeMPComplex,
-                                                             true);
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $8,
-                                                             $5, ASTTypeMPComplex);
-  }
-  | TOK_CONST TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $9,
-                                                             $6, ASTTypeMPComplex,
-                                                             true);
+  | TOK_CONST TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier {
+    if ($6) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $9,
+                                                                 $6, ASTTypeMPComplex,
+                                                                 true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($9, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | TOK_DURATION Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5590,23 +5784,21 @@ NamedTypeDecl
                                                              ASTTypeQubitContainer,
                                                              true);
   }
-  | TOK_QUBIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeQubitContainer);
+  | TOK_QUBIT '[' RegisterSize ']' Identifier {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $5, $3, ASTTypeQubitContainer);
   }
-  | TOK_CONST TOK_QUBIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeQubitContainer,
-                                                             true);
-  }
-  | TOK_QUBIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeQubitContainer);
-  }
-  | TOK_CONST TOK_QUBIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeQubitContainer,
-                                                             true);
+  | TOK_CONST TOK_QUBIT '[' RegisterSize ']' Identifier {
+    if (!$4)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $6, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $6, $4, ASTTypeQubitContainer, true);
   }
   | TOK_BIT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5616,23 +5808,21 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeBitset, true);
   }
-  | TOK_BIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeBitset);
+  | TOK_BIT '[' RegisterSize ']' Identifier {
+    if (!$3)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $5, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $5, $3, ASTTypeBitset);
   }
-  | TOK_CONST TOK_BIT '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeBitset,
-                                                             true);
-  }
-  | TOK_BIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeBitset);
-  }
-  | TOK_CONST TOK_BIT '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeBitset,
-                                                             true);
+  | TOK_CONST TOK_BIT '[' RegisterSize ']' Identifier {
+    if (!$4)
+      $$ = ASTDeclarationNode::DeclarationError(
+          $6, ASTProductionFactory::RegisterSizeError);
+    else
+      $$ = ASTProductionFactory::Instance().ProductionRule_850(
+          GET_TOKEN(4), $6, $4, ASTTypeBitset, true);
   }
   | TOK_ANGLE Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
@@ -5642,23 +5832,24 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeAngle, true);
   }
-  | TOK_ANGLE '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeAngle);
+  | TOK_ANGLE '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
+                                                                 $3, ASTTypeAngle);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
-  | TOK_CONST TOK_ANGLE '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeAngle,
-                                                             true);
-  }
-  | TOK_ANGLE '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
-                                                             $3, ASTTypeAngle);
-  }
-  | TOK_CONST TOK_ANGLE '[' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
-                                                             $4, ASTTypeAngle,
-                                                             true);
+  | TOK_CONST TOK_ANGLE '[' RegisterSize ']' Identifier {
+    if ($4) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                                 $4, ASTTypeAngle,
+                                                                 true);
+
+    } else {
+      $$ = ASTDeclarationNode::DeclarationError($6, ASTProductionFactory::RegisterSizeError);
+    }
   }
   | Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(0), $1);
@@ -5729,15 +5920,25 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeCBitArray);
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9),
-                                                             $10, $8, $5,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9),
+                                                                 $10, $8, $5,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Integer ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Integer ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_QUBIT ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5749,15 +5950,25 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeQubitArray);
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Integer ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Integer ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_ANGLE ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5769,15 +5980,25 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeAngleArray);
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Integer ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Integer ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BOOL ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5839,15 +6060,25 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeIntArray);
   }
-  | TOK_ARRAY '[' TOK_INT '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_INT '[' Integer ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Integer ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_UINT ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5877,17 +6108,27 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeIntArray, true);
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Integer ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Integer ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_FLOAT ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5899,20 +6140,35 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeFloatArray);
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Integer ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Integer ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DURATION ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5938,15 +6194,25 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeCBitArray);
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_BIT '[' Identifier ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeCBitArray);
+  | TOK_ARRAY '[' TOK_BIT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeCBitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_QUBIT ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5958,15 +6224,25 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeQubitArray);
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_QUBIT '[' Identifier ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeQubitArray);
+  | TOK_ARRAY '[' TOK_QUBIT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeQubitArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_ANGLE ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -5978,45 +6254,75 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeAngleArray);
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_ANGLE '[' Identifier ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeAngleArray);
+  | TOK_ARRAY '[' TOK_ANGLE '[' RegisterSize ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeAngleArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_INT ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeIntArray);
   }
-  | TOK_ARRAY '[' TOK_INT '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_INT '[' Identifier ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray);
+  | TOK_ARRAY '[' TOK_INT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_UINT ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeIntArray, true);
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
+                                                                 $8, $5,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_UINT '[' Identifier ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeMPIntegerArray,
-                                                             true);
+  | TOK_ARRAY '[' TOK_UINT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPIntegerArray,
+                                                                 true);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_FLOAT ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -6027,15 +6333,15 @@ ArrayExpr
                                                              ASTProductionFactory::EVX,
                                                              $7, ASTTypeFloatArray);
   }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10,
-                                                             $8, $5,
-                                                             ASTTypeMPDecimalArray);
-  }
-  | TOK_ARRAY '[' TOK_FLOAT '[' Identifier ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
-                                                             $8, $5, $10,
-                                                             ASTTypeMPDecimalArray);
+  | TOK_ARRAY '[' TOK_FLOAT '[' RegisterSize ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(11), $12,
+                                                                 $8, $5, $10,
+                                                                 ASTTypeMPDecimalArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DURATION ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
@@ -6051,61 +6357,66 @@ ArrayExpr
                                                              $8, $10, $5,
                                                              ASTTypeDurationArray);
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(12), $13,
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ']' Identifier {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(12), $13,
+                                                                 $11, $7,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(12), $13,
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ']' Identifier {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(12), $13,
+                                                                 $11, $7,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(12), $13,
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(12), $13,
-                                                             $11, $7,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ',' Integer ']' Identifier {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
 
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ',' Integer ']' Identifier {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ',' Identifier ']' Identifier {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
-                                                             $11, $7, $13,
-                                                             ASTTypeMPComplexArray);
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ',' Identifier ']' Identifier {
+    if ($7) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(14), $15,
+                                                                 $11, $7, $13,
+                                                                 ASTTypeMPComplexArray);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' DurationOfDecl ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7,
@@ -6225,56 +6536,86 @@ ArrayExpr
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeGate);
   }
-  | TOK_ARRAY '[' TOK_GATE '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeGate);
+  | TOK_ARRAY '[' TOK_GATE '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeGate);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_GATE ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeGate);
   }
-  | TOK_ARRAY '[' TOK_GATE '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeGate);
+  | TOK_ARRAY '[' TOK_GATE '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeGate);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DEFCAL ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeDefcal);
   }
-  | TOK_ARRAY '[' TOK_DEFCAL '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeDefcal);
+  | TOK_ARRAY '[' TOK_DEFCAL '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeDefcal);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_DEFCAL ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeDefcal);
   }
-  | TOK_ARRAY '[' TOK_DEFCAL '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeDefcal);
+  | TOK_ARRAY '[' TOK_DEFCAL '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeDefcal);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BARRIER ',' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeBarrier);
   }
-  | TOK_ARRAY '[' TOK_BARRIER '[' Integer ']' ',' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeBarrier);
+  | TOK_ARRAY '[' TOK_BARRIER '[' RegisterSize ']' ',' Integer ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeBarrier);
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   | TOK_ARRAY '[' TOK_BARRIER ',' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(6), $7, $5,
                                                              ASTTypeBarrier);
   }
-  | TOK_ARRAY '[' TOK_BARRIER '[' Identifier ']' ',' Identifier ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
-                                                             ASTProductionFactory::EVX,
-                                                             $8, ASTTypeBarrier);
+  | TOK_ARRAY '[' TOK_BARRIER '[' RegisterSize ']' ',' Identifier ']' Identifier {
+    if ($5) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
+                                                                 ASTProductionFactory::EVX,
+                                                                 $8, ASTTypeBarrier);
 
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
   }
   ;
 
@@ -6495,57 +6836,60 @@ InitArrayExpr
     // FIXME: IMPLEMENT.
     $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(13));
   }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(16));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
-    // FIXME: IMPLEMENT.
-    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
-  }
-  ;
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    if ($7) {
+        // FIXME: IMPLEMENT.
+        $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(16));
 
-// [start:end] or [start:step:end]. Each field is the shared arithmetic expression.
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    if ($7) {
+        // FIXME: IMPLEMENT.
+        $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    if ($7) {
+        // FIXME: IMPLEMENT.
+        $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    if ($7) {
+        // FIXME: IMPLEMENT.
+        $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    if ($7) {
+        // FIXME: IMPLEMENT.
+        $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    if ($7) {
+        // FIXME: IMPLEMENT.
+        $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+
+    } else {
+      $$ = new ASTInvalidArrayNode(ASTProductionFactory::RegisterSizeError, GET_TOKEN(0));
+    }
+  }
 ForBracketRange
   : ArithShift ':' ArithShift {
     $$ = new ASTExpressionList();
@@ -6818,6 +7162,12 @@ ArithShift
     $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
                                                              $3,
                                                              ASTOpTypeRightShift);
+  }
+  ;
+
+RegisterSize
+  : ArithShift {
+    $$ = ASTProductionFactory::Instance().FoldRegisterSize(GET_TOKEN(0), $1);
   }
   ;
 
@@ -7198,9 +7548,14 @@ Stretch
     $$ = ASTProductionFactory::Instance().ProductionRule_1350(GET_TOKEN(3),
                                                               $2, $4);
   }
-  | TOK_STRETCH '[' Integer ']' Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1350(GET_TOKEN(4),
-                                                              $5, $3);
+  | TOK_STRETCH '[' RegisterSize ']' Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_1350(GET_TOKEN(4),
+                                                                  $5, $3);
+
+    } else {
+      $$ = ASTStretchNode::ExpressionError($5, ASTProductionFactory::RegisterSizeError);
+    }
   }
   ;
 

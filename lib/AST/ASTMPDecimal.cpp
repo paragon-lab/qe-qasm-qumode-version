@@ -62,7 +62,6 @@ ASTMPDecimalNode *ASTMPDecimalNode::Pi(int Bits) {
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::Pi, Bits, Pi);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
   return MPD;
@@ -95,7 +94,6 @@ ASTMPDecimalNode *ASTMPDecimalNode::NegPi(int Bits) {
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::Pi, Bits, NegPi);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
   mpfr_clear(NegPi);
@@ -144,7 +142,6 @@ ASTMPDecimalNode *ASTMPDecimalNode::Tau(int Bits) {
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::Tau, Bits, Tau);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
   mpfr_clear(Tau);
@@ -189,7 +186,6 @@ ASTMPDecimalNode *ASTMPDecimalNode::NegTau(int Bits) {
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::Tau, Bits, NegTau);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
   mpfr_clear(Tau);
@@ -247,7 +243,6 @@ ASTMPDecimalNode *ASTMPDecimalNode::Euler(int Bits) {
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::EulerNumber, Bits, Gamma);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Gamma);
   mpfr_clear(Val);
@@ -302,7 +297,6 @@ ASTMPDecimalNode *ASTMPDecimalNode::NegEuler(int Bits) {
 
   ASTMPDecimalNode *MPD =
       new ASTMPDecimalNode(&ASTIdentifierNode::EulerNumber, Bits, NegGamma);
-  assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Gamma);
   mpfr_clear(Val);
@@ -330,15 +324,12 @@ ASTMPDecimalNode *ASTMPDecimalNode::NegEuler(int Bits, int Prec) {
 ASTMPComplexNode *ASTMPDecimalNode::ToMPComplex() const {
   ASTMPDecimalNode *MPCI =
       new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Bits, 1.0);
-  assert(MPCI && "Could not create a valid ASTMPDecimalNode!");
 
   ASTMPDecimalNode *MPCR =
       new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Bits, MPValue);
-  assert(MPCI && "Could not create a valid ASTMPDecimalNode!");
 
   ASTMPComplexNode *MPC = new ASTMPComplexNode(
       ASTIdentifierNode::MPComplex.Clone(), MPCR, MPCI, ASTOpTypeMul, Bits);
-  assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   return MPC;
 }

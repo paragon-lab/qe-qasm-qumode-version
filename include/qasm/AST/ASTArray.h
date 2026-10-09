@@ -381,7 +381,6 @@ public:
       S.str("");
       S << "ast-array-cbit-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *CId = new ASTIdentifierNode(S.str(), Size);
-      assert(CId && "Could not create a valid ASTIdentifierNode!");
 
       BV.push_back(new ASTCBitNode(CId, NSize));
     }
@@ -654,7 +653,6 @@ public:
       S.str("");
       S << Id->GetName() << ':' << I;
       ASTIdentifierNode *QId = new ASTIdentifierNode(S.str(), QSize);
-      assert(QId && "Could not create a valid ASTIdentifierNode!");
       QV.push_back(new ASTQubitContainerNode(QId, 1, QSize, S.str()));
     }
   }
@@ -789,7 +787,6 @@ public:
       S << "ast-array-angle-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *AId =
           new ASTIdentifierNode(S.str(), ASTAngleNode::AngleBits);
-      assert(AId && "Could not create a valid ASTIdentifierNode!");
 
       AId->SetPolymorphicName("arrayangle");
       AV.push_back(new ASTAngleNode(AId));
@@ -810,7 +807,6 @@ public:
       S.str("");
       S << "ast-array-angle-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *AId = new ASTIdentifierNode(S.str(), Bits);
-      assert(AId && "Could not create a valid ASTIdentifierNode!");
 
       AId->SetPolymorphicName("arrayangle");
       AV.push_back(new ASTAngleNode(AId, ASTAngleTypeGeneric, Bits));
@@ -970,7 +966,6 @@ public:
       S.str("");
       S << "ast-array-bool-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *BId = new ASTIdentifierNode(S.str(), 8);
-      assert(BId && "Could not create a valid ASTIdentifierNode!");
 
       BV.push_back(new ASTBoolNode(BId, false));
     }
@@ -988,7 +983,6 @@ public:
       S.str("");
       S << "ast-array-bool-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *BId = new ASTIdentifierNode(S.str(), 8);
-      assert(BId && "Could not create a valid ASTIdentifierNode!");
 
       BV.push_back(new ASTBoolNode(BId, Value));
     }
@@ -1135,7 +1129,6 @@ public:
       S << "ast-array-int-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId =
           new ASTIdentifierNode(S.str(), ASTIntNode::IntBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       if (Unsigned)
         IV.push_back(new ASTIntNode(IId, uint32_t(0)));
@@ -1157,7 +1150,6 @@ public:
       S << "ast-array-int-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId =
           new ASTIdentifierNode(S.str(), ASTIntNode::IntBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       IV.push_back(new ASTIntNode(IId, Value));
     }
@@ -1172,7 +1164,6 @@ public:
       S << "ast-array-int-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId =
           new ASTIdentifierNode(S.str(), ASTIntNode::IntBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       IV.push_back(new ASTIntNode(IId, Value));
     }
@@ -1327,7 +1318,6 @@ public:
       S.str("");
       S << "ast-array-mpinteger-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPIntegerNode(IId, Sign, Bits));
     }
@@ -1354,7 +1344,6 @@ public:
       S.str("");
       S << "ast-array-mpinteger-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPIntegerNode(IId, Sign, Bits, String, Base));
     }
@@ -1502,7 +1491,6 @@ public:
       S.str("");
       S << "ast-array-float-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), 32);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       FV.push_back(new ASTFloatNode(IId, 0.0f));
     }
@@ -1520,7 +1508,6 @@ public:
       S.str("");
       S << "ast-array-float-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), 32);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       FV.push_back(new ASTFloatNode(IId, Value));
     }
@@ -1667,7 +1654,6 @@ public:
       S.str("");
       S << "ast-array-mpdecimal-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPDecimalNode(IId, Bits));
     }
@@ -1686,7 +1672,6 @@ public:
       S.str("");
       S << "ast-array-mpdecimal-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPDecimalNode(IId, Bits, String, Base));
     }
@@ -1845,7 +1830,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, Bits));
     }
@@ -1866,7 +1850,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, String, Bits));
     }
@@ -1882,7 +1865,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, CE, Bits));
     }
@@ -1906,7 +1888,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, FN, Bits));
     }
@@ -1923,7 +1904,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, RD, ID, OT, Bits));
     }
@@ -1940,7 +1920,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, RD, ID, OT, Bits));
     }
@@ -1957,7 +1936,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, RD, ID, OT, Bits));
     }
@@ -1974,7 +1952,6 @@ public:
       S.str("");
       S << "ast-array-mpcomplex-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(S.str(), Bits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       MPV.push_back(new ASTMPComplexNode(IId, RD, ID, OT, Bits));
     }
@@ -2132,7 +2109,6 @@ public:
       S << "ast-array-duration-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(
           S.str(), ASTTypeDuration, ASTDurationNode::DurationBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       DV.push_back(new ASTDurationNode(IId, LU));
     }
@@ -2149,10 +2125,8 @@ public:
       S << "ast-array-duration-" << Id->GetName() << ':' << I;
       ASTIdentifierNode *IId = new ASTIdentifierNode(
           S.str(), ASTTypeDuration, ASTDurationNode::DurationBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
 
       ASTDurationNode *DN = new ASTDurationNode(IId, DON);
-      assert(DN && "Could not create a valid ASTDurationNode!");
 
       DN->SetLengthUnit(DT);
       DN->SetDuration(0UL);
@@ -2310,7 +2284,6 @@ public:
       ASTIdentifierNode *IId =
           new ASTIdentifierNode(S.str(), ASTTypeOpenPulseFrame,
                                 OpenPulse::ASTOpenPulseFrameNode::FrameBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
       FV.push_back(new OpenPulse::ASTOpenPulseFrameNode(IId));
     }
   }
@@ -2470,7 +2443,6 @@ public:
       ASTIdentifierNode *IId =
           new ASTIdentifierNode(S.str(), ASTTypeOpenPulsePort,
                                 OpenPulse::ASTOpenPulsePortNode::PortBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
       PV.push_back(new OpenPulse::ASTOpenPulsePortNode(IId));
     }
   }
@@ -2631,7 +2603,6 @@ public:
       ASTIdentifierNode *IId = new ASTIdentifierNode(
           S.str(), ASTTypeOpenPulseWaveform,
           OpenPulse::ASTOpenPulseWaveformNode::WaveformBits);
-      assert(IId && "Could not create a valid ASTIdentifierNode!");
       WV.push_back(new OpenPulse::ASTOpenPulseWaveformNode(IId, CPXL));
     }
   }

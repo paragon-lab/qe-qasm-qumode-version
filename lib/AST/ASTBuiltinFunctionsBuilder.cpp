@@ -79,7 +79,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     OpenPulse::ASTOpenPulseWaveformNode *WFN0 =
         new OpenPulse::ASTOpenPulseWaveformNode(WId0, CXL);
-    assert(WFN0 && "Could not create a valid OpenPulse Waveform!");
 
     WFN0->SetDeclarationContext(FCX);
     WFN0->SetLocation(Loc);
@@ -96,7 +95,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *WFD0 =
         new ASTDeclarationNode(WId0, WFN0, ASTTypeOpenPulseWaveform);
-    assert(WFD0 && "Could not create a valid ASTDeclarationNode!");
 
     WFD0->SetDeclarationContext(FCX);
     WFD0->SetLocation(Loc);
@@ -113,7 +111,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     OpenPulse::ASTOpenPulseWaveformNode *WFN1 =
         new OpenPulse::ASTOpenPulseWaveformNode(WId1, CXL);
-    assert(WFN1 && "Could not create a valid OpenPulse Waveform!");
 
     WFN1->SetDeclarationContext(FCX);
     WFN1->SetLocation(Loc);
@@ -130,7 +127,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *WFD1 =
         new ASTDeclarationNode(WId1, WFN1, ASTTypeOpenPulseWaveform);
-    assert(WFD1 && "Could not create a valid ASTDeclarationNode!");
 
     WFD1->SetDeclarationContext(FCX);
     WFD1->SetLocation(Loc);
@@ -138,14 +134,12 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTBinaryOpNode *BOP = new ASTBinaryOpNode(
         ASTIdentifierNode::BinaryOp.Clone(), WFN0, WFN1, ASTOpTypeMul);
-    assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
     BOP->SetDeclarationContext(FCX);
     BOP->SetLocation(Loc);
     BOP->Mangle();
 
     ASTStatementNode *SN = new ASTStatementNode(BOP->GetIdentifier(), BOP);
-    assert(SN && "Could not create a valid ASTStatementNode!");
 
     SN->SetDeclarationContext(FCX);
     SL.Append(SN);
@@ -153,7 +147,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     OpenPulse::ASTOpenPulseWaveformNode *WFNR =
         new OpenPulse::ASTOpenPulseWaveformNode(
             ASTIdentifierNode::Waveform.Clone(), CXL);
-    assert(WFNR && "Could not create a valid Result WaveformNode!");
 
     WFNR->SetDeclarationContext(FCX);
     WFNR->Mangle();
@@ -164,7 +157,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     assert(RId && "Could not create a valid ASTIdentifierNode!");
 
     ASTResultNode *RN = new ASTResultNode(RId, WFNR);
-    assert(RN && "Could not create a valid ASTResultNode!");
 
     RN->SetDeclarationContext(FCX);
     RN->SetLocation(Loc);
@@ -228,7 +220,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     OpenPulse::ASTOpenPulseWaveformNode *WFN0 =
         new OpenPulse::ASTOpenPulseWaveformNode(WId0, CXL);
-    assert(WFN0 && "Could not create a valid OpenPulse Waveform!");
 
     WFN0->SetDeclarationContext(FCX);
     WFN0->SetLocation(Loc);
@@ -245,7 +236,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *WFD0 =
         new ASTDeclarationNode(WId0, WFN0, ASTTypeOpenPulseWaveform);
-    assert(WFD0 && "Could not create a valid ASTDeclarationNode!");
 
     WFD0->SetDeclarationContext(FCX);
     WFD0->SetLocation(Loc);
@@ -262,7 +252,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     OpenPulse::ASTOpenPulseWaveformNode *WFN1 =
         new OpenPulse::ASTOpenPulseWaveformNode(WId1, CXL);
-    assert(WFN1 && "Could not create a valid OpenPulse Waveform!");
 
     WFN1->SetDeclarationContext(FCX);
     WFN1->SetLocation(Loc);
@@ -279,7 +268,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *WFD1 =
         new ASTDeclarationNode(WId1, WFN1, ASTTypeOpenPulseWaveform);
-    assert(WFD1 && "Could not create a valid ASTDeclarationNode!");
 
     WFD1->SetDeclarationContext(FCX);
     WFD1->SetLocation(Loc);
@@ -287,14 +275,12 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTBinaryOpNode *BOP = new ASTBinaryOpNode(
         ASTIdentifierNode::BinaryOp.Clone(), WFN0, WFN1, ASTOpTypeAdd);
-    assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
     BOP->SetDeclarationContext(FCX);
     BOP->SetLocation(Loc);
     BOP->Mangle();
 
     ASTStatementNode *SN = new ASTStatementNode(BOP->GetIdentifier(), BOP);
-    assert(SN && "Could not create a valid ASTStatementNode!");
 
     SN->SetDeclarationContext(FCX);
     SL.Append(SN);
@@ -302,7 +288,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     OpenPulse::ASTOpenPulseWaveformNode *WFNR =
         new OpenPulse::ASTOpenPulseWaveformNode(
             ASTIdentifierNode::Waveform.Clone(), CXL);
-    assert(WFNR && "Could not create a valid Result WaveformNode!");
 
     WFNR->SetDeclarationContext(FCX);
     WFNR->Mangle();
@@ -317,7 +302,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     RId->SetLocation(Loc);
 
     ASTResultNode *RN = new ASTResultNode(RId, WFNR);
-    assert(RN && "Could not create a valid ASTResultNode!");
 
     RN->SetDeclarationContext(FCX);
     RN->SetLocation(Loc);
@@ -381,7 +365,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     OpenPulse::ASTOpenPulseWaveformNode *WFN =
         new OpenPulse::ASTOpenPulseWaveformNode(WId, CXL);
-    assert(WFN && "Could not create a valid OpenPulse Waveform!");
 
     WFN->SetDeclarationContext(FCX);
     WFN->SetLocation(Loc);
@@ -397,7 +380,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *WFD =
         new ASTDeclarationNode(WId, WFN, ASTTypeOpenPulseWaveform);
-    assert(WFD && "Could not create a valid ASTDeclarationNode!");
 
     WFD->SetDeclarationContext(FCX);
     WFD->SetLocation(Loc);
@@ -414,7 +396,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTAngleType ATy = ASTAngleNode::DetermineAngleType("ang");
     ASTAngleNode *AN = new ASTAngleNode(AId, ATy, ASTAngleNode::AngleBits);
-    assert(AN && "Could not create a valid ASTAngleNode!");
 
     AN->SetLocation(Loc);
     AN->SetDeclarationContext(FCX);
@@ -429,7 +410,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     ASTE->SetValue(new ASTValue<>(AN, ASTTypeAngle), ASTTypeAngle);
 
     ASTDeclarationNode *ADN = new ASTDeclarationNode(AId, AN, ASTTypeAngle);
-    assert(ADN && "Could not create a valid ASTDeclarationNode!");
 
     ADN->SetDeclarationContext(FCX);
     ADN->SetLocation(Loc);
@@ -440,13 +420,11 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     // This needs to be clarified. The OpenPulse Spec is 100% vague.
     ASTBinaryOpNode *BOP = new ASTBinaryOpNode(
         ASTIdentifierNode::BinaryOp.Clone(), WFN, AN, ASTOpTypeMul);
-    assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
     BOP->SetDeclarationContext(FCX);
     BOP->SetLocation(Loc);
 
     ASTStatementNode *SN = new ASTStatementNode(BOP->GetIdentifier(), BOP);
-    assert(SN && "Could not create a valid ASTStatementNode!");
 
     SN->SetDeclarationContext(FCX);
     SN->SetLocation(Loc);
@@ -455,7 +433,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     OpenPulse::ASTOpenPulseWaveformNode *WFNR =
         new OpenPulse::ASTOpenPulseWaveformNode(
             ASTIdentifierNode::Waveform.Clone(), CXL);
-    assert(WFNR && "Could not create a valid OpenPulse Result Waveform!");
 
     WFNR->SetDeclarationContext(FCX);
     WFNR->SetLocation(Loc);
@@ -471,7 +448,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     RId->SetLocation(Loc);
 
     ASTResultNode *RN = new ASTResultNode(RId, WFNR);
-    assert(RN && "Could not create a valid ASTResultNode!");
 
     RN->SetDeclarationContext(FCX);
     RN->SetLocation(Loc);
@@ -533,7 +509,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     OpenPulse::ASTOpenPulseWaveformNode *WFN =
         new OpenPulse::ASTOpenPulseWaveformNode(WId, CXL);
-    assert(WFN && "Could not create a valid OpenPulse Waveform!");
 
     WFN->SetDeclarationContext(FCX);
     WFN->SetLocation(Loc);
@@ -549,7 +524,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *WFD =
         new ASTDeclarationNode(WId, WFN, ASTTypeOpenPulseWaveform);
-    assert(WFD && "Could not create a valid ASTDeclarationNode!");
 
     WFD->SetDeclarationContext(FCX);
     WFD->SetLocation(Loc);
@@ -566,7 +540,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTMPDecimalNode *MPD = new ASTMPDecimalNode(DId, ASTDoubleNode::DoubleBits,
                                                  static_cast<double>(1.0));
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
     MPD->SetLocation(Loc);
     MPD->SetDeclarationContext(FCX);
@@ -582,7 +555,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
 
     ASTDeclarationNode *MPDN =
         new ASTDeclarationNode(DId, MPD, ASTTypeMPDecimal);
-    assert(MPDN && "Could not create a valid ASTDeclarationNode!");
 
     MPDN->SetDeclarationContext(FCX);
     MPDN->SetLocation(Loc);
@@ -593,14 +565,12 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     // This needs to be clarified. We assume multiplication.
     ASTBinaryOpNode *BOP = new ASTBinaryOpNode(
         ASTIdentifierNode::BinaryOp.Clone(), WFN, MPD, ASTOpTypeMul);
-    assert(BOP && "Could not create a valid ASTBinaryOpNode!");
 
     BOP->SetDeclarationContext(FCX);
     BOP->SetLocation(Loc);
 
     ASTStatementNode *SN =
         new ASTStatementNode(&ASTIdentifierNode::BinaryOp, BOP);
-    assert(SN && "Could not create a valid ASTStatementNode!");
 
     SN->SetDeclarationContext(FCX);
     SN->SetLocation(Loc);
@@ -609,7 +579,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     OpenPulse::ASTOpenPulseWaveformNode *WFNR =
         new OpenPulse::ASTOpenPulseWaveformNode(
             ASTIdentifierNode::Waveform.Clone(), CXL);
-    assert(WFNR && "Could not create a valid OpenPulse Result Waveform!");
 
     WFNR->SetDeclarationContext(FCX);
     WFNR->SetLocation(Loc);
@@ -625,7 +594,6 @@ ASTFunctionDefinitionNode *ASTBuiltinFunctionsBuilder::CreateBuiltinFunction(
     RId->SetLocation(Loc);
 
     ASTResultNode *RN = new ASTResultNode(RId, WFNR);
-    assert(RN && "Could not create a valid ASTResultNode!");
 
     RN->SetDeclarationContext(FCX);
     RN->SetLocation(Loc);

@@ -205,7 +205,6 @@ void ASTSwitchStatementNode::ResolveQuantity(const ASTIntNode *DI) {
     ASTMPIntegerNode *DMPI =
         new ASTMPIntegerNode(MPId, DI->IsSigned() ? Signed : Unsigned, 128U,
                              DI->GetString().c_str());
-    assert(DMPI && "Could not create a valid ASTMPIntegerNode!");
 
     DMPI->SetLocation(DI->GetLocation());
     DMPI->SetDeclarationContext(DCX);

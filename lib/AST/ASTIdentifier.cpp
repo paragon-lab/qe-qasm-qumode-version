@@ -540,7 +540,6 @@ ASTIdentifierNode *ASTIdentifierNode::Clone() {
   }
 
   ASTIdentifierNode *RI = new ASTIdentifierNode(Name, SType, Bits);
-  assert(RI && "Could not clone a valid ASTIdentifierNode!");
   return RI;
 }
 

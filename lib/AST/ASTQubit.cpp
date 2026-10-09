@@ -265,7 +265,6 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode *AId,
 
   ASTQubitContainerAliasNode *CAN =
       new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
-  assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
@@ -316,7 +315,6 @@ ASTQubitContainerAliasNode *ASTQubitContainerAliasNode::CreateAlias(
 
   ASTQubitContainerAliasNode *CAN =
       new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
-  assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
@@ -341,7 +339,6 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode *AId,
 
   ASTQubitContainerAliasNode *CAN =
       new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
-  assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
@@ -366,7 +363,6 @@ ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode *AId,
 
   ASTQubitContainerAliasNode *CAN =
       new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
-  assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
@@ -376,7 +372,6 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode *AId) const {
 
   ASTQubitContainerAliasNode *CAN =
       new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
-  assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
 
   CAN->QAL = List;
   CAN->Bits = Bits;
@@ -390,7 +385,6 @@ ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode *AId) const {
 
   ASTQubitContainerAliasNode *CAN =
       new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
-  assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
 
   CAN->QAL = QAL;
   CAN->Bits = Bits;

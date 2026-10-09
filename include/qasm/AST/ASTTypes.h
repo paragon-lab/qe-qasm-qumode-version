@@ -405,7 +405,6 @@ public:
                   const ASTExpressionNode *EN = nullptr) {
     ASTExpressionNode *ER =
         new ASTExpressionNode(Id, EN, ASTTypeExpressionError);
-    assert(ER && "Could not create a valid ASTExpressionNode!");
     ER->SetLocation(Id->GetLocation());
     return ER;
   }
@@ -415,7 +414,6 @@ public:
                   const ASTExpressionNode *EN = nullptr) {
     ASTExpressionNode *ER =
         new ASTExpressionNode(IdR, EN, ASTTypeExpressionError);
-    assert(ER && "Could not create a valid ASTExpressionNode!");
     ER->SetLocation(IdR->GetLocation());
     return ER;
   }
@@ -1439,7 +1437,6 @@ public:
   virtual ASTIntNode *AsInt() const {
     ASTIntNode *I = new ASTIntNode(ASTIdentifierNode::Int.Clone(),
                                    static_cast<int32_t>(Value));
-    assert(I && "Could not create a valid ASTIntNode!");
     return I;
   }
 
@@ -1695,7 +1692,6 @@ public:
   ASTIntNode *AsInt() const {
     ASTIntNode *I =
         new ASTIntNode(&ASTIdentifierNode::Int, static_cast<int32_t>(Value));
-    assert(I && "Could not create a valid ASTIntNode!");
     return I;
   }
 
@@ -2265,7 +2261,6 @@ public:
 
     ASTMPIntegerNode *MPI = new ASTMPIntegerNode(
         ASTIdentifierNode::MPInt.Clone(), Bits + Bits / 2, ROP, false);
-    assert(MPI && "Could not create a valid ASTMPIntegerNode!");
     return MPI;
   }
 
@@ -2983,15 +2978,9 @@ public:
 
   virtual bool IsSequencePoint() const { return SQP; }
 
-  virtual void MakeImaginary() {
-    IM = new ASTImaginaryNode(Right);
-    assert(IM && "Could not create a valid ASTImaginaryNode!");
-  }
+  virtual void MakeImaginary() { IM = new ASTImaginaryNode(Right); }
 
-  virtual void MakeImaginary() const {
-    IM = new ASTImaginaryNode(Right);
-    assert(IM && "Could not create a valid ASTImaginaryNode!");
-  }
+  virtual void MakeImaginary() const { IM = new ASTImaginaryNode(Right); }
 
   virtual bool IsImaginaryPart() const { return IM; }
 
@@ -3589,7 +3578,6 @@ public:
 
     ASTMPDecimalNode *MPD =
         new ASTMPDecimalNode(GetIdentifier(), GetBits(), MPR);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
     mpfr_clear(MPR);
     return MPD;
@@ -3617,7 +3605,6 @@ public:
 
     ASTMPDecimalNode *MPD =
         new ASTMPDecimalNode(GetIdentifier(), GetBits(), MPR);
-    assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
     mpfr_clear(MPR);
     return MPD;
@@ -3884,7 +3871,6 @@ public:
     assert(ER && "Could not create a valid ASTExpressionNode!");
 
     ASTStatementNode *SR = new ASTStatementNode(Id, ER);
-    assert(SR && "Could not create a valid ASTStatementNode!");
 
     SR->SetLocation(Id->GetLocation());
     return SR;
@@ -3896,7 +3882,6 @@ public:
     assert(ER && "Could not create a valid ASTExpressionNode!");
 
     ASTStatementNode *SR = new ASTStatementNode(Id, ER);
-    assert(SR && "Could not create a valid ASTStatementNode!");
 
     SR->SetLocation(Id->GetLocation());
     return SR;
@@ -3908,7 +3893,6 @@ public:
     assert(ER && "Could not create a valid ASTExpressionNode!");
 
     ASTStatementNode *SR = new ASTStatementNode(IdR, ER);
-    assert(SR && "Could not create a valid ASTStatementNode!");
 
     SR->SetLocation(IdR->GetLocation());
     return SR;
@@ -3917,7 +3901,6 @@ public:
   static ASTStatementNode *StatementError(const ASTIdentifierNode *Id,
                                           const ASTSyntaxErrorNode *SYX) {
     ASTStatementNode *SR = new ASTStatementNode(Id, SYX);
-    assert(SR && "Could not create a valid ASTStatementNode!");
 
     SR->SetLocation(Id->GetLocation());
     return SR;
@@ -5570,7 +5553,6 @@ public:
   static ASTDeclarationNode *DeclarationError(const ASTIdentifierNode *Id) {
     ASTDeclarationNode *DR = new ASTDeclarationNode(Id, Id->GetExpression(),
                                                     ASTTypeDeclarationError);
-    assert(DR && "Could not create a valid ASTDeclarationNode!");
     DR->SetLocation(Id->GetLocation());
     return DR;
   }
@@ -5579,7 +5561,6 @@ public:
                                               const std::string &ERM) {
     ASTDeclarationNode *DR = new ASTDeclarationNode(Id, new ASTStringNode(ERM),
                                                     ASTTypeDeclarationError);
-    assert(DR && "Could not create a valid ASTDeclarationNode!");
     DR->SetLocation(Id->GetLocation());
     return DR;
   }
@@ -5960,7 +5941,6 @@ public:
   virtual ASTAngleNode *Clone(const ASTIdentifierNode *Id) const {
     ASTAngleNode *R =
         new ASTAngleNode(Id, GetBits(), GetMPValue(), GetAngleType());
-    assert(R && "Could not create a valid ASTAngleNode clone!");
 
     R->ExprType = ExprType;
     R->EX = EX;
@@ -5977,7 +5957,6 @@ public:
                               unsigned NumBits) const {
     ASTAngleNode *R =
         new ASTAngleNode(Id, NumBits, GetMPValue(), GetAngleType());
-    assert(R && "Could not create a valid ASTAngleNode clone!");
 
     R->ExprType = ExprType;
     R->EX = EX;
