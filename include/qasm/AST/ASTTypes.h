@@ -2017,8 +2017,10 @@ public:
         Expr(nullptr) {
     Id->SetBits(NumBits);
     mpfr_init2(MPValue, NumBits);
-    // MPFR_RNDN == round-to-nearest. This is IEEE-754 compliant.
-    if (mpfr_strtofr(MPValue, String, NULL, Base, MPFR_RNDN) != 0)
+    // MPFR ternary != 0 means inexact rounding, not parse failure.
+    char *End = nullptr;
+    mpfr_strtofr(MPValue, String, &End, Base, MPFR_RNDN);
+    if (!String || End == String)
       mpfr_set_nan(MPValue);
   }
 
@@ -2029,8 +2031,9 @@ public:
         MPValue(), Expr(nullptr) {
     Id->SetBits(NumBits);
     mpfr_init2(MPValue, NumBits);
-    // MPFR_RNDN == round-to-nearest. This is IEEE-754 compliant.
-    if (mpfr_strtofr(MPValue, String, NULL, Base, MPFR_RNDN) != 0)
+    char *End = nullptr;
+    mpfr_strtofr(MPValue, String, &End, Base, MPFR_RNDN);
+    if (!String || End == String)
       mpfr_set_nan(MPValue);
   }
 

@@ -15336,16 +15336,17 @@ ASTProductionFactory::ProductionRule_10004(const ASTToken *TK,
   }
 
   ASTUnitaryNode *UN = ASTBuilder::Instance().CreateASTUnitaryNode(DId, IL);
-
-  assert(UN && "Could not create a valid ASTUnitaryNode!");
+  if (!UN) {
+    // MaterializeComplexCells already emitted a typed diagnostic.
+    return ASTDeclarationNode::DeclarationError(
+        DId, "Could not create unitary declaration.");
+  }
 
   UN->SetLocation(DId->GetLocation());
   UN->Mangle();
 
   ASTDeclarationNode *DN =
       new ASTDeclarationNode(DId, UN, ASTTypeUnitary, false);
-
-  assert(DN && "Could not create a valid ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
 

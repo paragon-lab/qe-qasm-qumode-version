@@ -345,9 +345,9 @@ void ASTFloatNode::MangleLiteral() {
 }
 
 ASTMPDecimalNode *ASTDoubleNode::AsMPDecimal(unsigned W) const {
-  ASTMPDecimalNode *MPD = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                               W, GetString().c_str());
-  return MPD;
+  // Prefer the numeric value: GetString()/mpfr_strtofr treats an inexact
+  // ternary (normal for most decimals) as failure and used to yield NaN.
+  return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), W, GetValue());
 }
 
 void ASTDoubleNode::Mangle() {

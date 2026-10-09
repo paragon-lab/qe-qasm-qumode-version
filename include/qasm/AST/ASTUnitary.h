@@ -8,8 +8,8 @@
 #ifndef __QASM_AST_UNITARY_H
 #define __QASM_AST_UNITARY_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTGates.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -24,44 +24,37 @@ public:
   // unitary u;
   explicit ASTUnitaryNode(const ASTIdentifierNode *Id)
       // : ASTExpressionNode(Id, ASTTypeUnitary) {}
-        : ASTGateNode(Id), INL(nullptr) {}
+      : ASTGateNode(Id), INL(nullptr) {}
 
   // unitary u = {{1, 0}, {0, 1}};
-  ASTUnitaryNode(const ASTIdentifierNode *Id,
-                 const ASTInitializerList *IL)
+  ASTUnitaryNode(const ASTIdentifierNode *Id, const ASTInitializerList *IL)
       : ASTGateNode(Id), INL(IL) {}
 
   // Existing gate-call constructor
-  ASTUnitaryNode(const ASTIdentifierNode *Id,
-                 const ASTArgumentNodeList &AL,
-                 const ASTAnyTypeList &QL,
-                 bool IsGateCall = false)
+  ASTUnitaryNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
+                 const ASTAnyTypeList &QL, bool IsGateCall = false)
       : ASTGateNode(Id, AL, QL, IsGateCall), INL(nullptr) {}
-
 
   virtual ~ASTUnitaryNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeUnitary;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeUnitary; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
   }
 
-    virtual bool HasInitializerList() const {
-    return INL != nullptr;
-  }
+  virtual bool HasInitializerList() const { return INL != nullptr; }
 
-  virtual const ASTInitializerList *GetInitializerList() const {
-    return INL;
-  }
-  //added this block of code
-  virtual ASTUnitaryNode *
-  CloneCall(const ASTIdentifierNode *Id,
-            const ASTArgumentNodeList &AL,
-            const ASTAnyTypeList &QL) override;
+  virtual const ASTInitializerList *GetInitializerList() const { return INL; }
 
+  /// Promote each leaf cell of an initializer list to ASTMPComplexNode.
+  /// Keeps the ASTInitializerList / row-list shape; only replaces cells.
+  /// Returns false if any cell could not be materialized as complex.
+  static bool MaterializeComplexCells(const ASTInitializerList *IL);
+
+  virtual ASTUnitaryNode *CloneCall(const ASTIdentifierNode *Id,
+                                    const ASTArgumentNodeList &AL,
+                                    const ASTAnyTypeList &QL) override;
 
   virtual void Mangle() override;
 

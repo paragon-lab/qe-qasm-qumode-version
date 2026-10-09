@@ -811,7 +811,7 @@ int readinput() {
                                     OpenPulseFrameTime
 %type <TimeUnitNode>                TimeUnit
 %type <BoolNode>                    BooleanConstant
-%type <IntegerNode>                 Integer IntScalarType RegisterSize
+%type <IntegerNode>                 Integer SignedInteger IntScalarType RegisterSize
 %type <FloatNode>                   FloatScalarType
 %type <RealNode>                    Real
 %type <EllipsisNode>                Ellipsis
@@ -1170,17 +1170,29 @@ QubitListImpl
   ;
 
 IndexedSubscriptExpr
-  : '[' Integer ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
-  }
-  | '[' Identifier ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
-  }
-  | '[' BinaryOp ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
-  }
-  | '[' UnaryOp ']' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
+  : '[' ArithShift ']' {
+    if (const ASTIntNode *IN = dynamic_cast<const ASTIntNode *>($2)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1),
+                                                                IN);
+    } else if (const ASTUnaryOpNode *UOP =
+                   dynamic_cast<const ASTUnaryOpNode *>($2)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1),
+                                                                UOP);
+    } else if (const ASTBinaryOpNode *BOP =
+                   dynamic_cast<const ASTBinaryOpNode *>($2)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1),
+                                                                BOP);
+    } else if (const ASTIdentifierNode *IId = $2->GetIdentifier()) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1),
+                                                                IId);
+    } else {
+      std::stringstream M;
+      M << "Subscript expression does not evaluate to an integer.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($2), M.str(),
+          DiagLevel::Error);
+      YYERROR;
+    }
   }
   ;
 
@@ -1851,13 +1863,15 @@ Decl
           .ProductionRule_10004(GET_TOKEN(7), $2, $5);
   }
 
-  | TOK_LET Identifier '=' TOK_IDENTIFIER '[' TOK_INTEGER_CONSTANT ','
+  | TOK_LET Identifier '=' TOK_IDENTIFIER '[' SignedInteger ','
                                               IntegerList ']' ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1150($2, $4, $6, $8);
+    std::string *Fix = new std::string(std::to_string($6->GetSignedValue()));
+    $$ = ASTProductionFactory::Instance().ProductionRule_1150($2, $4, Fix, $8);
   }
-  | TOK_LET Identifier '=' TOK_IDENTIFIER '[' TOK_INTEGER_CONSTANT ':'
+  | TOK_LET Identifier '=' TOK_IDENTIFIER '[' SignedInteger ':'
                                               IntegerList ']' ';' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_1151($2, $4, $6, $8);
+    std::string *Fix = new std::string(std::to_string($6->GetSignedValue()));
+    $$ = ASTProductionFactory::Instance().ProductionRule_1151($2, $4, Fix, $8);
   }
   | TOK_LET Identifier '=' TOK_IDENTIFIER IndexedSubscriptExpr ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1152($2, $4, $5);
@@ -4161,16 +4175,10 @@ Expr
   ;
 
 InitExpressionNode
-  : '{' Real '}' {
+  : '{' ArithExpr '}' {
     $$ = $2;
   }
-  | Real {
-    $$ = $1;
-  }
-  | '{' Integer '}' {
-    $$ = $2;
-  }
-  | Integer {
+  | ArithExpr {
     $$ = $1;
   }
   | '{' String '}' {
@@ -4421,6 +4429,21 @@ Integer
   }
   ;
 
+/* Leading '-' is a token (not part of the numeral). Used where a signed
+   literal is required outside the ArithExpr stack (e.g. IntegerList). */
+SignedInteger
+  : Integer {
+    $$ = $1;
+  }
+  | '-' Integer {
+    if ($2->IsSigned())
+      $2->SetValue(static_cast<int32_t>(-$2->GetSignedValue()));
+    else
+      $2->SetValue(static_cast<int32_t>(-$2->GetUnsignedValue()));
+    $$ = $2;
+  }
+  ;
+
 IntegerList
   : IntegerListImpl {
     $$ = ASTIntegerListBuilder::Instance().List();
@@ -4431,20 +4454,20 @@ IntegerListImpl
   : %empty {
     $$ = ASTIntegerListBuilder::Instance().NewList();
   }
-  | IntegerListImpl Integer {
+  | IntegerListImpl SignedInteger {
     assert($1 && "Invalid IntegerListImpl argument!");
-    assert($2 && "Invalid Integer argument!");
+    assert($2 && "Invalid SignedInteger argument!");
     $1->Append($2);
   }
-  | IntegerListImpl Integer ',' {
+  | IntegerListImpl SignedInteger ',' {
     assert($1 && "Invalid IntegerListImpl argument!");
-    assert($2 && "Invalid Integer argument!");
+    assert($2 && "Invalid SignedInteger argument!");
     $$->SetSeparator(',');
     $1->Append($2->GetSignedValue());
   }
-  | IntegerListImpl Integer ':' {
+  | IntegerListImpl SignedInteger ':' {
     assert($1 && "Invalid IntegerListImpl argument!");
-    assert($2 && "Invalid Integer argument!");
+    assert($2 && "Invalid SignedInteger argument!");
     $$->SetSeparator(':');
     $1->Append($2->GetSignedValue());
   }
@@ -7025,8 +7048,7 @@ CtrlNAt
   ;
 
 // One arithmetic stack. Comparisons and assignments stay above it.
-// Flex longest-match glues "-" onto a following numeral (`N-1` → id, int -1).
-// That token is subtraction of its magnitude, the same node as spaced `N - 1`.
+// Numerals are unsigned tokens; unary/binary '-' are always operator tokens.
 ArithPrimary
   : Integer {
     $$ = $1;
@@ -7050,14 +7072,39 @@ ArithPrimary
     $$ = ASTProductionFactory::Instance().ProductionRule_8000(GET_TOKEN(1), $2);
   }
   | '-' ArithPrimary {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
-                                                             ASTOpTypeNegative,
-                                                             false);
+    /* Fold unary '-' on numeric literals so `-1` / `-0.5` stay Int/Double
+       nodes (subscripts, complex init). Keep UnaryOp for non-literals. */
+    if (ASTIntNode *IN = dynamic_cast<ASTIntNode *>($2)) {
+      if (IN->IsSigned())
+        IN->SetValue(static_cast<int32_t>(-IN->GetSignedValue()));
+      else
+        IN->SetValue(static_cast<int32_t>(-IN->GetUnsignedValue()));
+      $$ = IN;
+    } else if (ASTDoubleNode *DN = dynamic_cast<ASTDoubleNode *>($2)) {
+      std::string S = DN->GetString();
+      if (!S.empty() && S[0] == '-')
+        S = S.substr(1);
+      else
+        S = std::string("-") + S;
+      $$ = ASTProductionFactory::Instance().ProductionRule_801(GET_TOKEN(1), S);
+    } else if (ASTFloatNode *FN = dynamic_cast<ASTFloatNode *>($2)) {
+      std::stringstream SS;
+      SS << -static_cast<double>(FN->GetValue());
+      $$ = ASTProductionFactory::Instance().ProductionRule_801(GET_TOKEN(1),
+                                                              SS.str());
+    } else {
+      $$ = ASTProductionFactory::Instance().ProductionRule_350(
+          GET_TOKEN(1), $2, ASTOpTypeNegative, false);
+    }
   }
   | '+' ArithPrimary {
-    $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(1), $2,
-                                                             ASTOpTypePositive,
-                                                             false);
+    if (dynamic_cast<ASTIntNode *>($2) || dynamic_cast<ASTDoubleNode *>($2) ||
+        dynamic_cast<ASTFloatNode *>($2)) {
+      $$ = $2;
+    } else {
+      $$ = ASTProductionFactory::Instance().ProductionRule_350(
+          GET_TOKEN(1), $2, ASTOpTypePositive, false);
+    }
   }
   | UnaryOp {
     $$ = $1;
@@ -7132,20 +7179,6 @@ ArithExpr
   | ArithExpr '-' FunctionCallExpr {
     $$ = ASTProductionFactory::Instance().ProductionRule_580(GET_TOKEN(2), $1,
                                                              $3, ASTOpTypeSub);
-  }
-  | ArithExpr Integer {
-    if (!$2 || !$2->IsSigned() || $2->GetSignedValue() >= 0) {
-      std::stringstream M;
-      M << "syntax error, unexpected integer constant in expression.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation($2), M.str(), DiagLevel::Error);
-      YYERROR;
-    } else {
-      int32_t V = $2->GetSignedValue();
-      $2->SetValue(static_cast<int32_t>(-V));
-      $$ = ASTProductionFactory::Instance().ProductionRule_580(
-          GET_TOKEN(0), $1, $2, ASTOpTypeSub);
-    }
   }
   ;
 

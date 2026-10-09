@@ -3295,50 +3295,6 @@ $[a-zA-Z_][0-9]+ {
   return yylval->Tok->GetInt();
 }
 
--{HP}{H}+{IS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{NZ}{D}*{IS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--"0"{O}*{IS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{CP}?"'"([^'\\\n]|{ES})+"'" {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
 {D}+{E}{FS}? {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
@@ -3395,72 +3351,6 @@ $[a-zA-Z_][0-9]+ {
 }
 
 {HP}{H}+"."{P}{FS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{D}+{E}{FS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{D}*"."{D}+{E}?{FS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{D}+"."{E}?{FS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{HP}{H}+{P}{FS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{HP}{H}*"."{H}+{P}{FS}? {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
--{HP}{H}+"."{P}{FS}? {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_FP_CONSTANT);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();

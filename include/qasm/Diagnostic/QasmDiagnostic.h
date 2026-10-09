@@ -62,10 +62,20 @@ struct GateParamUnsupportedFormalPayload {
   std::string message() const;
 };
 
-using DiagnosticKind =
-    std::variant<ComplexInitPayload, GateParamArraySizeMismatchPayload,
-                 GateParamTypeMismatchPayload,
-                 GateParamUnsupportedFormalPayload>;
+struct UnitaryMatrixRowConstructPayload {
+  std::string message() const;
+};
+
+struct UnitaryMatrixInvalidComplexPayload {
+  unsigned Column;
+
+  std::string message() const;
+};
+
+using DiagnosticKind = std::variant<
+    ComplexInitPayload, GateParamArraySizeMismatchPayload,
+    GateParamTypeMismatchPayload, GateParamUnsupportedFormalPayload,
+    UnitaryMatrixRowConstructPayload, UnitaryMatrixInvalidComplexPayload>;
 
 struct Diagnostic {
   ASTLocation Loc;
