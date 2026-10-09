@@ -8882,6 +8882,45 @@ ASTProductionFactory::ProductionRule_880(const ASTToken *TK,
   return ACE;
 }
 
+ASTComplexExpressionNode *
+ASTProductionFactory::ProductionRule_880(const ASTToken *TK,
+                                         const ASTExpressionNode *Imag) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Imag && "Invalid imag ASTExpressionNode argument!");
+
+  // OpenQASM pure-imaginary literal: `N im` ≡ `0 + N im`.
+  // Match the imag operand's numeric family so Evaluate accepts R/I types
+  // (Real literals are ASTDoubleNode; MPDecimal zero + Double imag fails).
+  ASTExpressionNode *Zero = nullptr;
+  if (const ASTMPDecimalNode *MPD =
+          dynamic_cast<const ASTMPDecimalNode *>(Imag)) {
+    Zero = new ASTMPDecimalNode(
+        ASTIdentifierNode::MPDec.Clone(),
+        MPD->GetBits() ? MPD->GetBits() : ASTMPDecimalNode::DefaultBits, 0.0);
+  } else if (const ASTMPIntegerNode *MPI =
+                 dynamic_cast<const ASTMPIntegerNode *>(Imag)) {
+    Zero = new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(),
+                                ASTSignbit::Signed, MPI->GetBits());
+  } else if (dynamic_cast<const ASTIntNode *>(Imag)) {
+    Zero = new ASTIntNode(ASTIdentifierNode::Int.Clone(), 0);
+  } else {
+    Zero = new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), 0.0);
+  }
+  Zero->SetLocation(TK->GetLocation());
+
+  ASTBinaryOpNode *BOP = ProductionRule_580(TK, Zero, Imag, ASTOpTypeAdd);
+  if (!BOP || BOP->IsError()) {
+    std::stringstream M;
+    M << "Invalid pure-imaginary complex initializer.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Imag), M.str(),
+        DiagLevel::Error);
+    return nullptr;
+  }
+
+  return ProductionRule_880(TK, BOP);
+}
+
 ASTDeclarationNode *
 ASTProductionFactory::ProductionRule_150(const ASTToken *TK,
                                          const ASTIdentifierNode *Id) const {
