@@ -694,6 +694,8 @@ add_test(NAME t00342
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-complex-init-type-reject.qasm > ${CMAKE_BINARY_DIR}/tests/test-complex-init-type-reject.qasm.out 2>&1; rc=\$?; test \$rc -eq 1 && grep -q 'Cannot initialize complex from real component of type angle and imaginary component of type bit' ${CMAKE_BINARY_DIR}/tests/test-complex-init-type-reject.qasm.out")
 add_test(NAME t00343
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-complex-pure-imag.qasm > ${CMAKE_BINARY_DIR}/tests/test-complex-pure-imag.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '(+0 1.00000000000000000000)' ${CMAKE_BINARY_DIR}/tests/test-complex-pure-imag.qasm.out && grep -q '(+0 -1.00000000000000000000)' ${CMAKE_BINARY_DIR}/tests/test-complex-pure-imag.qasm.out")
+add_test(NAME t00344
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-two-unitaries-init.qasm > ${CMAKE_BINARY_DIR}/tests/test-two-unitaries-init.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && test \$(grep -c '<Unitary>' ${CMAKE_BINARY_DIR}/tests/test-two-unitaries-init.qasm.out) -eq 2 && test \$(grep -c '<ExpressionNodeList>' ${CMAKE_BINARY_DIR}/tests/test-two-unitaries-init.qasm.out) -eq 4")
 
 # -----------------------------------------------------------------------------
 # Qumode tests

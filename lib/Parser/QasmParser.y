@@ -1097,7 +1097,8 @@ InitializerListImpl
     $$ = ASTInitializerListBuilder::Instance().NewList();
   }
   | '{' InitExpressionNodeList '}' {
-    $$ = ASTInitializerListBuilder::Instance().List();
+    /* NewList: each InitializerList starts fresh (two unitaries must not share). */
+    $$ = ASTInitializerListBuilder::Instance().NewList();
     $$->Append($2);
     ASTExpressionNodeBuilder::Instance().Restart();
   }
