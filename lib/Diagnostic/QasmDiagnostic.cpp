@@ -45,6 +45,16 @@ std::string GateParamUnsupportedFormalPayload::message() const {
          PrintTypeName(ExpectedTy) + " on gate '" + GateName + "'.";
 }
 
+std::string UnitaryMatrixRowConstructPayload::message() const {
+  return "Could not construct complex matrix elements from unitary "
+         "initializer row.";
+}
+
+std::string UnitaryMatrixInvalidComplexPayload::message() const {
+  return "Invalid complex expression in unitary matrix at column " +
+         std::to_string(Column) + ".";
+}
+
 void EmitDiagnostic(const Diagnostic &Diag) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       Diag.Loc,

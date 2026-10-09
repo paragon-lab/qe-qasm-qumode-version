@@ -8831,8 +8831,11 @@ ASTUnitaryNode *ASTBuilder::CreateASTUnitaryNode(const ASTIdentifierNode *Id,
   ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
   assert(STE && "Could not retrieve a valid Unitary SymbolTable Entry!");
 
+  // Promote leaf cells to ASTMPComplexNode; keep ASTInitializerList shape.
+  if (!ASTUnitaryNode::MaterializeComplexCells(IL))
+    return nullptr;
+
   ASTUnitaryNode *UN = new ASTUnitaryNode(Id, IL);
-  assert(UN && "Could not create a valid ASTUnitaryNode!");
 
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(UN, ASTTypeUnitary), ASTTypeUnitary);
