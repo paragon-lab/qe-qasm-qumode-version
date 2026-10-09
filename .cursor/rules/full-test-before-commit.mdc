@@ -20,8 +20,11 @@ feature area (e.g. not only `qumode-*`).
 From the configured build directory (typically `build/Release`):
 
 ```bash
-ctest --output-on-failure
+ctest -Q --output-on-failure
 ```
+
+Use `-Q` by default so only the summary and failures show (cuts per-test
+clutter). Keep `--output-on-failure` so failing tests still dump their logs.
 
 If the tree was reconfigured or new tests were added, re-run `cmake` in that
 build dir first so CTest picks them up.

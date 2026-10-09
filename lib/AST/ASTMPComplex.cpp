@@ -22,6 +22,7 @@
 #include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Diagnostic/QasmDiagnostic.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <sstream>
@@ -30,6 +31,54 @@
 namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
+
+namespace {
+
+/// Resolve a symbol-table scalar to an MPDecimal for complex R/I Evaluate.
+ASTMPDecimalNode *MPDecimalFromSymbolValue(const ASTSymbolTableEntry *STE,
+                                           unsigned NumBits) {
+  if (!STE || !STE->GetValue())
+    return nullptr;
+
+  switch (STE->GetValueType()) {
+  case ASTTypeMPDecimal:
+    return STE->GetValue()->GetValue<ASTMPDecimalNode *>();
+  case ASTTypeMPInteger: {
+    const ASTMPIntegerNode *MPI =
+        STE->GetValue()->GetValue<ASTMPIntegerNode *>();
+    return MPI ? MPI->AsMPDecimal() : nullptr;
+  }
+  case ASTTypeInt: {
+    const ASTIntNode *IN = STE->GetValue()->GetValue<ASTIntNode *>();
+    if (!IN)
+      return nullptr;
+    const double V = IN->IsSigned()
+                         ? static_cast<double>(IN->GetSignedValue())
+                         : static_cast<double>(IN->GetUnsignedValue());
+    return new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits, V);
+  }
+  case ASTTypeFloat: {
+    const ASTFloatNode *FN = STE->GetValue()->GetValue<ASTFloatNode *>();
+    if (!FN)
+      return nullptr;
+    return new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, NumBits,
+                                static_cast<double>(FN->GetValue()));
+  }
+  case ASTTypeDouble: {
+    const ASTDoubleNode *DN = STE->GetValue()->GetValue<ASTDoubleNode *>();
+    return DN ? DN->AsMPDecimal(NumBits) : nullptr;
+  }
+  default:
+    return nullptr;
+  }
+}
+
+void EmitImpossibleComplexInit(ASTType RTy, ASTType ITy) {
+  EmitDiagnostic(Diagnostic{DIAGLineCounter::Instance().GetLocation(),
+                            DiagLevel::Error, ComplexInitPayload{RTy, ITy}});
+}
+
+} // namespace
 
 void ASTMPComplexNode::Evaluate(const ASTMPDecimalNode *R,
                                 const ASTMPDecimalNode *I, ASTOpType OT,
@@ -1071,97 +1120,46 @@ void ASTMPComplexNode::Evaluate(const ASTIdentifierNode *RId,
     return;
 
   RBits = std::max(RId->GetBits(), IId->GetBits());
+  RTy = RSTE->GetValueType();
+  ITy = ISTE->GetValueType();
 
-  if (RSTE->GetValueType() == ISTE->GetValueType()) {
-    switch (RSTE->GetValueType()) {
-    case ASTTypeMPDecimal: {
-      Evaluate(RSTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-               ISTE->GetValue()->GetValue<ASTMPDecimalNode *>(), OT, NumBits);
-      return;
-    } break;
-    case ASTTypeMPInteger: {
-      Evaluate(RSTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-               ISTE->GetValue()->GetValue<ASTMPIntegerNode *>(), OT, NumBits);
-      return;
-    } break;
-    case ASTTypeInt: {
-      Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-               ISTE->GetValue()->GetValue<ASTIntNode *>(), OT);
-      return;
-    } break;
-    case ASTTypeFloat: {
-      Evaluate(RSTE->GetValue()->GetValue<ASTFloatNode *>(),
-               ISTE->GetValue()->GetValue<ASTFloatNode *>(), OT);
-      return;
-    } break;
-    case ASTTypeDouble: {
-      Evaluate(RSTE->GetValue()->GetValue<ASTDoubleNode *>(),
-               ISTE->GetValue()->GetValue<ASTDoubleNode *>(), OT);
-      return;
-    } break;
-    case ASTTypeMPComplex: {
-      Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-               ISTE->GetValue()->GetValue<ASTMPComplexNode *>(), OT, NumBits);
-    } break;
-    default: {
-      NE = true;
-      std::stringstream M;
-      M << "Impossible initialization of complex value from Types R="
-        << PrintTypeEnum(RSTE->GetValueType())
-        << " I=" << PrintTypeEnum(ISTE->GetValueType()) << "!";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
-    } break;
-    }
-  } else if (RSTE->GetValueType() == ASTTypeMPDecimal &&
-             ISTE->GetValueType() == ASTTypeMPInteger) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-             ISTE->GetValue()->GetValue<ASTMPIntegerNode *>(), OT, NumBits);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeMPInteger &&
-             ISTE->GetValueType() == ASTTypeMPDecimal) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-             ISTE->GetValue()->GetValue<ASTMPDecimalNode *>(), OT, NumBits);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeDouble &&
-             ISTE->GetValueType() == ASTTypeInt) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTDoubleNode *>(),
-             ISTE->GetValue()->GetValue<ASTIntNode *>(), OT);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeInt &&
-             ISTE->GetValueType() == ASTTypeDouble) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-             ISTE->GetValue()->GetValue<ASTDoubleNode *>(), OT);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeFloat &&
-             ISTE->GetValueType() == ASTTypeInt) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTFloatNode *>(),
-             ISTE->GetValue()->GetValue<ASTIntNode *>(), OT);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeInt &&
-             ISTE->GetValueType() == ASTTypeFloat) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-             ISTE->GetValue()->GetValue<ASTFloatNode *>(), OT);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeDouble &&
-             ISTE->GetValueType() == ASTTypeFloat) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTDoubleNode *>(),
-             ISTE->GetValue()->GetValue<ASTFloatNode *>(), OT);
-    return;
-  } else if (RSTE->GetValueType() == ASTTypeFloat &&
-             ISTE->GetValueType() == ASTTypeDouble) {
-    Evaluate(RSTE->GetValue()->GetValue<ASTFloatNode *>(),
-             ISTE->GetValue()->GetValue<ASTDoubleNode *>(), OT);
-  } else {
-    NE = true;
-    std::stringstream M;
-    M << "Impossible Complex value initialization from R="
-      << PrintTypeEnum(RSTE->GetValueType())
-      << " I=" << PrintTypeEnum(ISTE->GetValueType()) << ".";
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+  if (RTy == ASTTypeMPComplex && ITy == ASTTypeMPComplex) {
+    Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
+             ISTE->GetValue()->GetValue<ASTMPComplexNode *>(), OT, NumBits);
     return;
   }
+
+  if (RTy == ASTTypeMPComplex) {
+    ASTMPDecimalNode *I = MPDecimalFromSymbolValue(ISTE, NumBits);
+    if (!I) {
+      NE = true;
+      EmitImpossibleComplexInit(RTy, ITy);
+      return;
+    }
+    Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(), I, OT);
+    return;
+  }
+
+  if (ITy == ASTTypeMPComplex) {
+    ASTMPDecimalNode *R = MPDecimalFromSymbolValue(RSTE, NumBits);
+    if (!R) {
+      NE = true;
+      EmitImpossibleComplexInit(RTy, ITy);
+      return;
+    }
+    Evaluate(R, ISTE->GetValue()->GetValue<ASTMPComplexNode *>(), OT);
+    return;
+  }
+
+  ASTMPDecimalNode *R = MPDecimalFromSymbolValue(RSTE, NumBits);
+  ASTMPDecimalNode *I = MPDecimalFromSymbolValue(ISTE, NumBits);
+  if (!R || !I) {
+    NE = true;
+    EmitImpossibleComplexInit(RTy, ITy);
+    return;
+  }
+
+  Evaluate(R, I, OT, NumBits);
 }
 
 void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
@@ -1213,167 +1211,11 @@ void ASTMPComplexNode::Evaluate(const ASTComplexExpressionNode *E,
       if (!RId || !IId)
         return;
 
-      ASTSymbolTableEntry *RSTE = ASTSymbolTable::Instance().Lookup(
-          RId, RId->GetBits(), RId->GetSymbolType());
-      ASTSymbolTableEntry *ISTE = ASTSymbolTable::Instance().Lookup(
-          IId, IId->GetBits(), IId->GetSymbolType());
-
-      if (!RSTE || !ISTE)
-        return;
-
       RTy = RId->GetSymbolType();
       ITy = IId->GetSymbolType();
       RBits = std::max(RId->GetBits(), IId->GetBits());
-
-      if (RSTE->GetValueType() == ISTE->GetValueType()) {
-        switch (RSTE->GetValueType()) {
-        case ASTTypeMPDecimal: {
-          Evaluate(RSTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-                   ISTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-                   E->GetBinaryOp()->GetOpType(), NumBits);
-          return;
-        } break;
-        case ASTTypeMPInteger: {
-          Evaluate(RSTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-                   ISTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-                   E->GetBinaryOp()->GetOpType(), NumBits);
-          return;
-        } break;
-        case ASTTypeMPComplex: {
-          Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                   ISTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                   E->GetBinaryOp()->GetOpType(), NumBits);
-          return;
-        } break;
-        case ASTTypeInt: {
-          Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-                   ISTE->GetValue()->GetValue<ASTIntNode *>(),
-                   E->GetBinaryOp()->GetOpType());
-          return;
-        } break;
-        case ASTTypeFloat: {
-          Evaluate(RSTE->GetValue()->GetValue<ASTFloatNode *>(),
-                   ISTE->GetValue()->GetValue<ASTFloatNode *>(),
-                   E->GetBinaryOp()->GetOpType());
-          return;
-        } break;
-        case ASTTypeDouble: {
-          Evaluate(RSTE->GetValue()->GetValue<ASTDoubleNode *>(),
-                   ISTE->GetValue()->GetValue<ASTDoubleNode *>(),
-                   E->GetBinaryOp()->GetOpType());
-          return;
-        } break;
-        default: {
-          NE = true;
-          std::stringstream M;
-          M << "Impossible initialization of complex value from Types R="
-            << PrintTypeEnum(RSTE->GetValueType())
-            << " I=" << PrintTypeEnum(ISTE->GetValueType()) << "!";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(), M.str(),
-              DiagLevel::Error);
-        } break;
-        }
-      } else if (RSTE->GetValueType() == ASTTypeMPDecimal &&
-                 ISTE->GetValueType() == ASTTypeMPInteger) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-                 E->GetBinaryOp()->GetOpType(), NumBits);
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPInteger &&
-                 ISTE->GetValueType() == ASTTypeMPDecimal) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-                 E->GetBinaryOp()->GetOpType(), NumBits);
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeDouble &&
-                 ISTE->GetValueType() == ASTTypeInt) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTDoubleNode *>(),
-                 ISTE->GetValue()->GetValue<ASTIntNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeInt &&
-                 ISTE->GetValueType() == ASTTypeDouble) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-                 ISTE->GetValue()->GetValue<ASTDoubleNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeFloat &&
-                 ISTE->GetValueType() == ASTTypeInt) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTFloatNode *>(),
-                 ISTE->GetValue()->GetValue<ASTIntNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeInt &&
-                 ISTE->GetValueType() == ASTTypeFloat) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-                 ISTE->GetValue()->GetValue<ASTFloatNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPComplex &&
-                 ISTE->GetValueType() == ASTTypeMPDecimal) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPComplex &&
-                 ISTE->GetValueType() == ASTTypeMPInteger) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPComplex &&
-                 ISTE->GetValueType() == ASTTypeFloat) {
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 ISTE->GetValue()->GetValue<ASTFloatNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPComplex &&
-                 ISTE->GetValueType() == ASTTypeInt) {
-        // FIXME: IMPLEMENT.
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 ISTE->GetValue()->GetValue<ASTIntNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPDecimal &&
-                 ISTE->GetValueType() == ASTTypeMPComplex) {
-        // FIXME: IMPLEMENT.
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPDecimalNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeMPInteger &&
-                 ISTE->GetValueType() == ASTTypeMPComplex) {
-        // FIXME: IMPLEMENT.
-        Evaluate(RSTE->GetValue()->GetValue<ASTMPIntegerNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeFloat &&
-                 ISTE->GetValueType() == ASTTypeMPComplex) {
-        // FIXME: IMPLEMENT.
-        Evaluate(RSTE->GetValue()->GetValue<ASTFloatNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else if (RSTE->GetValueType() == ASTTypeInt &&
-                 ISTE->GetValueType() == ASTTypeMPComplex) {
-        // FIXME: IMPLEMENT.
-        Evaluate(RSTE->GetValue()->GetValue<ASTIntNode *>(),
-                 ISTE->GetValue()->GetValue<ASTMPComplexNode *>(),
-                 E->GetBinaryOp()->GetOpType());
-        return;
-      } else {
-        NE = true;
-        std::stringstream M;
-        M << "Impossible Complex value initialization from R="
-          << PrintTypeEnum(RSTE->GetValueType())
-          << " I=" << PrintTypeEnum(ISTE->GetValueType()) << ".";
-        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-            DiagLevel::Error);
-        return;
-      }
+      Evaluate(RId, IId, E->GetBinaryOp()->GetOpType(), NumBits);
+      return;
     } break;
     case ASTTypeBinaryOp: {
       const ASTBinaryOpNode *LOp =

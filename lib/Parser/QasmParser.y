@@ -4522,17 +4522,13 @@ IndexedUnboundQubit
 
 ComplexCReal
   : Identifier '.' TOK_CREAL {
-    $$ = ASTProductionFactory::Instance().ProductionRule_816(
-        $1,
-        GET_TOKEN(2));
+    $$ = ASTProductionFactory::Instance().ProductionRule_816($1, GET_TOKEN(0));
   }
   ;
 
 ComplexCImag
   : Identifier '.' TOK_CIMAG {
-    $$ = ASTProductionFactory::Instance().ProductionRule_816(
-        $1,
-        GET_TOKEN(2));
+    $$ = ASTProductionFactory::Instance().ProductionRule_816($1, GET_TOKEN(0));
   }
   ;
 

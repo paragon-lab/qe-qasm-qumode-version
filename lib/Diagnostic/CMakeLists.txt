@@ -4,7 +4,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(OPENQASM_DIAG_SOURCES
     DIAGLineBuffer.cpp
-    DIAGLineCounter.cpp)
+    DIAGLineCounter.cpp
+    QasmDiagnostic.cpp)
 
 set(PHYSICAL_LIB_NAME "qasmDIAG")
 

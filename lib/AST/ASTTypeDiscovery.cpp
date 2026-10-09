@@ -38,6 +38,7 @@
 #include <qasm/AST/ASTTypeDiscovery.h>
 #include <qasm/AST/ASTUtils.h>
 #include <qasm/Diagnostic/DIAGLineBuffer.h>
+#include <qasm/Diagnostic/QasmDiagnostic.h>
 
 #include <cassert>
 #include <iostream>
@@ -3414,41 +3415,30 @@ bool ASTTypeDiscovery::ValidateTypedGateCall(
     ASTType ExpTy = F.GetType();
 
     if (!ASTGateType::Compatible(F, A)) {
-      std::stringstream M;
+      const ASTLocation Loc = DIAGLineCounter::Instance().GetLocation(TK);
       if (F.HasArraySize() && A.HasArraySize() &&
           F.GetArraySize() != A.GetArraySize()) {
-        M << "Gate '" << Decl->GetName() << "' parameter " << I
-          << " expects an array of size " << F.GetArraySize()
-          << ", but got size " << A.GetArraySize() << ".";
-      } else if (F.IsComplexScalar()) {
-        M << "Gate '" << Decl->GetName() << "' parameter " << I
-          << " expects a complex value, but got " << PrintTypeEnum(ArgTy)
-          << ".";
-      } else if (F.IsRealArrayFamily()) {
-        M << "Gate '" << Decl->GetName() << "' parameter " << I
-          << " expects a real array, but got " << PrintTypeEnum(ArgTy) << ".";
-      } else if (F.IsComplexArray()) {
-        M << "Gate '" << Decl->GetName() << "' parameter " << I
-          << " expects a complex array, but got " << PrintTypeEnum(ArgTy)
-          << ".";
-      } else if (F.IsRealScalarFamily()) {
-        M << "Gate '" << Decl->GetName() << "' parameter " << I << " expects "
-          << PrintTypeEnum(ExpTy) << ", but got " << PrintTypeEnum(ArgTy)
-          << ".";
+        EmitDiagnostic(Diagnostic{
+            Loc, DiagLevel::Error,
+            GateParamArraySizeMismatchPayload{
+                Decl->GetName(), I, F.GetArraySize(), A.GetArraySize()}});
+      } else if (F.IsComplexScalar() || F.IsRealArrayFamily() ||
+                 F.IsComplexArray() || F.IsRealScalarFamily()) {
+        EmitDiagnostic(Diagnostic{
+            Loc, DiagLevel::Error,
+            GateParamTypeMismatchPayload{Decl->GetName(), I, ExpTy, ArgTy}});
       } else {
-        M << "Unsupported fully-typed classical formal type "
-          << PrintTypeEnum(ExpTy) << " on gate '" << Decl->GetName() << "'.";
+        EmitDiagnostic(Diagnostic{
+            Loc, DiagLevel::Error,
+            GateParamUnsupportedFormalPayload{Decl->GetName(), ExpTy}});
       }
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
-          DiagLevel::Error);
       return false;
     }
 
     if (F.IsRealArrayFamily() && ASTGateType::ArgHasComplexElements(Arg)) {
       std::stringstream M;
-      M << "Gate '" << Decl->GetName() << "' parameter " << I
-        << " expects a real array, but an element is a complex expression.";
+      M << "Gate '" << Decl->GetName() << "' parameter " << I << " expects "
+        << PrintTypeName(ExpTy) << ", but an element is complex.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(TK), M.str(),
           DiagLevel::Error);
