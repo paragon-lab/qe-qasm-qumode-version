@@ -340,7 +340,7 @@ enum ASTType : unsigned {
   ASTTypeTypeExpression,
   ASTTypeTypeQualifier,
   ASTTypeUGate,
-  ASTTypeUnitary, //adding a data type Unitary KH
+  ASTTypeUnitary, // adding a data type Unitary KH
   ASTTypeUnitaryAttribute,
   ASTTypeUInt,
   ASTTypeULong,
@@ -549,6 +549,10 @@ enum ASTScopeState : unsigned {
 };
 
 const char *PrintTypeEnum(ASTType Type);
+
+/// OpenQASM-facing type name for diagnostics (never an `ASTType*` enumerator).
+const char *PrintTypeName(ASTType Type);
+
 const char *PrintSemaTypeEnum(ASTSemaType Type);
 const char *PrintOpTypeEnum(ASTOpType Type);
 const char *PrintExpressionType(ASTExpressionType Type);

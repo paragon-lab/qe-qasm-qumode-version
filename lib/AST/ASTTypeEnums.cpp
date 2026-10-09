@@ -1043,6 +1043,65 @@ const char *PrintTypeEnum(ASTType Type) {
   return "Unknown";
 }
 
+const char *PrintTypeName(ASTType Type) {
+  switch (Type) {
+  case ASTTypeBool:
+    return "bool";
+  case ASTTypeBitset:
+    return "bit";
+  case ASTTypeInt:
+  case ASTTypeMPInteger:
+    return "int";
+  case ASTTypeUInt:
+  case ASTTypeMPUInteger:
+    return "uint";
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPDecimal:
+    return "float";
+  case ASTTypeAngle:
+  case ASTTypeLambdaAngle:
+  case ASTTypePhiAngle:
+  case ASTTypeThetaAngle:
+    return "angle";
+  case ASTTypeMPComplex:
+  case ASTTypeComplexExpression:
+    return "complex";
+  case ASTTypeDuration:
+    return "duration";
+  case ASTTypeQubit:
+  case ASTTypeQubitContainer:
+  case ASTTypeQubitContainerAlias:
+    return "qubit";
+  case ASTTypeQumode:
+  case ASTTypeQumodeContainer:
+    return "qumode";
+  case ASTTypeBoolArray:
+    return "array[bool]";
+  case ASTTypeIntArray:
+    return "array[int]";
+  case ASTTypeFloatArray:
+  case ASTTypeMPDecimalArray:
+    return "array[float]";
+  case ASTTypeAngleArray:
+    return "array[angle]";
+  case ASTTypeMPComplexArray:
+    return "array[complex]";
+  case ASTTypeCBitArray:
+  case ASTTypeCBitNArray:
+    return "array[bit]";
+  case ASTTypeDurationArray:
+    return "array[duration]";
+  case ASTTypeQubitArray:
+    return "array[qubit]";
+  case ASTTypeBinaryOp:
+  case ASTTypeUnaryOp:
+    return "expression";
+  default:
+    return "unknown type";
+  }
+}
+
 const char *PrintOpTypeOperator(ASTOpType OpTy, const std::string &Op) {
   static std::string OPS;
 
@@ -1822,14 +1881,14 @@ const char *PrintParserToken(unsigned Token) {
     return "TOK_DISP";
     break;
   case token::TOK_BUMPER:
-  return "TOK_BUMPER";
+    return "TOK_BUMPER";
 
   case token::TOK_BUMPER_MAX:
-  return "TOK_BUMPER_MAX";
+    return "TOK_BUMPER_MAX";
 
-  case token::TOK_UNITARY: //adding a data type Unitary KH
-  return "TOK_UNITARY";
-  break;
+  case token::TOK_UNITARY: // adding a data type Unitary KH
+    return "TOK_UNITARY";
+    break;
   case token::TOK_ANGLE:
     return "TOK_ANGLE";
     break;

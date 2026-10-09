@@ -29,6 +29,35 @@ namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
+/// Ordinary arithmetic (`pi/3`, `-alpha`) is not a real/imag pair. Keep the
+/// expression tree without Evaluate — same rule as MaterializeComplexParamExpr.
+static ASTMPComplexNode *ComplexFromRealExpression(const ASTBinaryOpNode *BOP) {
+  ASTComplexExpressionNode *CEN =
+      new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, BOP);
+  ASTMPComplexNode *MPC =
+      new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, 128U);
+  MPC->AttachExpression(CEN);
+  return MPC;
+}
+
+static ASTMPComplexNode *ComplexFromRealExpression(const ASTUnaryOpNode *UOP) {
+  ASTComplexExpressionNode *CEN =
+      new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, UOP);
+  ASTMPComplexNode *MPC =
+      new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, 128U);
+  MPC->AttachExpression(CEN);
+  return MPC;
+}
+
+static ASTMPComplexNode *ComplexFromRealDecimal(const ASTMPDecimalNode *R) {
+  assert(R && "Invalid real part for complex promotion!");
+  const unsigned Bits = R->GetBits() ? R->GetBits() : 128U;
+  ASTMPDecimalNode *Imag =
+      new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, Bits, 0.0);
+  return new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, R, Imag,
+                              ASTOpTypeAdd, Bits);
+}
+
 void ASTMPComplexList::ConstructFromExpressionList(
     const ASTExpressionList &EL) {
   if (EL.Empty())
@@ -48,25 +77,27 @@ void ASTMPComplexList::ConstructFromExpressionList(
       case ASTTypeBinaryOp: {
         if (const ASTBinaryOpNode *BOP =
                 dynamic_cast<const ASTBinaryOpNode *>(EN)) {
-          ASTComplexExpressionNode *CEN =
-              new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, BOP);
-          ASTMPComplexNode *MPC =
-              new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, CEN, 128);
-          List.push_back(
-              new ASTMPComplexRep(const_cast<ASTBinaryOpNode *>(BOP), MPC));
+          // `a + b im` marks the add as imaginary: left/right are R and I.
+          // Unmarked ops (`pi/3`) are real-valued arithmetic.
+          if (BOP->IsImaginaryPart()) {
+            ASTComplexExpressionNode *CEN = new ASTComplexExpressionNode(
+                &ASTIdentifierNode::MPComplex, BOP);
+            ASTMPComplexNode *MPC =
+                new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, CEN, 128);
+            List.push_back(
+                new ASTMPComplexRep(const_cast<ASTBinaryOpNode *>(BOP), MPC));
+          } else {
+            List.push_back(
+                new ASTMPComplexRep(const_cast<ASTBinaryOpNode *>(BOP),
+                                    ComplexFromRealExpression(BOP)));
+          }
         }
       } break;
       case ASTTypeUnaryOp: {
         if (const ASTUnaryOpNode *UOP =
                 dynamic_cast<const ASTUnaryOpNode *>(EN)) {
-          ASTComplexExpressionNode *CEN =
-              new ASTComplexExpressionNode(&ASTIdentifierNode::MPComplex, UOP);
-          assert(UOP && "Could not create a valid ASTComplexExpression from "
-                        "an ASTUnaryOpNode!");
-          ASTMPComplexNode *MPC =
-              new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, CEN, 128);
-          List.push_back(
-              new ASTMPComplexRep(const_cast<ASTUnaryOpNode *>(UOP), MPC));
+          List.push_back(new ASTMPComplexRep(const_cast<ASTUnaryOpNode *>(UOP),
+                                             ComplexFromRealExpression(UOP)));
         }
       } break;
       case ASTTypeIdentifier: {
@@ -134,11 +165,68 @@ void ASTMPComplexList::ConstructFromExpressionList(
       case ASTTypeComplexExpression: {
         if (const ASTComplexExpressionNode *CEN =
                 dynamic_cast<const ASTComplexExpressionNode *>(EN)) {
-          ASTMPComplexNode *MPC =
-              new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, CEN, 128);
-          List.push_back(
-              new ASTMPComplexRep(const_cast<ASTMPComplexNode *>(MPC)));
+          const ASTBinaryOpNode *BOP = CEN->GetBinaryOp();
+          const ASTUnaryOpNode *UOP = CEN->GetUnaryOp();
+          // Only `… im` ComplexExpressions are evaluated as R/I pairs.
+          if (BOP && BOP->IsImaginaryPart()) {
+            ASTMPComplexNode *MPC =
+                new ASTMPComplexNode(&ASTIdentifierNode::MPComplex, CEN, 128);
+            List.push_back(
+                new ASTMPComplexRep(const_cast<ASTMPComplexNode *>(MPC)));
+          } else if (BOP) {
+            List.push_back(
+                new ASTMPComplexRep(const_cast<ASTBinaryOpNode *>(BOP),
+                                    ComplexFromRealExpression(BOP)));
+          } else if (UOP) {
+            List.push_back(
+                new ASTMPComplexRep(const_cast<ASTUnaryOpNode *>(UOP),
+                                    ComplexFromRealExpression(UOP)));
+          }
         }
+      } break;
+      case ASTTypeInt:
+      case ASTTypeUInt: {
+        if (const ASTIntNode *IN = dynamic_cast<const ASTIntNode *>(EN)) {
+          const double RV = IN->IsSigned()
+                                ? static_cast<double>(IN->GetSignedValue())
+                                : static_cast<double>(IN->GetUnsignedValue());
+          ASTMPDecimalNode *R =
+              new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128U, RV);
+          List.push_back(new ASTMPComplexRep(ComplexFromRealDecimal(R)));
+        }
+      } break;
+      case ASTTypeFloat: {
+        if (const ASTFloatNode *FN = dynamic_cast<const ASTFloatNode *>(EN)) {
+          ASTMPDecimalNode *R =
+              new ASTMPDecimalNode(&ASTIdentifierNode::MPDec, 128U,
+                                   static_cast<double>(FN->GetValue()));
+          List.push_back(new ASTMPComplexRep(ComplexFromRealDecimal(R)));
+        }
+      } break;
+      case ASTTypeDouble: {
+        if (const ASTDoubleNode *DN = dynamic_cast<const ASTDoubleNode *>(EN))
+          List.push_back(
+              new ASTMPComplexRep(ComplexFromRealDecimal(DN->AsMPDecimal())));
+      } break;
+      case ASTTypeMPDecimal: {
+        if (const ASTMPDecimalNode *MPD =
+                dynamic_cast<const ASTMPDecimalNode *>(EN))
+          List.push_back(new ASTMPComplexRep(ComplexFromRealDecimal(MPD)));
+      } break;
+      case ASTTypeMPInteger:
+      case ASTTypeMPUInteger: {
+        if (const ASTMPIntegerNode *MPI =
+                dynamic_cast<const ASTMPIntegerNode *>(EN))
+          List.push_back(
+              new ASTMPComplexRep(ComplexFromRealDecimal(MPI->AsMPDecimal())));
+      } break;
+      case ASTTypeAngle:
+      case ASTTypeLambdaAngle:
+      case ASTTypePhiAngle:
+      case ASTTypeThetaAngle: {
+        if (const ASTAngleNode *AN = dynamic_cast<const ASTAngleNode *>(EN))
+          List.push_back(
+              new ASTMPComplexRep(ComplexFromRealDecimal(AN->AsMPDecimal())));
       } break;
       default: {
         std::stringstream M;

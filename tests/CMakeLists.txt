@@ -690,6 +690,8 @@ add_test(NAME t00340
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-identifier-range.qasm > ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '<Size>3</Size>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Size>4</Size>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Size>8</Size>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Size>2</Size>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Stepping>1</Stepping>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Stepping>2</Stepping>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Name>BEGIN</Name>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Name>STEP</Name>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Op>-</Op>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out && grep -q '<Bound>' ${CMAKE_BINARY_DIR}/tests/test-identifier-range.qasm.out")
 add_test(NAME t00341
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-register-size-reject.qasm > ${CMAKE_BINARY_DIR}/tests/test-register-size-reject.qasm.out 2>&1; rc=\$?; test \$rc -eq 1 && grep -q 'Register size must be a non-negative compile-time constant' ${CMAKE_BINARY_DIR}/tests/test-register-size-reject.qasm.out && ! grep -q '<Size>1</Size>' ${CMAKE_BINARY_DIR}/tests/test-register-size-reject.qasm.out")
+add_test(NAME t00342
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-complex-init-type-reject.qasm > ${CMAKE_BINARY_DIR}/tests/test-complex-init-type-reject.qasm.out 2>&1; rc=\$?; test \$rc -eq 1 && grep -q 'Cannot initialize complex from real component of type angle and imaginary component of type bit' ${CMAKE_BINARY_DIR}/tests/test-complex-init-type-reject.qasm.out")
 
 # -----------------------------------------------------------------------------
 # Qumode tests
@@ -785,4 +787,7 @@ add_test(NAME qumode-t00029
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/index-oob-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out 2>&1; rc=\$?; test \$rc -eq 1 && grep -q 'QumodeContainer indexed element access is out-of-bounds' ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out && ! grep -q Assertion ${CMAKE_BINARY_DIR}/tests/qumode/index-oob-reject.qasm.out")
 
 add_test(NAME qumode-t00030
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/complex-array-real-elem.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/complex-array-real-elem.qasm.out 2>&1")
+
+add_test(NAME qumode-t00031
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/symbolic-index.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '<Name>qm\\[k\\]</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out && grep -q '<Name>qm\\[i\\]</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out && ! grep -q stoi ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out")

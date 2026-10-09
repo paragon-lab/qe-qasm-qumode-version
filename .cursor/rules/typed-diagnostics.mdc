@@ -1,0 +1,45 @@
+---
+description: >-
+  Prefer the typed Diagnostic + payload variant when adding or refactoring
+  diagnostics (Loc/Level on Diagnostic; message payloads in DiagnosticKind).
+alwaysApply: true
+---
+
+# Typed diagnostics (incremental)
+
+## Basis
+
+Shared machinery lives in:
+
+- `include/qasm/Diagnostic/QasmDiagnostic.h`
+- `lib/Diagnostic/QasmDiagnostic.cpp`
+
+Pattern:
+
+- `Diagnostic` always owns `Loc` and `Level`.
+- Message-specific data is a payload type with `message() const`.
+- Payloads are alternatives of `DiagnosticKind` (`std::variant<...>`).
+- Call sites build a `Diagnostic` and call `EmitDiagnostic(...)`.
+- Call-site helpers (e.g. `EmitImpossibleComplexInit` in `ASTMPComplex.cpp`)
+  may stay local; do not duplicate the framework in AST TUs.
+
+## When adding or refactoring a diagnostic
+
+1. Add a payload struct (fields + `message()`) in the Diagnostic headers/sources.
+2. Append it to `DiagnosticKind`.
+3. Replace ad-hoc `std::stringstream` + `QasmDiagnosticEmitter::EmitDiagnostic`
+   at the call site with `EmitDiagnostic(Diagnostic{Loc, Level, Payload{...}})`.
+4. Prefer a small named helper at the call site when construction is repeated.
+
+## Type names in messages
+
+Use `PrintTypeName(ASTType)` for any type mentioned in a user-facing
+diagnostic. Never use `PrintTypeEnum` there — it emits internal `ASTType*`
+enumerator names.
+
+## Do not
+
+- Put `Loc`/`Level` only on the payload (they belong on `Diagnostic`).
+- Introduce a virtual diagnostic base for this path — use the variant.
+- Grow a parallel stringly-typed emit style for new work when this pattern fits.
+- Show `ASTType*` / AST node enumerator strings to end users.
