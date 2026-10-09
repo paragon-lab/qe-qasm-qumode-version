@@ -413,6 +413,9 @@ public:
   ProductionRule_880(const ASTToken *TK, const ASTBinaryOpNode *BOP) const;
   ASTComplexExpressionNode *ProductionRule_880(const ASTToken *TK,
                                                const ASTUnaryOpNode *UOP) const;
+  /// Pure imaginary literal/expression: `1.0im` / `-1.0 im` → `0 + Imag im`.
+  ASTComplexExpressionNode *
+  ProductionRule_880(const ASTToken *TK, const ASTExpressionNode *Imag) const;
 
   ASTDeclarationNode *ProductionRule_1000(const ASTToken *TK,
                                           const ASTIdentifierNode *QId) const;

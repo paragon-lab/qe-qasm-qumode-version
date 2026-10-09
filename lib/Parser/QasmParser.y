@@ -7509,11 +7509,11 @@ ComplexInitializerExpr
       $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1),
                                                                UOP);
     } else {
-      std::stringstream M;
-      M << "Invalid complex initializer.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation($1), M.str(), DiagLevel::Error);
-      YYERROR;
+      /* Pure imaginary: `1.0im` / `-1.0 im` → `0 + Imag im`. */
+      $$ = ASTProductionFactory::Instance().ProductionRule_880(GET_TOKEN(1),
+                                                               $1);
+      if (!$$)
+        YYERROR;
     }
   }
   | BinaryOpSelfAssign TOK_IMAGINARY {
