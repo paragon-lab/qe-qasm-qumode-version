@@ -18,12 +18,15 @@
 
 #include <qasm/AST/AST.h>
 #include <qasm/AST/ASTObjectTracker.h>
+#include <qasm/AST/ASTQasmEmitter.h>
 #include <qasm/Frontend/QasmParser.h>
 
+#include <cstring>
 #include <iostream>
+#include <vector>
 
 static void Usage() {
-  std::cerr << "Usage: QasmParser [-keep-temps] ";
+  std::cerr << "Usage: QasmParser [-keep-temps] [-emit-qasm] ";
   std::cerr << "[-I<include-dir> [ -I<include-dir> ...]] ";
   std::cerr << "\n                  <translation-unit>" << std::endl;
 }
@@ -32,6 +35,18 @@ int main(int argc, char *argv[]) {
   if (argc < 2) {
     Usage();
     return 1;
+  }
+
+  bool EmitQasm = false;
+  std::vector<char *> FilteredArgs;
+  FilteredArgs.reserve(static_cast<std::size_t>(argc));
+  FilteredArgs.push_back(argv[0]);
+  for (int I = 1; I < argc; ++I) {
+    if (std::strcmp(argv[I], "-emit-qasm") == 0) {
+      EmitQasm = true;
+      continue;
+    }
+    FilteredArgs.push_back(argv[I]);
   }
 
   // Enabling the ASTObjectTracker is optional.
@@ -43,9 +58,15 @@ int main(int argc, char *argv[]) {
   QASM::ASTObjectTracker::Instance().Enable();
 
   QASM::ASTParser Parser;
-  Parser.ParseCommandLineArguments(argc, argv);
+  Parser.ParseCommandLineArguments(static_cast<int>(FilteredArgs.size()),
+                                   FilteredArgs.data());
   QASM::ASTRoot *Root = Parser.ParseAST();
-  Root->print();
+  if (EmitQasm) {
+    QASM::ASTQasmEmitter Emitter(std::cout);
+    Emitter.Emit(Root);
+  } else {
+    Root->print();
+  }
 
   // If the ASTObjectTracker is not enabled, this is a no-op.
   QASM::ASTObjectTracker::Instance().Release();

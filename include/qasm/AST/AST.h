@@ -32,6 +32,7 @@
 #include <qasm/AST/ASTLength.h>
 #include <qasm/AST/ASTPrimitives.h>
 #include <qasm/AST/ASTProgramBlock.h>
+#include <qasm/AST/ASTQasmEmitter.h>
 #include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTRegisters.h>
 #include <qasm/AST/ASTReset.h>

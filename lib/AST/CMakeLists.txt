@@ -79,6 +79,7 @@ set(OPENQASM_AST_SOURCES
   ASTParameterBuilder.cpp
   ASTPragma.cpp
   ASTProductionFactory.cpp
+  ASTQasmEmitter.cpp
   ASTQubit.cpp
   ASTQubitConcatBuilder.cpp
   ASTQubitList.cpp

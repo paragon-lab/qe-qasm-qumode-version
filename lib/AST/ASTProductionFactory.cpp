@@ -19916,6 +19916,23 @@ ASTProductionFactory::ProductionRule_1462(const ASTToken *TK,
                                           M.str());
   }
 
+  // Preserve indexed target info before resolving to the base container.
+  const ASTIdentifierRefNode *TIdR = nullptr;
+  if (TId->IsReference()) {
+    TIdR = dynamic_cast<const ASTIdentifierRefNode *>(TId);
+    assert(TIdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
+  }
+  const bool IndexedByName =
+      ASTStringUtils::Instance().IsIndexedQubit(TId->GetName());
+  unsigned TargetIndex = static_cast<unsigned>(~0x0);
+  if (TIdR)
+    TargetIndex = TIdR->GetIndex();
+  else if (IndexedByName) {
+    std::string TIS = ASTStringUtils::Instance().GetQubitIndex(TId->GetName());
+    TargetIndex = static_cast<unsigned>(std::stoul(TIS));
+  }
+  const bool HasTargetIndex = TargetIndex != static_cast<unsigned>(~0x0);
+
   if (TId->IsIndexed()) {
     TId = ASTBuilder::Instance().FindUnindexedASTIdentifierNode(TId);
     assert(TId && "Invalid ASTIdentifierNode argument!");
@@ -19925,7 +19942,7 @@ ASTProductionFactory::ProductionRule_1462(const ASTToken *TK,
   assert(TSTE && "Measure Result Identifier has no SymbolTableEntry!");
 
   ASTQubitContainerNode *QBN = nullptr;
-  unsigned TBits = TId->GetBits();
+  unsigned TBits = HasTargetIndex ? 1U : TId->GetBits();
 
   if (!TSTE->HasValue()) {
     QBN = ASTBuilder::Instance().CreateASTQubitContainerNode(TId, TBits);
@@ -19980,6 +19997,9 @@ ASTProductionFactory::ProductionRule_1462(const ASTToken *TK,
   ASTMeasureNode *MN =
       ASTBuilder::Instance().CreateASTMeasureNode(MId, QBN, CBN);
   assert(MN && "Could not create an ASTMeasureNode!");
+
+  if (HasTargetIndex)
+    MN->SetTargetIndex(TargetIndex);
 
   MN->SetLocation(TK->GetLocation());
   MN->SetDeclarationContext(CTX);

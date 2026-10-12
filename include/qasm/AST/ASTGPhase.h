@@ -223,7 +223,19 @@ public:
   virtual void Mangle() override;
 
   virtual const ASTGPhaseExpressionNode *GetGPhaseExpression() const {
-    return GPE;
+    return TType == ASTTypeGPhaseExpression ? GPE : nullptr;
+  }
+
+  virtual const ASTGateControlNode *GetControlNode() const {
+    return TType == ASTTypeGateControl ? CN : nullptr;
+  }
+
+  virtual const ASTGateNegControlNode *GetNegControlNode() const {
+    return TType == ASTTypeGateNegControl ? NCN : nullptr;
+  }
+
+  virtual const ASTGateQOpNode *GetGateQOpNode() const {
+    return TType == ASTTypeGateQOpNode ? GQN : nullptr;
   }
 
   virtual const ASTIdentifierList &GetIdentifierList() const { return IL; }

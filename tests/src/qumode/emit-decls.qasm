@@ -1,0 +1,23 @@
+OPENQASM 3.0;
+
+bit b;
+bit[8] bs;
+bool flag;
+int i;
+int[64] i64 = 7;
+uint u;
+uint[32] u32;
+float f;
+float[128] f128 = 1.5;
+angle a;
+angle[32] a32;
+complex c;
+complex[float[32]] c32;
+const int ci = 3;
+duration d = 100ns;
+array[int[32], 4] ai;
+array[bit, 8] ab;
+qubit q;
+qubit[3] qs;
+qumode qm;
+qumode[5] qms;
