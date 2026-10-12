@@ -585,6 +585,7 @@ public:
     switch (Ty) {
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias:
+    case ASTTypeQumodeContainer:
     case ASTTypeAngle:
     case ASTTypeBitset:
       return true;

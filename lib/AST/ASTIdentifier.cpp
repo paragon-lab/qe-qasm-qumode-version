@@ -585,6 +585,9 @@ void ASTIdentifierNode::SetSymbolTableEntry(ASTSymbolTableEntry *ST) {
     } else if (ASTExpressionValidator::Instance().IsNonArrayIndexableType(
                    ETy)) {
       SType = ASTExpressionEvaluator::Instance().GetNonArrayElementType(ETy);
+    } else if (ETy == ASTTypeQubit || ETy == ASTTypeQumode) {
+      // STE already names the indexed element (e.g. qms[1] → ASTTypeQumode).
+      SType = ETy;
     } else {
       std::stringstream M;
       M << "Non-indexable type " << PrintTypeEnum(ETy) << " used in an indexed "

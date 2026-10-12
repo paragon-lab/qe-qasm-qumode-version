@@ -24,7 +24,63 @@
 #include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTTypes.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace QASM {
+
+/// Named keyword argument on a measure, e.g. `fock=N` in `measure(fock=N) qm`.
+/// Kept as a key/expression pair so additional kwargs can be added later.
+class ASTMeasureKeywordArg {
+private:
+  std::string Key;
+  const ASTExpressionNode *Value;
+
+public:
+  ASTMeasureKeywordArg(const std::string &K, const ASTExpressionNode *V)
+      : Key(K), Value(V) {}
+
+  const std::string &GetKey() const { return Key; }
+  const ASTExpressionNode *GetValue() const { return Value; }
+
+  void print() const;
+};
+
+class ASTMeasureKeywordArgList {
+private:
+  std::vector<ASTMeasureKeywordArg> Args;
+
+public:
+  ASTMeasureKeywordArgList() = default;
+
+  void Append(const std::string &Key, const ASTExpressionNode *Value) {
+    Args.emplace_back(Key, Value);
+  }
+
+  void Append(const ASTMeasureKeywordArg &Arg) { Args.push_back(Arg); }
+
+  std::size_t Size() const { return Args.size(); }
+  bool Empty() const { return Args.empty(); }
+
+  const std::vector<ASTMeasureKeywordArg> &GetArgs() const { return Args; }
+
+  bool Has(const std::string &Key) const {
+    for (const auto &A : Args)
+      if (A.GetKey() == Key)
+        return true;
+    return false;
+  }
+
+  const ASTExpressionNode *Get(const std::string &Key) const {
+    for (const auto &A : Args)
+      if (A.GetKey() == Key)
+        return A.GetValue();
+    return nullptr;
+  }
+
+  void print() const;
+};
 
 class ASTMeasureNode : public ASTGateQOpNode {
 private:
@@ -41,6 +97,7 @@ private:
   std::vector<unsigned> RIV;
   std::vector<unsigned> TIV;
   ASTType RTy;
+  ASTMeasureKeywordArgList Kwargs;
 
 private:
   ASTMeasureNode() = delete;
@@ -192,6 +249,32 @@ public:
 
   virtual unsigned GetTargetVectorSize() const {
     return static_cast<unsigned>(TIV.size());
+  }
+
+  virtual void SetKeywordArgs(const ASTMeasureKeywordArgList &KAs) {
+    Kwargs = KAs;
+  }
+
+  virtual void SetKeywordArgs(ASTMeasureKeywordArgList &&KAs) {
+    Kwargs = std::move(KAs);
+  }
+
+  virtual const ASTMeasureKeywordArgList &GetKeywordArgs() const {
+    return Kwargs;
+  }
+
+  virtual bool HasKeywordArg(const std::string &Key) const {
+    return Kwargs.Has(Key);
+  }
+
+  virtual const ASTExpressionNode *GetKeywordArg(const std::string &Key) const {
+    return Kwargs.Get(Key);
+  }
+
+  virtual bool HasFockLevel() const { return HasKeywordArg("fock"); }
+
+  virtual const ASTExpressionNode *GetFockLevel() const {
+    return GetKeywordArg("fock");
   }
 
   virtual const ASTIdentifierNode *GetIdentifier() const override {

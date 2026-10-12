@@ -120,6 +120,9 @@ public:
       break;
     case ASTTypeQubitContainerAlias:
       return ASTTypeQubit;
+    case ASTTypeQumodeContainer:
+      return ASTTypeQumode;
+      break;
     case ASTTypeAngle:
       return ASTTypeAngle;
       break;

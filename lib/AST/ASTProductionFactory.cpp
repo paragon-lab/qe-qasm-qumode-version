@@ -77,6 +77,7 @@
 #include <iostream>
 #include <limits>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace QASM {
@@ -20324,6 +20325,257 @@ ASTProductionFactory::ProductionRule_1464(const ASTToken *TK,
 
   for (unsigned I = 0; I < CBN->Size(); ++I)
     MN->AddResultIndex(I);
+
+  MN->SetDeclarationContext(CTX);
+  MN->SetLocation(TK->GetLocation());
+  MN->Mangle();
+  return MN;
+}
+
+static bool IsAllowedFockLevelExpr(const ASTExpressionNode *EN) {
+  if (!EN)
+    return false;
+
+  if (const ASTIntNode *IN = dynamic_cast<const ASTIntNode *>(EN)) {
+    if (IN->IsSigned() && IN->GetSignedValue() < 0)
+      return false;
+    return true;
+  }
+
+  if (dynamic_cast<const ASTMPIntegerNode *>(EN))
+    return true;
+
+  // ArithPrimary wraps bare identifiers as ASTTypeIdentifier expressions.
+  if (EN->GetASTType() == ASTTypeIdentifier) {
+    if (const ASTIdentifierNode *Id = EN->GetIdentifier())
+      return ASTUtils::Instance().IsIntegralType(Id->GetSymbolType()) ||
+             ASTExpressionValidator::Instance().IsIntegerType(
+                 Id->GetSymbolType());
+    return false;
+  }
+
+  if (const ASTIdentifierNode *Id = dynamic_cast<const ASTIdentifierNode *>(EN))
+    return ASTUtils::Instance().IsIntegralType(Id->GetSymbolType()) ||
+           ASTExpressionValidator::Instance().IsIntegerType(
+               Id->GetSymbolType());
+
+  ASTType Ty = EN->GetASTType();
+  if (Ty == ASTTypeBinaryOp || Ty == ASTTypeUnaryOp)
+    return true;
+
+  return ASTUtils::Instance().IsIntegralType(Ty) ||
+         ASTExpressionValidator::Instance().IsIntegerType(Ty);
+}
+
+ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
+    const ASTToken *TK, const ASTMeasureKeywordArgList *Kwargs,
+    const ASTIdentifierNode *TId, const ASTIdentifierNode *RId) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Kwargs && "Invalid ASTMeasureKeywordArgList argument!");
+  assert(TId && "Invalid target ASTIdentifierNode argument!");
+
+  QasmFeatureTester::Instance().ValidateFeature("measure");
+  ASTScopeController::Instance().CheckOutOfScope(TId);
+  if (RId)
+    ASTScopeController::Instance().CheckOutOfScope(RId);
+
+  if (ASTGateContextBuilder::Instance().InOpenContext()) {
+    std::stringstream M;
+    M << "A measure cannot occur within a gate statement sequence.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
+
+  if (Kwargs->Empty()) {
+    std::stringstream M;
+    M << "measure(...) requires at least one keyword argument.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
+
+  // Validate kwargs: currently only `fock` is supported; duplicates rejected.
+  // Unknown keys are rejected but still stored on the AST once accepted keys
+  // expand — keep the list representation so new keys need no AST redesign.
+  std::set<std::string> Seen;
+  for (const ASTMeasureKeywordArg &KA : Kwargs->GetArgs()) {
+    if (!Seen.insert(KA.GetKey()).second) {
+      std::stringstream M;
+      M << "Duplicate measure keyword argument '" << KA.GetKey() << "'.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                            M.str());
+    }
+    if (KA.GetKey() != "fock") {
+      std::stringstream M;
+      M << "Unsupported measure keyword argument '" << KA.GetKey()
+        << "'; expected 'fock'.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                            M.str());
+    }
+    if (!IsAllowedFockLevelExpr(KA.GetValue())) {
+      std::stringstream M;
+      M << "measure(fock=N) requires N to be an unsigned integer expression.";
+      const ASTLocation Loc =
+          KA.GetValue() ? DIAGLineCounter::Instance().GetLocation(KA.GetValue())
+                        : DIAGLineCounter::Instance().GetLocation(TK);
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(Loc, M.str(),
+                                                       DiagLevel::Error);
+      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                            M.str());
+    }
+  }
+
+  if (!Kwargs->Has("fock")) {
+    std::stringstream M;
+    M << "measure(...) currently requires a 'fock' keyword argument.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
+
+  // Resolve target: must be a qumode (container or indexed element).
+  const ASTIdentifierRefNode *TIdR = nullptr;
+  if (TId->IsReference()) {
+    TIdR = dynamic_cast<const ASTIdentifierRefNode *>(TId);
+    assert(TIdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
+  }
+
+  ASTType TTy = TId->GetSymbolType();
+  const ASTSymbolTableEntry *TQSTE = ASTSymbolTable::Instance().FindQubit(TId);
+  if (!TQSTE && TIdR)
+    TQSTE = ASTSymbolTable::Instance().FindQubit(TIdR);
+  if (TQSTE)
+    TTy = TQSTE->GetValueType();
+
+  if (!ASTUtils::Instance().IsQumodeType(TTy)) {
+    std::stringstream M;
+    M << "measure(fock=N) target '" << TId->GetName()
+      << "' must be a qumode, but has type " << PrintTypeName(TTy) << ".";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TId), M.str(),
+        DiagLevel::Error);
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
+
+  ASTQubitContainerNode *QCN = nullptr;
+  if (TQSTE && TQSTE->HasValue()) {
+    if (TQSTE->GetValueType() == ASTTypeQumodeContainer ||
+        TQSTE->GetValueType() == ASTTypeQubitContainer)
+      QCN = TQSTE->GetValue()->GetValue<ASTQubitContainerNode *>();
+  }
+  if (!QCN) {
+    unsigned Bits = TId->GetBits() ? TId->GetBits() : 1U;
+    if (TIdR)
+      QCN = ASTBuilder::Instance().CreateASTQumodeContainerNode(TIdR, Bits);
+    else
+      QCN = ASTBuilder::Instance().CreateASTQumodeContainerNode(TId, Bits);
+  }
+  if (!QCN) {
+    std::stringstream M;
+    M << "Could not resolve measure(fock=N) target '" << TId->GetName() << "'.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TId), M.str(), DiagLevel::ICE);
+    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                          M.str());
+  }
+
+  // Result: explicit bit, or an anonymous 1-bit result for the statement form.
+  ASTCBitNode *CBN = nullptr;
+  const ASTIdentifierRefNode *RIdR = nullptr;
+  if (RId) {
+    if (RId->IsReference()) {
+      RIdR = dynamic_cast<const ASTIdentifierRefNode *>(RId);
+      assert(RIdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
+    }
+
+    ASTSymbolTableEntry *RSTE =
+        RIdR
+            ? ASTSymbolTable::Instance().Lookup(RIdR, 1U, RIdR->GetSymbolType())
+            : ASTSymbolTable::Instance().Lookup(RId, RId->GetBits(),
+                                                RId->GetSymbolType());
+    ASTType RTy = RSTE ? RSTE->GetValueType() : RId->GetSymbolType();
+    if (RTy != ASTTypeBitset && RTy != ASTTypeUndefined) {
+      std::stringstream M;
+      M << "measure(fock=N) result '" << RId->GetName()
+        << "' must be a bit, but has type " << PrintTypeName(RTy) << ".";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(RId), M.str(),
+          DiagLevel::Error);
+      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
+                                            M.str());
+    }
+
+    if (RSTE && RSTE->HasValue() && RSTE->GetValueType() == ASTTypeBitset) {
+      CBN = RSTE->GetValue()->GetValue<ASTCBitNode *>();
+    } else {
+      if (RIdR)
+        CBN = ASTBuilder::Instance().CreateASTCBitNode(RIdR, 1U, 0UL);
+      else
+        CBN = ASTBuilder::Instance().CreateASTCBitNode(RId, 1U, 0UL);
+      assert(CBN && "Could not create a valid ASTCBitNode!");
+      if (RSTE) {
+        RSTE->ResetValue();
+        RSTE->SetValue(new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
+      }
+    }
+  } else {
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
+
+    std::stringstream RID;
+    RID << "ast-measure-result-"
+        << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
+    ASTIdentifierNode *AnonRId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        RID.str(), 1U, ASTTypeBitset);
+    assert(AnonRId && "Could not create measure result ASTIdentifierNode!");
+    AnonRId->SetGateParamName("measure-result");
+    AnonRId->SetLocation(TK->GetLocation());
+    AnonRId->SetDeclarationContext(CTX);
+    CBN = ASTBuilder::Instance().CreateASTCBitNode(AnonRId, 1U, 0UL);
+    assert(CBN && "Could not create a valid Measure ASTCBitNode!");
+    CBN->Mangle();
+  }
+
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
+
+  std::stringstream MS;
+  MS << "ast-measure-" << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
+  ASTIdentifierNode *MId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      MS.str(), ASTMeasureNode::MeasureBits, ASTTypeMeasure);
+  assert(MId && "Could not create a Measure ASTIdentifierNode!");
+
+  MId->SetGateParamName("measure");
+  MId->SetDeclarationContext(CTX);
+  MId->SetLocation(TK->GetLocation());
+
+  ASTMeasureNode *MN =
+      ASTBuilder::Instance().CreateASTMeasureNode(MId, QCN, CBN);
+  assert(MN && "Could not create an ASTMeasureNode!");
+
+  MN->SetKeywordArgs(*Kwargs);
+
+  if (RIdR)
+    MN->SetResultIndex(RIdR->GetIndex());
+  if (TIdR)
+    MN->SetTargetIndex(TIdR->GetIndex());
+  else if (ASTStringUtils::Instance().IsIndexedQubit(TId->GetName())) {
+    std::string TIS = ASTStringUtils::Instance().GetQubitIndex(TId->GetName());
+    MN->SetTargetIndex(static_cast<unsigned>(std::stoul(TIS)));
+  }
 
   MN->SetDeclarationContext(CTX);
   MN->SetLocation(TK->GetLocation());

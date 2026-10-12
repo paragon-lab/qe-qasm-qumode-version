@@ -355,12 +355,33 @@ void ASTCNotGateOpNode::print() const {
   std::cout << "</CNotGateOpNode>" << std::endl;
 }
 
+void ASTMeasureKeywordArg::print() const {
+  std::cout << "<KeywordArg>" << std::endl;
+  std::cout << "<Key>" << Key << "</Key>" << std::endl;
+  std::cout << "<Value>" << std::endl;
+  if (Value)
+    Value->print();
+  std::cout << "</Value>" << std::endl;
+  std::cout << "</KeywordArg>" << std::endl;
+}
+
+void ASTMeasureKeywordArgList::print() const {
+  std::cout << "<KeywordArgs>" << std::endl;
+  for (const auto &A : Args)
+    A.print();
+  std::cout << "</KeywordArgs>" << std::endl;
+}
+
 void ASTMeasureNode::print() const {
   std::cout << "<MeasureNode>" << std::endl;
   std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
   std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
             << std::endl;
   ASTGateQOpNode::print();
+
+  if (!Kwargs.Empty())
+    Kwargs.print();
+
   std::cout << "<Target>" << std::endl;
 
   if (TIV.size())

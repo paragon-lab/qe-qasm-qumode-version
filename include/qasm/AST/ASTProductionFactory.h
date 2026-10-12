@@ -917,6 +917,11 @@ public:
   ASTMeasureNode *ProductionRule_1464(const ASTToken *TK,
                                       const ASTIdentifierNode *TId,
                                       const std::string &BS) const;
+  /// measure(fock=N) qm;  /  c = measure(fock=N) qm;
+  ASTMeasureNode *ProductionRule_1466(const ASTToken *TK,
+                                      const ASTMeasureKeywordArgList *Kwargs,
+                                      const ASTIdentifierNode *TId,
+                                      const ASTIdentifierNode *RId) const;
 
   // Reset
   ASTResetNode *ProductionRule_1480(const ASTToken *TK,
