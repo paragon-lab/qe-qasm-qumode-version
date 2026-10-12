@@ -1,6 +1,7 @@
 // CV / qumode gate definitions.
-// disp is a builtin gate with the following signature:
-// gate disp(complex[float[64]] alpha) qumode qm;
+// Builtins (no include required):
+//   gate disp(complex[float[64]] alpha) qumode qm;
+//   gate bs(angle theta, angle phi) qumode qm1, qumode qm2;
 
 gate snap[uint N](array[angle, N] thetas) qumode qm {
     for i in [0:N] {

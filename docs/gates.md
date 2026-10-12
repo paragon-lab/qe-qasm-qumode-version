@@ -9,6 +9,7 @@ OpenQASM 3.0, as well as the limitations of the parser on these declarations.
 
 At the moment, the following qumode gates are supported:
 - displacement `disp(alpha) qm`
+- beamsplitter `bs(theta, phi) qm1, qm2`
 - SNAP: `snap([theta_0, theta_1, ...]) qm`
 - ECD: `ecd(alpha) qb, qm`
 
@@ -25,6 +26,19 @@ disp(0.5) qm; // equivalent to disp(0.5 + 0.0im)
 ```
 The displacement gate is treated as a builtin gate. The user doesn't need to
 include any file to use this gate.
+
+## Beamsplitter gate
+
+Gate signature:
+```qasm
+gate bs(angle theta, angle phi) qumode qm1, qumode qm2;
+```
+Example Usage:
+```qasm
+bs(pi/4, 0) qm1, qm2;
+bs(theta, phi) a, b;
+```
+The beamsplitter gate is a builtin. No include is required.
 
 ## SNAP gate
 

@@ -795,3 +795,6 @@ add_test(NAME qumode-t00030
 
 add_test(NAME qumode-t00031
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/symbolic-index.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '<Name>qm\\[k\\]</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out && grep -q '<Name>qm\\[i\\]</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out && ! grep -q stoi ${CMAKE_BINARY_DIR}/tests/qumode/symbolic-index.qasm.out")
+
+add_test(NAME qumode-t00032
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/bs-builtin.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/bs-builtin.qasm.out 2>&1; rc=\$?; test \$rc -eq 0 && grep -q '<Name>bs</Name>' ${CMAKE_BINARY_DIR}/tests/qumode/bs-builtin.qasm.out && grep -q '<FullyTyped>true</FullyTyped>' ${CMAKE_BINARY_DIR}/tests/qumode/bs-builtin.qasm.out")

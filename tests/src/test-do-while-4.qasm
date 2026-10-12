@@ -1,16 +1,16 @@
 OPENQASM 3.0;
 
-int bs = 0;
+int acc = 0;
 
 int i = 10;
 
 int j = 20;
 
 do {
-  bs |= i--;
+  acc |= i--;
 
   while (j != 0) {
-    bs = bs + 1;
+    acc = acc + 1;
     --j;
   }
 

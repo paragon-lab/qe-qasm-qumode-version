@@ -481,6 +481,7 @@ void ASTTypeSystemBuilder::Init() {
     BGM = {
         "U",
         "disp",
+        "bs",
     };
   }
 
@@ -573,6 +574,7 @@ void ASTTypeSystemBuilder::Init() {
   ASTTypeSystemBuilder::Instance().CreateASTReservedMPDecimalValues();
   ASTTypeSystemBuilder::Instance().CreateASTBuiltinUGate();
   ASTTypeSystemBuilder::Instance().CreateASTBuiltinDispGate();
+  ASTTypeSystemBuilder::Instance().CreateASTBuiltinBSGate();
   ASTTypeSystemBuilder::Instance().CreateASTBuiltinCXGate();
 
   ASTDefcalGrammarBuilder::Instance().SetCurrent("openpulse");
@@ -704,6 +706,90 @@ void ASTTypeSystemBuilder::CreateASTBuiltinDispGate() const {
   QIL.DeleteSymbols();
   GPL.DeleteSymbols();
   ASTSymbolTable::Instance().EraseLocalAngle(AlphaId);
+  ASTGateOperandParamBuilder::Instance().ReleaseQubits();
+  ASTGateContextBuilder::Instance().CloseContext();
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
+}
+
+void ASTTypeSystemBuilder::CreateASTBuiltinBSGate() const {
+  // Builtin beamsplitter: gate bs(angle theta, angle phi) qumode qm1, qumode
+  // qm2; Fully typed so CreateGateCall → ValidateTypedGateCall enforces the
+  // ABI.
+  ASTParameterList GPL;
+  ASTIdentifierList QIL;
+
+  ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeGate);
+
+  ASTIdentifierNode *ThetaId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"theta", ASTAngleNode::AngleBits, ASTTypeAngle);
+  assert(ThetaId && "Could not create a valid theta ASTIdentifierNode!");
+
+  ThetaId->SetPolymorphicName(u8"theta");
+  ThetaId->SetGateLocal(true);
+  ThetaId->SetLocalScope();
+
+  ASTAngleNode *Theta = ASTBuilder::Instance().CreateASTAngleNode(
+      ThetaId, ASTAngleNode::DetermineAngleType(u8"theta"),
+      ASTAngleNode::AngleBits);
+  assert(Theta && "Could not create a valid theta ASTAngleNode!");
+  GPL.Append(Theta);
+
+  ASTIdentifierNode *PhiId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"phi", ASTAngleNode::AngleBits, ASTTypeAngle);
+  assert(PhiId && "Could not create a valid phi ASTIdentifierNode!");
+
+  PhiId->SetPolymorphicName(u8"phi");
+  PhiId->SetGateLocal(true);
+  PhiId->SetLocalScope();
+
+  ASTAngleNode *Phi = ASTBuilder::Instance().CreateASTAngleNode(
+      PhiId, ASTAngleNode::DetermineAngleType(u8"phi"),
+      ASTAngleNode::AngleBits);
+  assert(Phi && "Could not create a valid phi ASTAngleNode!");
+  GPL.Append(Phi);
+
+  ASTIdentifierNode *Qm1Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "qm1", 1U, ASTTypeGateOperandParam);
+  assert(Qm1Id && "Could not create a valid qm1 ASTIdentifierNode!");
+
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(Qm1Id);
+  Qm1Id->SetGateLocal(true);
+  Qm1Id->SetLocalScope();
+  Qm1Id->SetPolymorphicType(ASTTypeQumode);
+  QIL.Append(Qm1Id);
+
+  ASTIdentifierNode *Qm2Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "qm2", 1U, ASTTypeGateOperandParam);
+  assert(Qm2Id && "Could not create a valid qm2 ASTIdentifierNode!");
+
+  ASTIdentifierTypeController::Instance().CheckGateOperandParamType(Qm2Id);
+  Qm2Id->SetGateLocal(true);
+  Qm2Id->SetLocalScope();
+  Qm2Id->SetPolymorphicType(ASTTypeQumode);
+  QIL.Append(Qm2Id);
+
+  ASTIdentifierNode *BId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"bs", ASTGateNode::GateBits, ASTTypeGate);
+  assert(BId && "Could not create a valid BSGate ASTIdentifierNode!");
+
+  BId->SetPolymorphicName("bs");
+  ASTGateNode *BGN = ASTBuilder::Instance().CreateASTGateNode(
+      BId, ASTGateKindGeneric, GPL, QIL);
+  assert(BGN && "Could not create a valid BSGate ASTGateNode!");
+
+  BGN->SetFormalParamTypes({ASTTypeAngle, ASTTypeAngle});
+  BGN->SetFormalParamArraySizes({0U, 0U});
+  BGN->SetFormalParamArraySizeTemplateIndices(
+      {static_cast<unsigned>(~0U), static_cast<unsigned>(~0U)});
+  BGN->SetFormalQuantumTypes({ASTTypeQumode, ASTTypeQumode});
+  BGN->SetFullyTyped(true);
+  BGN->Mangle();
+
+  ASTGateQubitTracker::Instance().Erase();
+  QIL.DeleteSymbols();
+  GPL.DeleteSymbols();
+  ASTSymbolTable::Instance().EraseLocalAngle(ThetaId);
+  ASTSymbolTable::Instance().EraseLocalAngle(PhiId);
   ASTGateOperandParamBuilder::Instance().ReleaseQubits();
   ASTGateContextBuilder::Instance().CloseContext();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
