@@ -3167,6 +3167,7 @@ ASTBuilder::FindOrCreateASTIdentifierNode(const std::string &Id, unsigned Bits,
       case ASTTypeIdentifier:
       case ASTTypeGate:
       case ASTTypeMeasure:
+      case ASTTypePhotonCountMeasure:
       case ASTTypeBarrier:
       case ASTTypeMPInteger:
       case ASTTypeMPDecimal:
@@ -3700,6 +3701,32 @@ ASTMeasureNode *ASTBuilder::CreateASTMeasureNode(const ASTIdentifierNode *Id,
   STE->ResetValue();
   STE->SetValue(new ASTValue<>(MN, ASTTypeMeasure), ASTTypeMeasure);
   assert(STE->HasValue() && "Measure SymbolTable Entry has no Value!");
+
+  return MN;
+}
+
+ASTPhotonCountMeasureNode *ASTBuilder::CreateASTPhotonCountMeasureNode(
+    const ASTIdentifierNode *Id, ASTQubitContainerNode *Target,
+    ASTCBitNode *Result, const ASTExpressionNode *FockLevel, unsigned RI) {
+  assert(Id && "Invalid ASTIdentifierNode PhotonCountMeasure argument!");
+  assert(Target &&
+         "Invalid Target ASTQubitContainerNode PhotonCountMeasure argument!");
+  assert(Result && "Invalid Result ASTCBitNode PhotonCountMeasure argument!");
+  assert(FockLevel && "Invalid FockLevel ASTExpressionNode argument!");
+
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+      Id, ASTMeasureNode::MeasureBits, ASTTypePhotonCountMeasure);
+  assert(STE &&
+         "Could not retrieve a valid PhotonCountMeasure SymbolTable Entry!");
+
+  ASTPhotonCountMeasureNode *MN =
+      new ASTPhotonCountMeasureNode(Id, Target, Result, FockLevel, RI);
+
+  STE->ResetValue();
+  STE->SetValue(new ASTValue<>(MN, ASTTypePhotonCountMeasure),
+                ASTTypePhotonCountMeasure);
+  assert(STE->HasValue() &&
+         "PhotonCountMeasure SymbolTable Entry has no Value!");
 
   return MN;
 }
@@ -6026,6 +6053,7 @@ ASTBuilder::CreateASTReturnStatementNode(const ASTIdentifierNode *Id,
     RN = new ASTReturnStatementNode(Id, dynamic_cast<ASTCBitNode *>(EN));
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     RN = new ASTReturnStatementNode(Id, dynamic_cast<ASTMeasureNode *>(EN));
     break;
   case ASTTypeQubit:
@@ -6140,6 +6168,7 @@ ASTBuilder::CreateASTReturnStatementNode(const ASTIdentifierNode *Id,
     RN = new ASTReturnStatementNode(Id, dynamic_cast<ASTCBitNode *>(SN));
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     RN = new ASTReturnStatementNode(Id, dynamic_cast<ASTMeasureNode *>(SN));
     break;
   case ASTTypeQubit:

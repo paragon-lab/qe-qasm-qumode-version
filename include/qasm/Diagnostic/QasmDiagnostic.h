@@ -72,10 +72,37 @@ struct UnitaryMatrixInvalidComplexPayload {
   std::string message() const;
 };
 
+struct TokenInvalidInVersionPayload {
+  std::string Token;
+  double Version;
+
+  std::string message() const;
+};
+
+struct FeatureDeprecatedPayload {
+  std::string Feature;
+
+  std::string message() const;
+};
+
+struct FeatureRemovalPayload {
+  std::string Feature;
+
+  std::string message() const;
+};
+
+struct UnknownOpenQASMVersionPayload {
+  double Version;
+
+  std::string message() const;
+};
+
 using DiagnosticKind = std::variant<
     ComplexInitPayload, GateParamArraySizeMismatchPayload,
     GateParamTypeMismatchPayload, GateParamUnsupportedFormalPayload,
-    UnitaryMatrixRowConstructPayload, UnitaryMatrixInvalidComplexPayload>;
+    UnitaryMatrixRowConstructPayload, UnitaryMatrixInvalidComplexPayload,
+    TokenInvalidInVersionPayload, FeatureDeprecatedPayload,
+    FeatureRemovalPayload, UnknownOpenQASMVersionPayload>;
 
 struct Diagnostic {
   ASTLocation Loc;

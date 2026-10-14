@@ -20387,11 +20387,11 @@ static bool IsAllowedFockLevelExpr(const ASTExpressionNode *EN) {
          ASTExpressionValidator::Instance().IsIntegerType(Ty);
 }
 
-ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
-    const ASTToken *TK, const ASTMeasureKeywordArgList *Kwargs,
+ASTPhotonCountMeasureNode *ASTProductionFactory::ProductionRule_1466(
+    const ASTToken *TK, const ASTExpressionNode *FockLevel,
     const ASTIdentifierNode *TId, const ASTIdentifierNode *RId) const {
   assert(TK && "Invalid ASTToken argument!");
-  assert(Kwargs && "Invalid ASTMeasureKeywordArgList argument!");
+  assert(FockLevel && "Invalid FockLevel ASTExpressionNode argument!");
   assert(TId && "Invalid target ASTIdentifierNode argument!");
 
   QasmFeatureTester::Instance().ValidateFeature("measure");
@@ -20404,63 +20404,19 @@ ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
     M << "A measure cannot occur within a gate statement sequence.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                          M.str());
+    return ASTPhotonCountMeasureNode::StatementError(
+        ASTIdentifierNode::PhotonCountMeasure.Clone(), M.str());
   }
 
-  if (Kwargs->Empty()) {
+  if (!IsAllowedFockLevelExpr(FockLevel)) {
     std::stringstream M;
-    M << "measure(...) requires at least one keyword argument.";
+    M << "measure_photon_count(N) requires N to be an unsigned integer "
+         "expression.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                          M.str());
-  }
-
-  // Validate kwargs: currently only `fock` is supported; duplicates rejected.
-  // Unknown keys are rejected but still stored on the AST once accepted keys
-  // expand — keep the list representation so new keys need no AST redesign.
-  std::set<std::string> Seen;
-  for (const ASTMeasureKeywordArg &KA : Kwargs->GetArgs()) {
-    if (!Seen.insert(KA.GetKey()).second) {
-      std::stringstream M;
-      M << "Duplicate measure keyword argument '" << KA.GetKey() << "'.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
-          DiagLevel::Error);
-      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                            M.str());
-    }
-    if (KA.GetKey() != "fock") {
-      std::stringstream M;
-      M << "Unsupported measure keyword argument '" << KA.GetKey()
-        << "'; expected 'fock'.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
-          DiagLevel::Error);
-      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                            M.str());
-    }
-    if (!IsAllowedFockLevelExpr(KA.GetValue())) {
-      std::stringstream M;
-      M << "measure(fock=N) requires N to be an unsigned integer expression.";
-      const ASTLocation Loc =
-          KA.GetValue() ? DIAGLineCounter::Instance().GetLocation(KA.GetValue())
-                        : DIAGLineCounter::Instance().GetLocation(TK);
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(Loc, M.str(),
-                                                       DiagLevel::Error);
-      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                            M.str());
-    }
-  }
-
-  if (!Kwargs->Has("fock")) {
-    std::stringstream M;
-    M << "measure(...) currently requires a 'fock' keyword argument.";
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                          M.str());
+        DIAGLineCounter::Instance().GetLocation(FockLevel), M.str(),
+        DiagLevel::Error);
+    return ASTPhotonCountMeasureNode::StatementError(
+        ASTIdentifierNode::PhotonCountMeasure.Clone(), M.str());
   }
 
   // Resolve target: must be a qumode (container or indexed element).
@@ -20479,13 +20435,13 @@ ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
 
   if (!ASTUtils::Instance().IsQumodeType(TTy)) {
     std::stringstream M;
-    M << "measure(fock=N) target '" << TId->GetName()
+    M << "measure_photon_count(N) target '" << TId->GetName()
       << "' must be a qumode, but has type " << PrintTypeName(TTy) << ".";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TId), M.str(),
         DiagLevel::Error);
-    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                          M.str());
+    return ASTPhotonCountMeasureNode::StatementError(
+        ASTIdentifierNode::PhotonCountMeasure.Clone(), M.str());
   }
 
   ASTQubitContainerNode *QCN = nullptr;
@@ -20503,11 +20459,12 @@ ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
   }
   if (!QCN) {
     std::stringstream M;
-    M << "Could not resolve measure(fock=N) target '" << TId->GetName() << "'.";
+    M << "Could not resolve measure_photon_count(N) target '" << TId->GetName()
+      << "'.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(TId), M.str(), DiagLevel::ICE);
-    return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                          M.str());
+    return ASTPhotonCountMeasureNode::StatementError(
+        ASTIdentifierNode::PhotonCountMeasure.Clone(), M.str());
   }
 
   // Result: explicit bit, or an anonymous 1-bit result for the statement form.
@@ -20527,13 +20484,13 @@ ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
     ASTType RTy = RSTE ? RSTE->GetValueType() : RId->GetSymbolType();
     if (RTy != ASTTypeBitset && RTy != ASTTypeUndefined) {
       std::stringstream M;
-      M << "measure(fock=N) result '" << RId->GetName()
+      M << "measure_photon_count(N) result '" << RId->GetName()
         << "' must be a bit, but has type " << PrintTypeName(RTy) << ".";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(RId), M.str(),
           DiagLevel::Error);
-      return ASTMeasureNode::StatementError(ASTIdentifierNode::Measure.Clone(),
-                                            M.str());
+      return ASTPhotonCountMeasureNode::StatementError(
+          ASTIdentifierNode::PhotonCountMeasure.Clone(), M.str());
     }
 
     if (RSTE && RSTE->HasValue() && RSTE->GetValueType() == ASTTypeBitset) {
@@ -20555,12 +20512,13 @@ ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
     assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
     std::stringstream RID;
-    RID << "ast-measure-result-"
+    RID << "ast-measure-photon-count-result-"
         << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
     ASTIdentifierNode *AnonRId = ASTBuilder::Instance().CreateASTIdentifierNode(
         RID.str(), 1U, ASTTypeBitset);
-    assert(AnonRId && "Could not create measure result ASTIdentifierNode!");
-    AnonRId->SetGateParamName("measure-result");
+    assert(AnonRId &&
+           "Could not create photon-count measure result ASTIdentifierNode!");
+    AnonRId->SetGateParamName("measure-photon-count-result");
     AnonRId->SetLocation(TK->GetLocation());
     AnonRId->SetDeclarationContext(CTX);
     CBN = ASTBuilder::Instance().CreateASTCBitNode(AnonRId, 1U, 0UL);
@@ -20573,20 +20531,20 @@ ASTMeasureNode *ASTProductionFactory::ProductionRule_1466(
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   std::stringstream MS;
-  MS << "ast-measure-" << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
+  MS << "ast-measure-photon-count-"
+     << DIAGLineCounter::Instance().GetIdentifierLocation(TK);
   ASTIdentifierNode *MId = ASTBuilder::Instance().CreateASTIdentifierNode(
-      MS.str(), ASTMeasureNode::MeasureBits, ASTTypeMeasure);
-  assert(MId && "Could not create a Measure ASTIdentifierNode!");
+      MS.str(), ASTMeasureNode::MeasureBits, ASTTypePhotonCountMeasure);
+  assert(MId && "Could not create a PhotonCountMeasure ASTIdentifierNode!");
 
-  MId->SetGateParamName("measure");
+  MId->SetGateParamName("measure_photon_count");
   MId->SetDeclarationContext(CTX);
   MId->SetLocation(TK->GetLocation());
 
-  ASTMeasureNode *MN =
-      ASTBuilder::Instance().CreateASTMeasureNode(MId, QCN, CBN);
-  assert(MN && "Could not create an ASTMeasureNode!");
-
-  MN->SetKeywordArgs(*Kwargs);
+  ASTPhotonCountMeasureNode *MN =
+      ASTBuilder::Instance().CreateASTPhotonCountMeasureNode(MId, QCN, CBN,
+                                                             FockLevel);
+  assert(MN && "Could not create an ASTPhotonCountMeasureNode!");
 
   if (RIdR)
     MN->SetResultIndex(RIdR->GetIndex());

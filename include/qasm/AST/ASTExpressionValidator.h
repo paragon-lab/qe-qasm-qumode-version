@@ -480,6 +480,7 @@ public:
     case ASTTypeFunction:
     case ASTTypeFunctionCall:
     case ASTTypeMeasure:
+    case ASTTypePhotonCountMeasure:
       return true;
       break;
     default:

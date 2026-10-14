@@ -494,7 +494,6 @@ int readinput() {
     QASM::ASTCBitNode* CBitNode;
     QASM::ASTArrayNode* ArrayNode;
     QASM::ASTMeasureNode* MeasureNode;
-    QASM::ASTMeasureKeywordArgList* MeasureKwargList;
     QASM::ASTResultNode* ResultNode;
     QASM::ASTRotateNode* RotateNode;
     QASM::ASTPopcountNode* PopcountNode;
@@ -634,7 +633,8 @@ int readinput() {
 %token <Token> TOK_PHI TOK_CHI TOK_PSI TOK_OMEGA
 %token <Token> TOK_EULER TOK_EULER_NUMBER
 
-%token <Token> TOK_GATE TOK_BARRIER TOK_MEASURE TOK_EXTERN
+%token <Token> TOK_GATE TOK_BARRIER TOK_MEASURE TOK_MEASURE_PHOTON_COUNT
+%token <Token> TOK_EXTERN
 %token <Token> TOK_CAL TOK_DEFCAL TOK_DEFCAL_GRAMMAR
 
 %token <Token> TOK_PTR_OP TOK_INC_OP TOK_DEC_OP
@@ -760,7 +760,6 @@ int readinput() {
 %type <BarrierNode>                 Barrier
 %type <ResetNode>                   Reset
 %type <MeasureNode>                 Measure MeasureDecl
-%type <MeasureKwargList>            MeasureKwargList MeasureKwargListImpl
 %type <DelayNode>                   Delay
 %type <StretchNode>                 Stretch
 %type <DurationNode>                DurationDecl ImplicitDuration
@@ -2975,7 +2974,7 @@ Measure
     $$ = ASTProductionFactory::Instance().ProductionRule_1461(GET_TOKEN(2),
                                                               $4, $1);
   }
-  | Identifier '=' TOK_MEASURE '(' MeasureKwargList ')' Identifier ';' {
+  | Identifier '=' TOK_MEASURE_PHOTON_COUNT '(' ArithExpr ')' Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1466(GET_TOKEN(5),
                                                               $5, $7, $1);
   }
@@ -2988,27 +2987,9 @@ Measure
   | TOK_MEASURE Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1462(GET_TOKEN(2), $2);
   }
-  | TOK_MEASURE '(' MeasureKwargList ')' Identifier ';' {
+  | TOK_MEASURE_PHOTON_COUNT '(' ArithExpr ')' Identifier ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1466(GET_TOKEN(5),
                                                               $3, $5, nullptr);
-  }
-  ;
-
-MeasureKwargList
-  : MeasureKwargListImpl {
-    $$ = $1;
-  }
-  ;
-
-MeasureKwargListImpl
-  : Identifier '=' ArithExpr {
-    $$ = new ASTMeasureKeywordArgList();
-    assert($$ && "Could not create a valid ASTMeasureKeywordArgList!");
-    $$->Append($1->GetName(), $3);
-  }
-  | MeasureKwargListImpl ',' Identifier '=' ArithExpr {
-    $$ = $1;
-    $$->Append($3->GetName(), $5);
   }
   ;
 

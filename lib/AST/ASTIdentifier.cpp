@@ -136,6 +136,11 @@ ASTIdentifierNode __attribute__((init_priority(201)))
 ASTIdentifierNode::Measure("measure", ASTTypeMeasure, (unsigned)~0x0);
 
 ASTIdentifierNode __attribute__((init_priority(201)))
+ASTIdentifierNode::PhotonCountMeasure("measure_photon_count",
+                                      ASTTypePhotonCountMeasure,
+                                      (unsigned)~0x0);
+
+ASTIdentifierNode __attribute__((init_priority(201)))
 ASTIdentifierNode::Box("box", ASTTypeBox, 64U);
 
 ASTIdentifierNode __attribute__((init_priority(201)))

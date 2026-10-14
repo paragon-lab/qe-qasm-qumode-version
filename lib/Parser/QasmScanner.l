@@ -498,6 +498,21 @@ yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   return yylval->Tok->GetInt();
 }
 
+"measure_photon_count" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_MEASURE_PHOTON_COUNT);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  QASM::QasmFeatureTester::Instance().ValidateFeature("measure");
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(
+      ASTTypePhotonCountMeasure);
+  return yylval->Tok->GetInt();
+}
+
 "measure" {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_MEASURE);
   assert(yylval->Tok && "Could not create a valid ASTToken!");

@@ -66,8 +66,11 @@ protected:
   /// Emit `lhs = rhs;` / compound assignment from a binary-op statement.
   virtual void EmitBinaryOpStatement(const ASTBinaryOpStatementNode *S);
 
-  /// Emit `measure …;` / `bit = measure …;` including `measure(fock=…)`.
+  /// Emit `measure …;` / `bit = measure …;`.
   virtual void EmitMeasure(const ASTMeasureNode *MN);
+
+  /// Emit `measure_photon_count(N) qm;` / `bit = measure_photon_count(N) qm;`.
+  virtual void EmitPhotonCountMeasure(const ASTPhotonCountMeasureNode *MN);
 
   /// Emit `gate name[…](…) qargs { … }`.
   virtual void EmitGateDeclaration(const ASTGateDeclarationNode *GDN);

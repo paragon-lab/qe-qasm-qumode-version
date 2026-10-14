@@ -179,7 +179,7 @@ public:
   }
 
   virtual ASTType GetMeasureReturnType() const {
-    if (Type == ASTTypeMeasure)
+    if (IsMeasure())
       return Measure->GetResultType();
 
     return ASTTypeUndefined;
@@ -209,10 +209,13 @@ public:
     return Type == ASTTypeFunctionCallStatement;
   }
 
-  virtual bool IsMeasure() const { return Type == ASTTypeMeasure; }
+  virtual bool IsMeasure() const {
+    return Type == ASTTypeMeasure || Type == ASTTypePhotonCountMeasure;
+  }
 
   virtual bool IsTransitive() const {
-    return Type == ASTTypeFunctionCallStatement || Type == ASTTypeMeasure;
+    return Type == ASTTypeFunctionCallStatement || Type == ASTTypeMeasure ||
+           Type == ASTTypePhotonCountMeasure;
   }
 
   virtual const ASTImplicitConversionNode *GetImplicitConversion() const {
@@ -306,11 +309,11 @@ public:
   }
 
   virtual ASTMeasureNode *GetMeasure() {
-    return Type == ASTTypeMeasure ? Measure : nullptr;
+    return IsMeasure() ? Measure : nullptr;
   }
 
   virtual const ASTMeasureNode *GetMeasure() const {
-    return Type == ASTTypeMeasure ? Measure : nullptr;
+    return IsMeasure() ? Measure : nullptr;
   }
 
   virtual const ASTBinaryOpNode *GetBinaryOp() const {
@@ -430,6 +433,7 @@ public:
       QBit->print();
       break;
     case ASTTypeMeasure:
+    case ASTTypePhotonCountMeasure:
       Measure->print();
       break;
     case ASTTypeBinaryOp:

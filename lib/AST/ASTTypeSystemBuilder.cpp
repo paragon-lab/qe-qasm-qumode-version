@@ -320,6 +320,10 @@ void ASTTypeSystemBuilder::Init() {
             ASTMeasureNode::MeasureBits,
         },
         {
+            ASTTypePhotonCountMeasure,
+            ASTMeasureNode::MeasureBits,
+        },
+        {
             ASTTypePragma,
             ASTPragmaNode::PragmaBits,
         },

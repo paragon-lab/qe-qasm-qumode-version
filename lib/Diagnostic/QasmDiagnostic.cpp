@@ -18,6 +18,8 @@
 
 #include <qasm/Diagnostic/QasmDiagnostic.h>
 
+#include <iomanip>
+#include <sstream>
 #include <variant>
 
 namespace QASM {
@@ -53,6 +55,29 @@ std::string UnitaryMatrixRowConstructPayload::message() const {
 std::string UnitaryMatrixInvalidComplexPayload::message() const {
   return "Invalid complex expression in unitary matrix at column " +
          std::to_string(Column) + ".";
+}
+
+std::string TokenInvalidInVersionPayload::message() const {
+  std::ostringstream OS;
+  OS << "Token '" << Token << "' is invalid in OpenQASM Version " << std::fixed
+     << std::setprecision(1) << Version << ".";
+  return OS.str();
+}
+
+std::string FeatureDeprecatedPayload::message() const {
+  return "feature '" + Feature +
+         "' is deprecated and will be removed in a future version of OpenQASM.";
+}
+
+std::string FeatureRemovalPayload::message() const {
+  return "'" + Feature +
+         "' feature will be removed in a future version of OpenQASM.";
+}
+
+std::string UnknownOpenQASMVersionPayload::message() const {
+  std::ostringstream OS;
+  OS << "Unknown OpenQASM version " << Version << ".";
+  return OS.str();
 }
 
 void EmitDiagnostic(const Diagnostic &Diag) {

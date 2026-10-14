@@ -653,6 +653,9 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeMeasure:
     return "ASTTypeMeasure";
     break;
+  case ASTTypePhotonCountMeasure:
+    return "ASTTypePhotonCountMeasure";
+    break;
   case ASTTypeModAssign:
     return "ASTTypeModAssign";
     break;
@@ -1903,6 +1906,9 @@ const char *PrintParserToken(unsigned Token) {
     break;
   case token::TOK_MEASURE:
     return "TOK_MEASURE";
+    break;
+  case token::TOK_MEASURE_PHOTON_COUNT:
+    return "TOK_MEASURE_PHOTON_COUNT";
     break;
   case token::TOK_KERNEL:
     return "TOK_KERNEL";

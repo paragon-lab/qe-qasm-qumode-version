@@ -355,32 +355,12 @@ void ASTCNotGateOpNode::print() const {
   std::cout << "</CNotGateOpNode>" << std::endl;
 }
 
-void ASTMeasureKeywordArg::print() const {
-  std::cout << "<KeywordArg>" << std::endl;
-  std::cout << "<Key>" << Key << "</Key>" << std::endl;
-  std::cout << "<Value>" << std::endl;
-  if (Value)
-    Value->print();
-  std::cout << "</Value>" << std::endl;
-  std::cout << "</KeywordArg>" << std::endl;
-}
-
-void ASTMeasureKeywordArgList::print() const {
-  std::cout << "<KeywordArgs>" << std::endl;
-  for (const auto &A : Args)
-    A.print();
-  std::cout << "</KeywordArgs>" << std::endl;
-}
-
 void ASTMeasureNode::print() const {
   std::cout << "<MeasureNode>" << std::endl;
   std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
   std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
             << std::endl;
   ASTGateQOpNode::print();
-
-  if (!Kwargs.Empty())
-    Kwargs.print();
 
   std::cout << "<Target>" << std::endl;
 
@@ -411,6 +391,40 @@ void ASTMeasureNode::print() const {
   }
 
   std::cout << "</MeasureNode>" << std::endl;
+}
+
+void ASTPhotonCountMeasureNode::print() const {
+  std::cout << "<PhotonCountMeasureNode>" << std::endl;
+  std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
+  std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
+            << std::endl;
+  ASTGateQOpNode::print();
+
+  std::cout << "<FockLevel>" << std::endl;
+  if (FockLevel)
+    FockLevel->print();
+  std::cout << "</FockLevel>" << std::endl;
+
+  std::cout << "<Target>" << std::endl;
+  if (HasTargetVector())
+    for (unsigned I = 0; I < GetTargetVectorSize(); ++I)
+      std::cout << "<TargetIndex>" << GetTargetIndex(I) << "</TargetIndex>"
+                << std::endl;
+  if (GetTarget())
+    GetTarget()->print();
+  std::cout << "</Target>" << std::endl;
+
+  if (HasResult()) {
+    std::cout << "<Result>" << std::endl;
+    if (HasResultVector())
+      for (unsigned I = 0; I < GetResultVectorSize(); ++I)
+        std::cout << "<ResultIndex>" << GetResultIndex(I) << "</ResultIndex>"
+                  << std::endl;
+    GetResult()->print();
+    std::cout << "</Result>" << std::endl;
+  }
+
+  std::cout << "</PhotonCountMeasureNode>" << std::endl;
 }
 
 void ASTResetNode::print() const {
@@ -486,6 +500,12 @@ void ASTMeasureNode::Mangle() {
 
   M.End();
   GetIdentifier()->SetMangledName(M.AsString());
+}
+
+void ASTPhotonCountMeasureNode::Mangle() {
+  if (FockLevel)
+    const_cast<ASTExpressionNode *>(FockLevel)->Mangle();
+  ASTMeasureNode::Mangle();
 }
 
 void ASTGateQOpNode::Mangle(ASTGateQOpNode *G) {

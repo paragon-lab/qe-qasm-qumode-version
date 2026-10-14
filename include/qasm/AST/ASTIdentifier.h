@@ -632,6 +632,7 @@ public:
   static ASTIdentifierNode Stretch;
   static ASTIdentifierNode Length;
   static ASTIdentifierNode Measure;
+  static ASTIdentifierNode PhotonCountMeasure;
   static ASTIdentifierNode Box;
   static ASTIdentifierNode BoxAs;
   static ASTIdentifierNode BoxTo;

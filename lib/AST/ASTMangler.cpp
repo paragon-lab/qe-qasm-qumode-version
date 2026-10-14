@@ -5437,6 +5437,7 @@ void ASTDemangler::DeserializeDefcal(std::stringstream &SR) {
         case ASTTypeDuration:
         case ASTTypeLength:
         case ASTTypeMeasure:
+        case ASTTypePhotonCountMeasure:
         case ASTTypeReset:
         case ASTTypeBox:
         case ASTTypeBoxAs:
@@ -5665,6 +5666,7 @@ void ASTDemangler::DeserializeFunction(std::stringstream &SR) {
       case ASTTypeDuration:
       case ASTTypeLength:
       case ASTTypeMeasure:
+      case ASTTypePhotonCountMeasure:
       case ASTTypeQubit:
       case ASTTypeReset:
       case ASTTypeBox:
@@ -5750,6 +5752,7 @@ void ASTDemangler::DeserializeGate(std::stringstream &SR) {
         case ASTTypeDuration:
         case ASTTypeLength:
         case ASTTypeMeasure:
+        case ASTTypePhotonCountMeasure:
         case ASTTypeReset:
         case ASTTypeBox:
         case ASTTypeBoxAs:
@@ -5839,6 +5842,7 @@ void ASTDemangler::DeserializeKernel(std::stringstream &SR) {
       case ASTTypeDuration:
       case ASTTypeLength:
       case ASTTypeMeasure:
+      case ASTTypePhotonCountMeasure:
       case ASTTypeReset:
       case ASTTypeBox:
       case ASTTypeBoxAs:
@@ -6278,6 +6282,7 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream &SR,
   case ASTTypeReset:
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     break;
   case ASTTypeGPhaseExpression:
     break;
@@ -6456,6 +6461,7 @@ void ASTDemangler::DeserializeBinaryOp(
     case ASTTypeStretch:
     case ASTTypeReset:
     case ASTTypeMeasure:
+    case ASTTypePhotonCountMeasure:
     case ASTTypeGPhaseExpression:
     case ASTTypeOpenPulseFrame:
     case ASTTypeOpenPulsePlay:

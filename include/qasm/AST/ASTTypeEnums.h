@@ -235,6 +235,7 @@ enum ASTType : unsigned {
   ASTTypeLet,
   ASTTypeLValueReference,
   ASTTypeMeasure,
+  ASTTypePhotonCountMeasure,
   ASTTypeModAssign,
   ASTTypeMPComplex,
   ASTTypeMPComplexArray,

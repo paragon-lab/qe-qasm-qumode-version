@@ -60,8 +60,8 @@
 #include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTTypeSpecifier.h>
 #include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTValue.h>
 #include <qasm/AST/ASTUnitary.h>
+#include <qasm/AST/ASTValue.h>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -338,6 +338,11 @@ public:
                        ASTQubitContainerNode *Target, ASTMPComplexNode *Result,
                        unsigned RIX = static_cast<unsigned>(~0x0));
 
+  ASTPhotonCountMeasureNode *CreateASTPhotonCountMeasureNode(
+      const ASTIdentifierNode *Id, ASTQubitContainerNode *Target,
+      ASTCBitNode *Result, const ASTExpressionNode *FockLevel,
+      unsigned RIX = static_cast<unsigned>(~0x0));
+
   ASTQRegNode *CreateASTQRegNode(const ASTIdentifierNode *Id,
                                  unsigned NumQubits);
 
@@ -386,13 +391,11 @@ public:
   ASTQumodeContainerNode *
   CreateASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned NumBits);
   // unitary u;
-  ASTUnitaryNode *
-  CreateASTUnitaryNode(const ASTIdentifierNode *Id);
+  ASTUnitaryNode *CreateASTUnitaryNode(const ASTIdentifierNode *Id);
 
-  //unitary u = {{1,0},{0,1}};
-  ASTUnitaryNode *
-  CreateASTUnitaryNode(const ASTIdentifierNode *Id,
-                     const ASTInitializerList *IL);
+  // unitary u = {{1,0},{0,1}};
+  ASTUnitaryNode *CreateASTUnitaryNode(const ASTIdentifierNode *Id,
+                                       const ASTInitializerList *IL);
 
   ASTQubitNode *CreateASTQubitNode(const ASTIdentifierNode *Id, unsigned Index);
 

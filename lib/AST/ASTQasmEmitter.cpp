@@ -216,6 +216,14 @@ void ASTQasmEmitter::EmitStatement(const ASTStatement *S) {
       EmitUnhandled(S);
     return;
 
+  case ASTTypePhotonCountMeasure:
+    if (const ASTPhotonCountMeasureNode *MN =
+            dynamic_cast<const ASTPhotonCountMeasureNode *>(S))
+      EmitPhotonCountMeasure(MN);
+    else
+      EmitUnhandled(S);
+    return;
+
   case ASTTypeGateDeclaration:
     if (const ASTGateDeclarationNode *GDN =
             dynamic_cast<const ASTGateDeclarationNode *>(S))
@@ -670,8 +678,10 @@ bool IsAnonymousMeasureResult(const ASTCBitNode *CB) {
     return true;
   if (Name.rfind("ast-measure-result-", 0) == 0)
     return true;
+  if (Name.rfind("ast-measure-photon-count-result-", 0) == 0)
+    return true;
   const std::string &GP = CB->GetIdentifier()->GetGateParamName();
-  return GP == "measure-result";
+  return GP == "measure-result" || GP == "measure-photon-count-result";
 }
 
 void EmitIndexedName(std::ostream &OS, const std::string &Base, bool HasIndex,
@@ -722,21 +732,37 @@ void ASTQasmEmitter::EmitMeasure(const ASTMeasureNode *MN) {
 
   OS << "measure";
 
-  const ASTMeasureKeywordArgList &Kwargs = MN->GetKeywordArgs();
-  if (!Kwargs.Empty()) {
-    OS << '(';
-    bool First = true;
-    for (const ASTMeasureKeywordArg &KA : Kwargs.GetArgs()) {
-      if (!First)
-        OS << ", ";
-      First = false;
-      OS << KA.GetKey() << '=';
-      EmitExpression(KA.GetValue());
-    }
-    OS << ')';
+  OS << ' ';
+
+  if (const ASTQubitContainerNode *T = MN->GetTarget()) {
+    const bool HasTI = MN->HasTargetVector();
+    EmitIndexedName(OS, T->GetName(), HasTI,
+                    HasTI ? MN->GetTargetIndex(0) : 0U);
   }
 
-  OS << ' ';
+  OS << ";\n";
+}
+
+void ASTQasmEmitter::EmitPhotonCountMeasure(
+    const ASTPhotonCountMeasureNode *MN) {
+  assert(MN && "Invalid ASTPhotonCountMeasureNode!");
+
+  if (MN->IsError())
+    return;
+
+  if (MN->HasResult()) {
+    const ASTCBitNode *CB = MN->GetResult();
+    if (CB && !IsAnonymousMeasureResult(CB)) {
+      const bool HasRI = MN->HasResultVector();
+      EmitIndexedName(OS, CB->GetName(), HasRI,
+                      HasRI ? MN->GetResultIndex(0) : 0U);
+      OS << " = ";
+    }
+  }
+
+  OS << "measure_photon_count(";
+  EmitExpression(MN->GetFockLevel());
+  OS << ") ";
 
   if (const ASTQubitContainerNode *T = MN->GetTarget()) {
     const bool HasTI = MN->HasTargetVector();

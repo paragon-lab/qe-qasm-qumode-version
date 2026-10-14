@@ -109,6 +109,9 @@ ASTType ASTTypeSpecifierNode::ResolveASTType(int Token) const {
   case token::TOK_MEASURE:
     return ASTTypeMeasure;
     break;
+  case token::TOK_MEASURE_PHOTON_COUNT:
+    return ASTTypePhotonCountMeasure;
+    break;
   case token::TOK_KERNEL:
     return ASTTypeKernel;
     break;
@@ -232,6 +235,9 @@ const char *ASTTypeSpecifierNode::ResolveASTTypeName() const {
     break;
   case ASTTypeMeasure:
     return "measure";
+    break;
+  case ASTTypePhotonCountMeasure:
+    return "measure_photon_count";
     break;
   case ASTTypeKernel:
     return "kernel";

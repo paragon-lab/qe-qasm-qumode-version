@@ -539,7 +539,8 @@ bool ASTDeclarationBuilder::TransferReturn(
     if (const ASTQubitContainerNode *QCN = RN->GetQubitContainer())
       RT = TransferSymbol(QCN->GetIdentifier(), MM);
   } break;
-  case ASTTypeMeasure: {
+  case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure: {
     bool MRT = true;
 
     if (const ASTMeasureNode *MN = RN->GetMeasure()) {

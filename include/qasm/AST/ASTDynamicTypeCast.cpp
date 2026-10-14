@@ -282,6 +282,7 @@ __To *ASTDynamicTypeCast::DynCast(ASTBase *From) {
     return dynamic_cast<__To *>(From);
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     return dynamic_cast<__To *>(From);
     break;
   case ASTTypeModAssign:
@@ -739,6 +740,7 @@ const __To *ASTDynamicTypeCast::DynCast(const ASTBase *From) {
     return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeModAssign:
@@ -1342,6 +1344,7 @@ __To *ASTDynamicTypeCast::DynCast(ASTAnyType &From) {
     }
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     try {
       return std::any_cast<__To *>(From.first);
     } catch (const std::bad_any_cast &E) {
@@ -2057,6 +2060,7 @@ const __To *ASTDynamicTypeCast::DynCast(const ASTAnyType &From) {
     }
     break;
   case ASTTypeMeasure:
+  case ASTTypePhotonCountMeasure:
     try {
       return std::any_cast<const __To *>(From.first);
     } catch (const std::bad_any_cast &E) {

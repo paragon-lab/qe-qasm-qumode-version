@@ -479,6 +479,7 @@ public:
     switch (Ty) {
     case ASTTypeAngle:
     case ASTTypeMeasure:
+    case ASTTypePhotonCountMeasure:
     case ASTTypeReset:
     case ASTTypeBitset:
     case ASTTypeDefcalCall:
