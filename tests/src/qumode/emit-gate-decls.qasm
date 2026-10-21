@@ -17,6 +17,9 @@ gate bar(angle alpha) qubit q {
   ctrl @ gphase(alpha) q;
 }
 
+gate idq qumode q {
+}
+
 qubit q;
 qumode qm;
 myu(pi / 2, 0, pi) q;

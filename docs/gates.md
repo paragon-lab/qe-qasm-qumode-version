@@ -114,6 +114,18 @@ gate baz(array[complex[float[64]], 3] alphas, angle beta) qubit qb, qumode qm {
 }
 ```
 
+A fully typed declaration may omit classical parameters. Empty parentheses are
+optional; the emitter always prints `()`:
+
+```qasm
+gate idq qumode q { }
+gate idq() qumode q { }  // equivalent
+gate fock_id[uint N] qumode q { }
+gate fock_id[uint N]() qumode q { }  // equivalent
+idq qm;
+fock_id[3] qm;
+```
+
 Arrays with variable lengths can also be used as parameters through
 template parameters:
 ```qasm

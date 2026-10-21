@@ -1079,6 +1079,14 @@ const char *PrintTypeName(ASTType Type) {
   case ASTTypeQumode:
   case ASTTypeQumodeContainer:
     return "qumode";
+  case ASTTypeGate:
+  case ASTTypeUGate:
+  case ASTTypeCXGate:
+  case ASTTypeCCXGate:
+  case ASTTypeCNotGate:
+  case ASTTypeHadamardGate:
+  case ASTTypeDispGate:
+    return "gate";
   case ASTTypeBoolArray:
     return "array[bool]";
   case ASTTypeIntArray:

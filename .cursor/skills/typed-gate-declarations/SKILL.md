@@ -15,7 +15,7 @@ Syntax and the frozen `disp` / `snap` / `ecd` call ABI are in `docs/gates.md`. T
 ## Which production
 
 - Untyped classical formals and bare quantum operands: `ProductionRule_1430` / `1431`. No call-site checks.
-- Any typed classical formal together with typed quantum operands: `ProductionRule_10030` only. No partial typing. It delegates to `1430` after validation.
+- Typed quantum operands (`qubit`/`qumode`), with zero or more explicitly typed classical formals: `ProductionRule_10030` only. Classical formals are `TypedGateClassicalParams` (`['(' NamedTypeDeclList? ')']?`): omitted, `()`, or `(typed, …)`, including after `TypedGateTemplateHeader`. No partial typing. It delegates to `1430` after validation.
 - `uint` templates used as array lengths: `ProductionRule_10031`. Call-site `foo([…])` infers `N`; `foo[N]([…])` checks. Do not overwrite body `N`.
 - Calls: `ProductionRule_3500` → `CreateQOpNodeCall` → `CreateGateCall`. `ValidateTypedGateCall` runs before `CloneCall`, and only when `IsFullyTyped()`.
 

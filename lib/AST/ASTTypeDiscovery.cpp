@@ -1565,6 +1565,20 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       case ASTTypeHadamardGate:
       case ASTTypeDispGate:
       case ASTTypeUGate:
+        // Builtin calls (`disp`, `U`, `h`, …) leave CurrentType as a gate
+        // type and InQubitList true. The next identifier is an operand, not
+        // a new gate name — inventing ASTTypeGate here makes undeclared
+        // targets look like gates.
+        if (DCX->GetContextType() != ASTTypeGate &&
+            DCX->GetContextType() != ASTTypeDefcal) {
+          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0U,
+                                                              ASTTypeUndefined);
+          assert(Id && "Could not create a valid ASTIdentifierNode!");
+          Id->SetLocation(TK->GetLocation());
+          ASTIdentifierTypeController::Instance().SetCurrentType(
+              ASTTypeUndefined);
+          break;
+        }
         Id = ASTBuilder::Instance().CreateASTIdentifierNode(
             S, ASTGateNode::GateBits, ASTTypeGate);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -3328,14 +3342,21 @@ bool ASTTypeDiscovery::ValidateTypedGateCall(
     ASTType ArgTy = QSTE ? QSTE->GetValueType() : QId->GetSymbolType();
     ASTType ExpTy = FQT[I];
 
+    if (ArgTy == ASTTypeUndefined) {
+      EmitDiagnostic(Diagnostic{DIAGLineCounter::Instance().GetLocation(QId),
+                                DiagLevel::Error,
+                                UndeclaredIdentifierPayload{QId->GetName()}});
+      return false;
+    }
+
     const bool Ok =
         (ExpTy == ASTTypeQubit && ASTUtils::Instance().IsQubitType(ArgTy)) ||
         (ExpTy == ASTTypeQumode && ASTUtils::Instance().IsQumodeType(ArgTy));
     if (!Ok) {
       std::stringstream M;
       M << "Gate '" << Decl->GetName() << "' operand " << I << " expects "
-        << PrintTypeEnum(ExpTy) << ", but '" << QId->GetName() << "' has type "
-        << PrintTypeEnum(ArgTy) << ".";
+        << PrintTypeName(ExpTy) << ", but '" << QId->GetName() << "' has type "
+        << PrintTypeName(ArgTy) << ".";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(QId), M.str(),
           DiagLevel::Error);

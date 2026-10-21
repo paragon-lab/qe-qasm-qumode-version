@@ -80,6 +80,20 @@ std::string UnknownOpenQASMVersionPayload::message() const {
   return OS.str();
 }
 
+std::string UndeclaredIdentifierPayload::message() const {
+  return "Undeclared identifier '" + Name + "'.";
+}
+
+std::string DispTargetTypeMismatchPayload::message() const {
+  return "The disp gate target must be a qumode, but '" + Name + "' has type " +
+         PrintTypeName(GotTy) + ".";
+}
+
+std::string DispControlTypeMismatchPayload::message() const {
+  return "Control operands of disp must be qubits, but '" + Name +
+         "' has type " + PrintTypeName(GotTy) + ".";
+}
+
 void EmitDiagnostic(const Diagnostic &Diag) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       Diag.Loc,

@@ -799,6 +799,8 @@ int readinput() {
                                     GateTypedQuantumOperandListImpl
 %type <ArgumentList>                ArgsList
 %type <NamedTypeDeclarationList>    NamedTypeDeclList NamedTypeDeclListImpl
+                                    TypedGateClassicalParams
+%type <String>                      TypedGateTemplateHeader
 
 %type <BoundQubitList>              QubitList QubitListImpl
 %type <ArraySubscriptNode>          IndexedSubscriptExpr
@@ -995,7 +997,6 @@ OpenPulseStmtListImpl
   | OpenPulseStmtListImpl Statement {
     assert($$ && "OpenPulse StatementListImpl is Invalid!");
     assert($1 && "Invalid OpenPulseStmtListImpl argument!");
-    assert($2 && "Invalid Statement argument!");
 
     if ($2 && !$2->IsDirective()) {
       $1->Append($2);
@@ -1014,8 +1015,7 @@ ForStmtListImpl
     $$ = ASTForStatementBuilder::Instance().NewList();
   }
   | ForStmtListImpl Statement {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective()) {
+    if ($2 && !$2->IsDirective()) {
       $1->Append($2);
     }
   }
@@ -1034,8 +1034,7 @@ BoxStmtListImpl
   }
   | BoxStmtListImpl Statement {
     assert($1 && "Invalid BoxStmtListImpl argument!");
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       $1->Append($2);
   }
   ;
@@ -1052,14 +1051,12 @@ FuncStmtListImpl
     $$ = ASTFunctionStatementBuilder::Instance().List();
   }
   | FuncStmtListImpl Statement {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       ASTFunctionStatementBuilder::Instance().Append($2);
     $$ = ASTFunctionStatementBuilder::Instance().List();
   }
   | FuncStmtListImpl Statement ',' {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       ASTFunctionStatementBuilder::Instance().Append($2);
     $$ = ASTFunctionStatementBuilder::Instance().List();
   }
@@ -1228,14 +1225,12 @@ KernelStmtListImpl
     $$ = ASTKernelStatementBuilder::Instance().List();
   }
   | KernelStmtListImpl Statement {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       ASTKernelStatementBuilder::Instance().Append($2);
     $$ = ASTKernelStatementBuilder::Instance().List();
   }
   | KernelStmtListImpl Statement ',' {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       ASTKernelStatementBuilder::Instance().Append($2);
     $$ = ASTKernelStatementBuilder::Instance().List();
   }
@@ -1253,14 +1248,12 @@ DefcalStmtListImpl
     $$ = ASTDefcalStatementBuilder::Instance().List();
   }
   | DefcalStmtListImpl Statement {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       ASTDefcalStatementBuilder::Instance().Append($2);
     $$ = ASTDefcalStatementBuilder::Instance().List();
   }
   | DefcalStmtListImpl Statement ',' {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       ASTDefcalStatementBuilder::Instance().Append($2);
     $$ = ASTDefcalStatementBuilder::Instance().List();
   }
@@ -1291,9 +1284,7 @@ IfStmtListImpl
   }
   | IfStmtListImpl Statement {
     assert($1 && "Invalid IfStmtListImpl argument!");
-    assert($2 && "Invalid ASTStatementNode argument!");
-
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       $1->Append($2);
   }
   ;
@@ -1311,9 +1302,7 @@ ElseIfStmtListImpl
   }
   | ElseIfStmtListImpl Statement {
     assert($1 && "Invalid ElseIfStmtListImpl argument!");
-    assert($2 && "Invalid ASTStatementNode argument!");
-
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       $1->Append($2);
   }
   ;
@@ -1331,9 +1320,7 @@ ElseStmtListImpl
   }
   | ElseStmtListImpl Statement {
     assert($1 && "Invalid ElseStmtListImpl argument!");
-    assert($2 && "Invalid ASTStatementNode argument!");
-
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       $1->Append($2);
   }
   ;
@@ -1349,8 +1336,7 @@ WhileStmtListImpl
     $$ = ASTWhileStatementBuilder::Instance().NewList();
   }
   | WhileStmtListImpl Statement {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective()) {
+    if ($2 && !$2->IsDirective()) {
       $1->Append($2);
     }
   }
@@ -1367,8 +1353,7 @@ DoWhileStmtListImpl
     $$ = ASTDoWhileStatementBuilder::Instance().NewList();
   }
   | DoWhileStmtListImpl Statement {
-    assert($2 && "Invalid ASTStatementNode argument!");
-    if (!$2->IsDirective()) {
+    if ($2 && !$2->IsDirective()) {
       $1->Append($2);
     }
   }
@@ -1500,6 +1485,11 @@ Statement
     $$ = $1;
   }
   | Newline {
+  }
+  | ';' {
+    /* Redundant semicolon: whitespace is already skipped by the scanner.
+       No AST node. Statement lists skip a null $$ . */
+    $$ = nullptr;
   }
   | UnitaryAttributeAssign ';' {
     $$ = $1;
@@ -2185,25 +2175,22 @@ GateDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_1431(GET_TOKEN(5),
                                                               Id, $3, $5);
   }
-  /* Fully-typed gate declaration: classical NamedTypeDecl params (validated
-     explicitly typed in ProductionRule_10030) + typed quantum operands.
-     Lookahead after ')' is TOK_QUBIT / TOK_QUMODE (vs bare Identifier for
-     the OQ3 untyped-operand production above). */
-  | TOK_GATE TOK_IDENTIFIER '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
+  /* Fully-typed: optional classical formals via TypedGateClassicalParams
+     (`['(' NamedTypeDeclList? ')']?`) + typed quantum operands.
+     Lookahead after ')' / the gate name is TOK_QUBIT / TOK_QUMODE (vs bare
+     Identifier for the OQ3 untyped-operand productions above). */
+  | TOK_GATE TOK_IDENTIFIER TypedGateClassicalParams GateTypedQuantumOperandList '{' GateOpList '}' {
     ASTGateTemplateParamBuilder::Instance().Clear();
     ASTIdentifierNode* Id =
-        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(7), *$2);
-    $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(8),
-                                                               Id, $4, $6, $8);
+        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(5), *$2);
+    $$ = ASTProductionFactory::Instance().ProductionRule_10030(
+        GET_TOKEN(6), Id, $3, $4, $6);
   }
-  | TOK_GATE TOK_IDENTIFIER '[' {
-      ASTGateTemplateParamBuilder::Instance().Clear();
-    } GateTemplateParamList ']' '(' NamedTypeDeclList ')' GateTypedQuantumOperandList '{' GateOpList '}' {
-    /* Mid-rule counts as a symbol: $4. TOK_GATE is yystack_[12]. */
+  | TypedGateTemplateHeader TypedGateClassicalParams GateTypedQuantumOperandList '{' GateOpList '}' {
     ASTIdentifierNode* Id =
-        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(11), *$2);
-    $$ = ASTProductionFactory::Instance().ProductionRule_10030(GET_TOKEN(12),
-                                                               Id, $8, $10, $12);
+        ASTProductionFactory::Instance().ProductionRule_1500(GET_TOKEN(5), *$1);
+    $$ = ASTProductionFactory::Instance().ProductionRule_10030(
+        GET_TOKEN(5), Id, $2, $3, $5);
   }
   | TOK_GATE TOK_CX GateOperandParamList '{' GateOpList '}' {
     $$ = ASTProductionFactory::Instance().ProductionRule_1432(GET_TOKEN(5), $3,
@@ -2220,9 +2207,30 @@ GateDecl
   }
   ;
 
-/* GateTemplateOpen removed: templated GateDecl clears the builder in a
-   mid-rule action after '[' so IndexedSubscript cannot steal the bracket. */
+/* Shared `gate name[uint N]` prefix so TypedGateClassicalParams can follow
+   without duplicating the mid-rule after '[' (duplicate mid-rules are
+   reduce/reduce and make one production useless). */
+TypedGateTemplateHeader
+  : TOK_GATE TOK_IDENTIFIER '[' {
+      ASTGateTemplateParamBuilder::Instance().Clear();
+    } GateTemplateParamList ']' {
+    $$ = $2;
+  }
+  ;
 
+/* ['(' NamedTypeDeclList? ')']? — omitted, empty `()`, or a typed list.
+   NamedTypeDeclList itself is never empty (functions/extern share it). */
+TypedGateClassicalParams
+  : %empty {
+    $$ = new ASTDeclarationList();
+  }
+  | '(' ')' {
+    $$ = new ASTDeclarationList();
+  }
+  | '(' NamedTypeDeclList ')' {
+    $$ = $2;
+  }
+  ;
 
 GateTemplateParamList
   : GateTemplateParam
