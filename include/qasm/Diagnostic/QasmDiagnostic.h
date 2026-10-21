@@ -97,12 +97,47 @@ struct UnknownOpenQASMVersionPayload {
   std::string message() const;
 };
 
+struct UndeclaredIdentifierPayload {
+  std::string Name;
+
+  std::string message() const;
+};
+
+struct DispTargetTypeMismatchPayload {
+  std::string Name;
+  ASTType GotTy;
+
+  std::string message() const;
+};
+
+struct DispControlTypeMismatchPayload {
+  std::string Name;
+  ASTType GotTy;
+
+  std::string message() const;
+};
+
+struct PartialTypedGateImplicitParamPayload {
+  std::string Name;
+
+  std::string message() const;
+};
+
+struct PartialTypedGateUntypedOperandPayload {
+  std::string Name;
+
+  std::string message() const;
+};
+
 using DiagnosticKind = std::variant<
     ComplexInitPayload, GateParamArraySizeMismatchPayload,
     GateParamTypeMismatchPayload, GateParamUnsupportedFormalPayload,
     UnitaryMatrixRowConstructPayload, UnitaryMatrixInvalidComplexPayload,
     TokenInvalidInVersionPayload, FeatureDeprecatedPayload,
-    FeatureRemovalPayload, UnknownOpenQASMVersionPayload>;
+    FeatureRemovalPayload, UnknownOpenQASMVersionPayload,
+    UndeclaredIdentifierPayload, DispTargetTypeMismatchPayload,
+    DispControlTypeMismatchPayload, PartialTypedGateImplicitParamPayload,
+    PartialTypedGateUntypedOperandPayload>;
 
 struct Diagnostic {
   ASTLocation Loc;

@@ -115,6 +115,9 @@ public:
   ASTIntNode *FoldRegisterSize(const ASTToken *TK,
                                const ASTExpressionNode *Expr) const;
 
+  // `complex` / `complex[float]` → complex[float[64]].
+  ASTIntNode *DefaultComplexBits(const ASTToken *TK) const;
+
 public:
   static const std::variant<const ASTIntNode *, const ASTIdentifierNode *> EVX;
 
@@ -230,6 +233,7 @@ public:
                                        const ASTIntNode *II) const;
 
   // MPComplexType
+  ASTMPComplexNode *ProductionRule_808(const ASTToken *TK) const;
   ASTMPComplexNode *ProductionRule_808(const ASTToken *TK,
                                        const ASTIntNode *II) const;
 

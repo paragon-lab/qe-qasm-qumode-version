@@ -68,6 +68,7 @@
 #include <qasm/AST/ASTWhileStatementBuilder.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseController.h>
+#include <qasm/Diagnostic/QasmDiagnostic.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Frontend/QasmFeatureTester.h>
 
@@ -292,6 +293,16 @@ ASTProductionFactory::FoldRegisterSize(const ASTToken *TK,
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
   return nullptr;
+}
+
+ASTIntNode *ASTProductionFactory::DefaultComplexBits(const ASTToken *TK) const {
+  assert(TK && "Invalid ASTToken argument!");
+
+  ASTIntNode *II = ASTBuilder::Instance().CreateASTIntNode(
+      static_cast<uint32_t>(ASTMPComplexNode::DefaultBits));
+  assert(II && "Could not create a default complex bit-width node!");
+  II->SetLocation(TK->GetLocation());
+  return II;
 }
 
 ASTDeclarationNode *
@@ -5555,6 +5566,11 @@ ASTProductionFactory::ProductionRule_806(const ASTToken *TK,
 }
 
 ASTMPComplexNode *
+ASTProductionFactory::ProductionRule_808(const ASTToken *TK) const {
+  return ProductionRule_808(TK, DefaultComplexBits(TK));
+}
+
+ASTMPComplexNode *
 ASTProductionFactory::ProductionRule_808(const ASTToken *TK,
                                          const ASTIntNode *II) const {
   assert(TK && "Invalid ASTToken argument!");
@@ -8633,6 +8649,7 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_850(
   }
 
   DN = new ASTDeclarationNode(Id, AN, ASTTypeAngle);
+  DN->SetImplicitClassicalType(true);
 
   DN->SetLocation(TK->GetLocation());
   DN->SetConst(Const);
@@ -17675,6 +17692,34 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_1430(
         DIAGLineCounter::Instance().GetLocation(QIL), M.str(),
         DiagLevel::Error);
     return ASTGateDeclarationNode::DeclarationError(GId, M.str());
+  }
+
+  // 10030 delegates here after validating typed quantum operands. Only reject
+  // when explicit classical formals are paired with untyped (bare) operands.
+  bool TypedQuantumOperands = true;
+  for (ASTIdentifierList::const_iterator II = QIL->begin(); II != QIL->end();
+       ++II) {
+    ASTType PTy = (*II)->GetPolymorphicType();
+    if (PTy != ASTTypeQubit && PTy != ASTTypeQumode) {
+      TypedQuantumOperands = false;
+      break;
+    }
+  }
+  if (!TypedQuantumOperands) {
+    for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
+         ++DI) {
+      const ASTDeclarationNode *DN = *DI;
+      if (DN && !DN->IsImplicitClassicalType()) {
+        const ASTIdentifierNode *QId = *QIL->begin();
+        const ASTLocation QLoc = DIAGLineCounter::Instance().GetLocation(QId);
+        EmitDiagnostic(
+            Diagnostic{QLoc, DiagLevel::Error,
+                       PartialTypedGateUntypedOperandPayload{QId->GetName()}});
+        return ASTGateDeclarationNode::DeclarationError(
+            GId,
+            PartialTypedGateUntypedOperandPayload{QId->GetName()}.message());
+      }
+    }
   }
 
   for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
@@ -27850,28 +27895,32 @@ ASTProductionFactory::ProductionRule_10020(const ASTToken *TK,
     if (!QSTE)
       QSTE = QId->GetSymbolTableEntry();
     ASTType QTy = QSTE ? QSTE->GetValueType() : QId->GetSymbolType();
+    const ASTLocation QLoc = DIAGLineCounter::Instance().GetLocation(QId);
+
+    if (QTy == ASTTypeUndefined) {
+      EmitDiagnostic(Diagnostic{QLoc, DiagLevel::Error,
+                                UndeclaredIdentifierPayload{QId->GetName()}});
+      return ASTGateQOpNode::StatementError(
+          QId, UndeclaredIdentifierPayload{QId->GetName()}.message());
+    }
 
     const bool IsTarget = (I + 1U == ATL->Size());
     if (IsTarget) {
       if (!ASTUtils::Instance().IsQumodeType(QTy) &&
           QTy != ASTTypeGateOperandParam) {
-        std::stringstream M;
-        M << "The disp gate target must be a qumode, but '" << QId->GetName()
-          << "' has type " << PrintTypeEnum(QTy) << ".";
-        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(QId), M.str(),
-            DiagLevel::Error);
-        return ASTGateQOpNode::StatementError(QId, M.str());
+        EmitDiagnostic(
+            Diagnostic{QLoc, DiagLevel::Error,
+                       DispTargetTypeMismatchPayload{QId->GetName(), QTy}});
+        return ASTGateQOpNode::StatementError(
+            QId, DispTargetTypeMismatchPayload{QId->GetName(), QTy}.message());
       }
     } else if (!ASTUtils::Instance().IsQubitType(QTy) &&
                QTy != ASTTypeGateOperandParam) {
-      std::stringstream M;
-      M << "Control operands of disp must be qubits, but '" << QId->GetName()
-        << "' has type " << PrintTypeEnum(QTy) << ".";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
-          DiagLevel::Error);
-      return ASTGateQOpNode::StatementError(QId, M.str());
+      EmitDiagnostic(
+          Diagnostic{QLoc, DiagLevel::Error,
+                     DispControlTypeMismatchPayload{QId->GetName(), QTy}});
+      return ASTGateQOpNode::StatementError(
+          QId, DispControlTypeMismatchPayload{QId->GetName(), QTy}.message());
     }
   }
 
@@ -27971,19 +28020,20 @@ ASTGateDeclarationNode *ASTProductionFactory::ProductionRule_10030(
   assert(QIL && "Invalid GateOperandParamList argument!");
   assert(GOL && "Invalid ASTGateQOpList argument!");
 
-  if (DL->Empty()) {
-    std::stringstream M;
-    M << "Fully-typed gate declarations require at least one explicitly "
-         "typed classical parameter.";
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTGateDeclarationNode::DeclarationError(GId, M.str());
-  }
-
+  // Empty DL is allowed: fully typed means every quantum operand is
+  // `qubit`/`qumode`; classical parameters may be omitted.
   for (ASTDeclarationList::const_iterator DI = DL->begin(); DI != DL->end();
        ++DI) {
     const ASTDeclarationNode *DN = *DI;
     assert(DN && "Invalid ASTDeclarationNode in typed gate parameter list!");
+    if (DN->IsImplicitClassicalType()) {
+      const ASTLocation PLoc = DIAGLineCounter::Instance().GetLocation(DN);
+      EmitDiagnostic(
+          Diagnostic{PLoc, DiagLevel::Error,
+                     PartialTypedGateImplicitParamPayload{DN->GetName()}});
+      return ASTGateDeclarationNode::DeclarationError(
+          GId, PartialTypedGateImplicitParamPayload{DN->GetName()}.message());
+    }
     ASTType PTy = DN->GetASTType();
     if (!IsExplicitClassicalGateParamType(PTy)) {
       std::stringstream M;

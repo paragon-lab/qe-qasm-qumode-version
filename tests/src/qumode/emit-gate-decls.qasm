@@ -10,11 +10,22 @@ gate mydisp(complex[float[64]] alpha) qumode qm {
   disp(alpha) qm;
 }
 
+gate mydisp2(complex alpha) qumode qm {
+  disp(alpha) qm;
+}
+
+gate mydisp3(complex[float] beta) qumode qm {
+  disp(beta) qm;
+}
+
 gate foo[uint N](array[float[64], N] thetas) qubit q {
 }
 
 gate bar(angle alpha) qubit q {
   ctrl @ gphase(alpha) q;
+}
+
+gate idq qumode q {
 }
 
 qubit q;

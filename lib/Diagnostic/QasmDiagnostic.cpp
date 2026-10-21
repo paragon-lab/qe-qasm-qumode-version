@@ -80,6 +80,31 @@ std::string UnknownOpenQASMVersionPayload::message() const {
   return OS.str();
 }
 
+std::string UndeclaredIdentifierPayload::message() const {
+  return "Undeclared identifier '" + Name + "'.";
+}
+
+std::string DispTargetTypeMismatchPayload::message() const {
+  return "The disp gate target must be a qumode, but '" + Name + "' has type " +
+         PrintTypeName(GotTy) + ".";
+}
+
+std::string DispControlTypeMismatchPayload::message() const {
+  return "Control operands of disp must be qubits, but '" + Name +
+         "' has type " + PrintTypeName(GotTy) + ".";
+}
+
+std::string PartialTypedGateImplicitParamPayload::message() const {
+  return "Fully-typed gate parameter '" + Name +
+         "' must have an explicit classical type.";
+}
+
+std::string PartialTypedGateUntypedOperandPayload::message() const {
+  return "Fully-typed gate operands must be declared as qubit or qumode "
+         "(operand '" +
+         Name + "').";
+}
+
 void EmitDiagnostic(const Diagnostic &Diag) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       Diag.Loc,
