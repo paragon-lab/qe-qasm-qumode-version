@@ -814,7 +814,7 @@ int readinput() {
                                     OpenPulseFrameTime
 %type <TimeUnitNode>                TimeUnit
 %type <BoolNode>                    BooleanConstant
-%type <IntegerNode>                 Integer SignedInteger IntScalarType RegisterSize
+%type <IntegerNode>                 Integer SignedInteger IntScalarType RegisterSize ComplexWidth
 %type <FloatNode>                   FloatScalarType
 %type <RealNode>                    Real
 %type <EllipsisNode>                Ellipsis
@@ -4688,70 +4688,84 @@ MPComplexDecl
   : TOK_COMPLEX Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_250(GET_TOKEN(1), $2);
   }
-  | TOK_COMPLEX '[' RegisterSize ']' Identifier {
-    if ($3) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(4),
-                                                                 $5, $3);
+  | TOK_COMPLEX ComplexWidth Identifier {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(2),
+                                                                 $3, $2);
 
     } else {
       $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
     }
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_251(GET_TOKEN(7),
-                                                                 $8, $5);
+  | TOK_COMPLEX Identifier '=' ComplexInitializerExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_253(
+        GET_TOKEN(3), $2,
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(3)), $4);
+  }
+  | TOK_COMPLEX ComplexWidth Identifier '=' ComplexInitializerExpr {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(4),
+                                                                 $3, $2, $5);
 
     } else {
       $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
     }
   }
-  | TOK_COMPLEX '[' RegisterSize ']' Identifier '=' ComplexInitializerExpr {
-    if ($3) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(6),
-                                                                 $5, $3, $7);
+  | TOK_COMPLEX Identifier '=' BinaryOp {
+    $$ = ASTProductionFactory::Instance().ProductionRule_254(
+        GET_TOKEN(3), $2,
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(3)), $4);
+  }
+  | TOK_COMPLEX ComplexWidth Identifier '=' BinaryOp {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(4),
+                                                                 $3, $2, $5);
 
     } else {
       $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
     }
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' ComplexInitializerExpr {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_253(GET_TOKEN(9),
-                                                                 $8, $5, $10);
-
+  | TOK_COMPLEX Identifier '=' ArithShift {
+    ASTIntNode *Bits =
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(3));
+    if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($4)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(3),
+                                                               $2, Bits, BOP);
+    } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($4)) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(3),
+                                                               $2, Bits, UOP);
+    } else if ($4->GetIdentifier()) {
+      $$ = ASTProductionFactory::Instance().ProductionRule_259(
+          GET_TOKEN(3), $2, Bits,
+          const_cast<ASTIdentifierNode *>($4->GetIdentifier()));
     } else {
-      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
+      std::stringstream M;
+      M << "Invalid complex initializer.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation($4), M.str(),
+          DiagLevel::Error);
+      $$ = ASTMPComplexNode::ExpressionError($2, M.str());
     }
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' BinaryOp {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
-                                                                 $8, $5, $10);
-
-    } else {
-      $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
-    }
-  }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' ArithShift {
-    if ($5) {
-        if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($10)) {
-          $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(9),
-                                                                   $8, $5, BOP);
-        } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($10)) {
-          $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(9),
-                                                                   $8, $5, UOP);
-        } else if ($10->GetIdentifier()) {
+  | TOK_COMPLEX ComplexWidth Identifier '=' ArithShift {
+    if ($2) {
+        if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>($5)) {
+          $$ = ASTProductionFactory::Instance().ProductionRule_254(GET_TOKEN(4),
+                                                                   $3, $2, BOP);
+        } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>($5)) {
+          $$ = ASTProductionFactory::Instance().ProductionRule_255(GET_TOKEN(4),
+                                                                   $3, $2, UOP);
+        } else if ($5->GetIdentifier()) {
           $$ = ASTProductionFactory::Instance().ProductionRule_259(
-              GET_TOKEN(9), $8, $5,
-              const_cast<ASTIdentifierNode *>($10->GetIdentifier()));
+              GET_TOKEN(4), $3, $2,
+              const_cast<ASTIdentifierNode *>($5->GetIdentifier()));
         } else {
           std::stringstream M;
           M << "Invalid complex initializer.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation($10), M.str(),
+              DIAGLineCounter::Instance().GetLocation($5), M.str(),
               DiagLevel::Error);
-          $$ = ASTMPComplexNode::ExpressionError($8, M.str());
+          $$ = ASTMPComplexNode::ExpressionError($3, M.str());
         }
 
     } else {
@@ -4759,19 +4773,27 @@ MPComplexDecl
     }
   }
 MPComplexFunctionCallDecl
-  : TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier '=' FunctionCallStmtExpr {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_261(GET_TOKEN(9),
-                                                                 $8, $5, $10);
+  : TOK_COMPLEX Identifier '=' FunctionCallStmtExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_261(
+        GET_TOKEN(3), $2,
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(3)), $4);
+  }
+  | TOK_COMPLEX ComplexWidth Identifier '=' FunctionCallStmtExpr {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_261(GET_TOKEN(4),
+                                                                 $3, $2, $5);
 
     } else {
       $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
     }
   }
 MPComplexType
-  : TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_808(GET_TOKEN(6), $5);
+  : TOK_COMPLEX {
+    $$ = ASTProductionFactory::Instance().ProductionRule_808(GET_TOKEN(0));
+  }
+  | TOK_COMPLEX ComplexWidth {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_808(GET_TOKEN(1), $2);
 
     } else {
       $$ = ASTMPComplexNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
@@ -5651,10 +5673,16 @@ CastExpr
       $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
     }
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' '(' Expr ')' {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(9), $5,
-                                                                  $9, ASTTypeMPComplex);
+  | TOK_COMPLEX '(' Expr ')' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3600(
+        GET_TOKEN(3),
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(3)), $3,
+        ASTTypeMPComplex);
+  }
+  | TOK_COMPLEX ComplexWidth '(' Expr ')' {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_3600(GET_TOKEN(4), $2,
+                                                                  $4, ASTTypeMPComplex);
 
     } else {
       $$ = ASTCastExpressionNode::ExpressionError(ASTProductionFactory::RegisterSizeError);
@@ -5770,23 +5798,35 @@ NamedTypeDecl
       $$ = ASTDeclarationNode::DeclarationError($6, ASTProductionFactory::RegisterSizeError);
     }
   }
-  | TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier {
-    if ($5) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $8,
-                                                                 $5, ASTTypeMPComplex);
+  | TOK_COMPLEX Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(
+        GET_TOKEN(1), $2,
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(1)),
+        ASTTypeMPComplex);
+  }
+  | TOK_CONST TOK_COMPLEX Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(
+        GET_TOKEN(1), $3,
+        ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(1)),
+        ASTTypeMPComplex, true);
+  }
+  | TOK_COMPLEX ComplexWidth Identifier {
+    if ($2) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(2), $3,
+                                                                 $2, ASTTypeMPComplex);
 
     } else {
-      $$ = ASTDeclarationNode::DeclarationError($8, ASTProductionFactory::RegisterSizeError);
+      $$ = ASTDeclarationNode::DeclarationError($3, ASTProductionFactory::RegisterSizeError);
     }
   }
-  | TOK_CONST TOK_COMPLEX '[' TOK_FLOAT '[' RegisterSize ']' ']' Identifier {
-    if ($6) {
-        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $9,
-                                                                 $6, ASTTypeMPComplex,
+  | TOK_CONST TOK_COMPLEX ComplexWidth Identifier {
+    if ($3) {
+        $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(2), $4,
+                                                                 $3, ASTTypeMPComplex,
                                                                  true);
 
     } else {
-      $$ = ASTDeclarationNode::DeclarationError($9, ASTProductionFactory::RegisterSizeError);
+      $$ = ASTDeclarationNode::DeclarationError($4, ASTProductionFactory::RegisterSizeError);
     }
   }
   | TOK_DURATION Identifier {
@@ -7219,6 +7259,20 @@ ArithShift
 RegisterSize
   : ArithShift {
     $$ = ASTProductionFactory::Instance().FoldRegisterSize(GET_TOKEN(0), $1);
+  }
+  ;
+
+/* Width of a complex type. Bare `complex` is handled separately.
+   `complex[float]` and omitted float size both mean float[64]. */
+ComplexWidth
+  : '[' TOK_FLOAT ']' {
+    $$ = ASTProductionFactory::Instance().DefaultComplexBits(GET_TOKEN(1));
+  }
+  | '[' RegisterSize ']' {
+    $$ = $2;
+  }
+  | '[' TOK_FLOAT '[' RegisterSize ']' ']' {
+    $$ = $4;
   }
   ;
 

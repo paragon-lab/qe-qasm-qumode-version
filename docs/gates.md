@@ -74,8 +74,9 @@ the syntactic level.
 
 Currently, the supported classical types for parameters are `angle`, `float[N]`,
 `complex[float[N]]`, and fixed-length arrays of these types (including lengths
-bound by template parameters). Type checking for typed gate declarations is
-enforced both in definitions and in call sites.
+bound by template parameters). `float` means `float[64]`. `complex` and
+`complex[float]` mean `complex[float[64]]`. Type checking for typed gate
+declarations is enforced both in definitions and in call sites.
 
 ## Examples for the new syntax
 
@@ -88,6 +89,8 @@ gate ecd(complex[float[64]] alpha) qubit c, qumode t {
     ctrl @ disp(alpha/2) c, t;
 }
 ```
+`complex alpha` and `complex[float] alpha` are the same type as
+`complex[float[64]] alpha`.
 
 Arrays of `angle`s, `float[N]`s, or `complex[float[N]]`s can also be used as
 parameters:
@@ -112,6 +115,15 @@ gate baz(array[complex[float[64]], 3] alphas, angle beta) qubit qb, qumode qm {
     ecd(alphas[1]/3) qb, qm;
     ecd(alphas[2]/4) qb, qm;
 }
+```
+
+Partial typing is rejected. Classical formals and quantum operands must be
+either both untyped (`gate foo(alpha) q`) or both explicitly typed
+(`gate foo(angle alpha) qubit q` / `qumode q`). These do not parse:
+
+```qasm
+gate foo(alpha) qumode qm { }   // implicit classical, typed quantum
+gate foo(angle alpha) qm { }    // typed classical, implicit quantum
 ```
 
 A fully typed declaration may omit classical parameters. Empty parentheses are

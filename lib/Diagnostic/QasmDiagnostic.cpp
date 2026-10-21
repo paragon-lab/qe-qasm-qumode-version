@@ -94,6 +94,17 @@ std::string DispControlTypeMismatchPayload::message() const {
          "' has type " + PrintTypeName(GotTy) + ".";
 }
 
+std::string PartialTypedGateImplicitParamPayload::message() const {
+  return "Fully-typed gate parameter '" + Name +
+         "' must have an explicit classical type.";
+}
+
+std::string PartialTypedGateUntypedOperandPayload::message() const {
+  return "Fully-typed gate operands must be declared as qubit or qumode "
+         "(operand '" +
+         Name + "').";
+}
+
 void EmitDiagnostic(const Diagnostic &Diag) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       Diag.Loc,

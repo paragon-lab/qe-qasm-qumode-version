@@ -1676,8 +1676,12 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             Id->SetLocation(TK->GetLocation());
             break;
           case ASTTypeFloat:
-            Id = ASTBuilder::Instance().CreateASTIdentifierNode(
-                S, ASTFloatNode::FloatBits, CTy);
+            if (PTy == ASTTypeMPComplex)
+              Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+                  S, ASTMPComplexNode::DefaultBits, ASTTypeMPComplex);
+            else
+              Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+                  S, ASTFloatNode::FloatBits, CTy);
             assert(Id && "Could not create a valid ASTIdentifierNode!");
             Id->SetLocation(TK->GetLocation());
             break;
@@ -2092,13 +2096,27 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             ASTTypeUndefined);
         break;
       case ASTTypeFloat:
-        Id = ASTBuilder::Instance().CreateASTIdentifierNode(
-            S, ASTFloatNode::FloatBits, CTy);
-        assert(Id && "Could not create a valid ASTIdentifierNode!");
-        Id->SetLocation(TK->GetLocation());
-        ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
-        ASTIdentifierTypeController::Instance().SetCurrentType(
-            ASTTypeUndefined);
+        // `complex[float] name` — float has no [N], so CT is IEEE float
+        // while PT is still MPComplex. Infer complex[float[64]].
+        if (PTy == ASTTypeMPComplex) {
+          const unsigned Bits = ASTMPComplexNode::DefaultBits;
+          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, Bits,
+                                                              ASTTypeMPComplex);
+          assert(Id && "Could not create a valid ASTIdentifierNode!");
+          Id->SetLocation(TK->GetLocation());
+          ASTIdentifierTypeController::Instance().SetPreviousType(
+              ASTTypeMPComplex);
+          ASTIdentifierTypeController::Instance().SetCurrentType(
+              ASTTypeUndefined);
+        } else {
+          Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+              S, ASTFloatNode::FloatBits, CTy);
+          assert(Id && "Could not create a valid ASTIdentifierNode!");
+          Id->SetLocation(TK->GetLocation());
+          ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
+          ASTIdentifierTypeController::Instance().SetCurrentType(
+              ASTTypeUndefined);
+        }
         break;
       case ASTTypeMPInteger:
       case ASTTypeMPDecimal:

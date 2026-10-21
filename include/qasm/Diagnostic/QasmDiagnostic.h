@@ -117,6 +117,18 @@ struct DispControlTypeMismatchPayload {
   std::string message() const;
 };
 
+struct PartialTypedGateImplicitParamPayload {
+  std::string Name;
+
+  std::string message() const;
+};
+
+struct PartialTypedGateUntypedOperandPayload {
+  std::string Name;
+
+  std::string message() const;
+};
+
 using DiagnosticKind = std::variant<
     ComplexInitPayload, GateParamArraySizeMismatchPayload,
     GateParamTypeMismatchPayload, GateParamUnsupportedFormalPayload,
@@ -124,7 +136,8 @@ using DiagnosticKind = std::variant<
     TokenInvalidInVersionPayload, FeatureDeprecatedPayload,
     FeatureRemovalPayload, UnknownOpenQASMVersionPayload,
     UndeclaredIdentifierPayload, DispTargetTypeMismatchPayload,
-    DispControlTypeMismatchPayload>;
+    DispControlTypeMismatchPayload, PartialTypedGateImplicitParamPayload,
+    PartialTypedGateUntypedOperandPayload>;
 
 struct Diagnostic {
   ASTLocation Loc;

@@ -5449,6 +5449,7 @@ protected:
   bool IsTypeDecl;
   bool IsNamedTypeDecl;
   bool AllowDuplicates;
+  bool ImplicitClassicalType;
 
   union {
     const void *VM;
@@ -5463,7 +5464,7 @@ public:
                      bool TypeDecl = false)
       : ASTStatementNode(Id), Type(Ty), PO(static_cast<uint64_t>(~0x0UL)),
         IsTypeDecl(TypeDecl), IsNamedTypeDecl(false), AllowDuplicates(false),
-        VM(nullptr), MType(ASTTypeUndefined) {
+        ImplicitClassicalType(false), VM(nullptr), MType(ASTTypeUndefined) {
     AllowDuplicates = Ty == ASTTypeGate || Ty == ASTTypeCNotGate ||
                       Ty == ASTTypeHadamardGate || Ty == ASTTypeCCXGate ||
                       Ty == ASTTypeCXGate || Ty == ASTTypeUGate ||
@@ -5476,7 +5477,8 @@ public:
                      bool TypeDecl = false)
       : ASTStatementNode(Id, EX), Type(Ty), PO(static_cast<uint64_t>(~0x0UL)),
         IsTypeDecl(TypeDecl), IsNamedTypeDecl(NamedTypeDecl),
-        AllowDuplicates(false), VM(nullptr), MType(ASTTypeUndefined) {
+        AllowDuplicates(false), ImplicitClassicalType(false), VM(nullptr),
+        MType(ASTTypeUndefined) {
     AllowDuplicates = Ty == ASTTypeGate || Ty == ASTTypeCNotGate ||
                       Ty == ASTTypeHadamardGate || Ty == ASTTypeCCXGate ||
                       Ty == ASTTypeCXGate || Ty == ASTTypeUGate ||
@@ -5503,6 +5505,12 @@ public:
   virtual bool IsTypeDeclaration() const { return IsTypeDecl; }
 
   virtual bool IsNamedTypeDeclaration() const { return IsNamedTypeDecl; }
+
+  virtual void SetImplicitClassicalType(bool V = true) {
+    ImplicitClassicalType = V;
+  }
+
+  virtual bool IsImplicitClassicalType() const { return ImplicitClassicalType; }
 
   virtual bool DuplicatesAllowed() const { return AllowDuplicates; }
 
